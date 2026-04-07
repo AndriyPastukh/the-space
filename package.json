@@ -1,0 +1,19 @@
+{
+    "name": "project-the-space",
+    "version": "1.0.0",
+    "description": "TheSpace — простір досвіду, підтримки та перших кроків в професійному розвитку.\r Це спільнота для новачків яка допомагає отримати перший практичний досвід через, виконання невеликих завдань-проектів, обмін знаннями і досвідом, взаємодію з іншими учасниками спільноти.",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/AndriyPastukh/the-space.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "bugs": {
+        "url": "https://github.com/AndriyPastukh/the-space/issues"
+    },
+    "homepage": "https://github.com/AndriyPastukh/the-space#readme"
+}
