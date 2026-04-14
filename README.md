@@ -11,3 +11,30 @@ TheSpace — простір досвіду, підтримки та перших
 * обмінюватися знаннями
 * будувати власне портфоліо 
 * знаходити та створювати спільноти, команди
+
+---
+# Project start
+## 1. Start Docker (database + backend + frontend)
+
+```bash
+docker compose up --build
+```
+
+## Frontend
+Open:
+```
+http://localhost:5173
+```
+
+## Backend
+Open:
+```
+http://localhost:3000
+```
+
+## PostgreSQL
+
+Default connection:
+```
+postgresql://postgres:postgres@localhost:5432/appdb
+```
