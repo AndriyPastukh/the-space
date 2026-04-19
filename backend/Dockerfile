@@ -13,8 +13,11 @@ RUN npm install
 # Копіюємо весь інший код
 COPY . .
 
+# білдимо
+RUN npm run build
+
 # Відкриваємо порт NestJS
 EXPOSE 3000
 
-# Запускаємо сервер у режимі розробки
-CMD ["npm", "run", "start:dev"]
+# Запускаємо сервер у режимі продакш
+CMD ["node", "dist/main"]

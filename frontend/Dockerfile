@@ -9,6 +9,9 @@ RUN npm install
 
 COPY . .
 
+# білдимо
+RUN npm run build
+
 # Відкриваємо порт Vite
 EXPOSE 5173
 
