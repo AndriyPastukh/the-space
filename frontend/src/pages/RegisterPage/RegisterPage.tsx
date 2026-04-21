@@ -76,7 +76,6 @@ export default function RegisterPage() {
     // Перехід на головну або профіль
     navigate('/');
   };
-//dfsdfsdfsf
   return (
     <div className="auth-page">
       <div className="auth-box">
