@@ -169,18 +169,19 @@ export default function RegisterPage() {
             />
           </div>
 
-          {error && <p className="err-msg" style={{color: 'red', marginBottom: '10px'}}>{error}</p>}
+          {error && <p className="err-msg" style={{color: '#f87171', marginBottom: '10px'}}>{error}</p>}
 
           <label className="form-checkbox">
-            <input 
-              type="checkbox" 
-              id="terms" 
-              checked={form.terms}
-              onChange={handleInputChange}
-            /> я приймаю умови платформи
+            <input
+                type="checkbox"
+                id="terms"
+                checked={form.terms}
+                onChange={handleInputChange}
+            />
+            <span>Я приймаю умови платформи</span>
           </label>
 
-          <button type="submit" className="btn btn-primary btn-block btn-lg">
+          <button type="submit" className="btn-primary">
             Зареєструватись
           </button>
         </form>

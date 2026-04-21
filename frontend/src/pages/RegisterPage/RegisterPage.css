@@ -68,6 +68,19 @@
   display: block;
 }
 
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.form-checkbox input {
+  cursor: pointer;
+}
+
 .divider {
   display: flex;
   align-items: center;
@@ -125,6 +138,31 @@
   border-color: var(--purple);
 }
 
+.interest-chip:hover {
+  background: rgba(124, 58, 237, 0.25);
+  border-color: var(--purple-lt);
+  color: #ffffff;
+}
+
+.btn-primary {
+  background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
+  color: white;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 14px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  margin-top: 10px;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
+}
+
 .err-msg {
   color: #f87171;
   font-size: 13px;
@@ -132,8 +170,23 @@
 }
 
 .auth-footer {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 13px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  margin-top: 24px;
+  font-size: 14px;
   color: var(--text-muted);
+  text-align: center;
+}
+
+.auth-footer a {
+  color: var(--purple-lt);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
 }
