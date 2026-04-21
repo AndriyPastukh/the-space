@@ -12,6 +12,6 @@ export class AppController {
 
   @Get('/status')
   getStatus() {
-    return { status: 'ok' };
+    return this.appService.getStatus();
   }
 }
