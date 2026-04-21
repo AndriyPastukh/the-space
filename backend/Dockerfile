@@ -23,4 +23,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Запускаємо сервер у режимі продакш
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]
