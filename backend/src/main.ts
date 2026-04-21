@@ -4,6 +4,7 @@ import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({ origin: true }); // дає можливість приймати запити з фронту
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // видаляє зайві поля при отриманні запитів

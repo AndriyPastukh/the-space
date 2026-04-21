@@ -13,6 +13,9 @@ RUN npm install
 # Копіюємо весь інший код
 COPY . .
 
+# генеруємо Prisma client 
+RUN npx prisma generate
+
 # білдимо
 RUN npm run build
 
