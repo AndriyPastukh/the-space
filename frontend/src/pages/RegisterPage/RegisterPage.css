@@ -46,6 +46,19 @@
   gap: 16px;
 }
 
+.form-group {
+  margin-bottom: 10px;
+}
+
+.form-group a {
+  text-decoration: none; /* Прибираємо підкреслення за замовчуванням */
+  transition: text-decoration 0.2s;
+}
+
+.form-group a:hover {
+  text-decoration: underline;
+}
+
 .form-input {
   width: 100%;
   background: var(--surface2);
