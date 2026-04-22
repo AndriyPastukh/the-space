@@ -1,7 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  output   = "./generated/prisma-client"
-  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -9,7 +7,16 @@ datasource db {
 }
 
 model User {
-  id           Int    @id @default(autoincrement())
-  email        String @unique
-  passwordHash String
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  passwordHash  String
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 }

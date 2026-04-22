@@ -8,12 +8,16 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { UsersService } from '../users/users.service';
+import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async register(dto: RegisterDto) {
     const { email, password } = dto;
@@ -63,6 +67,14 @@ export class AuthService {
       { expiresIn: '30d' },
     );
 
+    // Зберігаємо Refresh Token в БД
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+      },
+    });
+
     return {
       accessToken,
       refreshToken,
@@ -76,6 +88,17 @@ export class AuthService {
         process.env.JWT_REFRESH_SECRET!,
       ) as any;
 
+      // ПЕРЕВІРКА: Чи існує токен в базі даних (Revocation check)
+      const storedToken = await this.prisma.refreshToken.findUnique({
+        where: { token: dto.refreshToken },
+      });
+
+      if (!storedToken) {
+        throw new UnauthorizedException({
+          message: 'Invalid or expired refresh token',
+        });
+      }
+
       const newAccessToken = jwt.sign(
         { sub: decoded.sub, email: decoded.email },
         process.env.JWT_ACCESS_SECRET!,
@@ -86,9 +109,23 @@ export class AuthService {
         accessToken: newAccessToken,
       };
     } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
       throw new UnauthorizedException({
         message: 'Invalid or expired refresh token',
       });
     }
+  }
+
+  async logout(refreshToken: string) {
+    try {
+      await this.prisma.refreshToken.delete({
+        where: { token: refreshToken },
+      });
+    } catch (error) {
+      // Якщо токена вже немає (наприклад, видалений раніше), просто ігноруємо
+    }
+    return { message: 'Logged out successfully' };
   }
 }
