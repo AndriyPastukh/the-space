@@ -23,10 +23,7 @@ export class JwtAuthGuard implements CanActivate {
     }
 
     try {
-      const payload = jwt.verify(
-        token,
-        process.env.JWT_ACCESS_SECRET!,
-      ) as any;
+      const payload = jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as any;
 
       request.user = {
         id: payload.sub,
