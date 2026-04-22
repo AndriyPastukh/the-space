@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshDto } from './dto/refresh.dto';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
@@ -66,5 +67,28 @@ export class AuthService {
       accessToken,
       refreshToken,
     };
+  }
+
+  async refreshToken(dto: RefreshDto) {
+    try {
+      const decoded = jwt.verify(
+        dto.refreshToken,
+        process.env.JWT_REFRESH_SECRET!,
+      ) as any;
+
+      const newAccessToken = jwt.sign(
+        { sub: decoded.sub, email: decoded.email },
+        process.env.JWT_ACCESS_SECRET!,
+        { expiresIn: '15m' },
+      );
+
+      return {
+        accessToken: newAccessToken,
+      };
+    } catch (error) {
+      throw new UnauthorizedException({
+        message: 'Invalid or expired refresh token',
+      });
+    }
   }
 }
