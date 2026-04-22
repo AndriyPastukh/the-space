@@ -19,6 +19,32 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
+  private async generateAndSaveTokens(userId: number, email: string) {
+    const accessToken = jwt.sign(
+      { sub: userId, email },
+      process.env.JWT_ACCESS_SECRET!,
+      { expiresIn: '15m' },
+    );
+
+    const refreshToken = jwt.sign(
+      { sub: userId, email },
+      process.env.JWT_REFRESH_SECRET!,
+      { expiresIn: '30d' },
+    );
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: userId,
+      },
+    });
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+  
   async register(dto: RegisterDto) {
     const { email, password } = dto;
 
@@ -30,11 +56,10 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await this.usersService.create(email, passwordHash);
+    const newUser = await this.usersService.create(email, passwordHash);
 
-    return {
-      message: 'User created successfully',
-    };
+    // зразу токени вертаємо
+    return this.generateAndSaveTokens(newUser.id, newUser.email);
   }
 
   async login(dto: LoginDto) {
@@ -54,31 +79,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 3. Генерація токенів
-    const accessToken = jwt.sign(
-      { sub: user.id, email: user.email },
-      process.env.JWT_ACCESS_SECRET!,
-      { expiresIn: '15m' },
-    );
-
-    const refreshToken = jwt.sign(
-      { sub: user.id, email: user.email },
-      process.env.JWT_REFRESH_SECRET!,
-      { expiresIn: '30d' },
-    );
-
-    // Зберігаємо Refresh Token в БД
-    await this.prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId: user.id,
-      },
-    });
-
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return this.generateAndSaveTokens(user.id, user.email);
   }
 
   async refreshToken(dto: RefreshDto) {

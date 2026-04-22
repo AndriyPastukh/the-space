@@ -7,11 +7,22 @@ import { Page1 } from "./pages/Page1";
 import { Page2 } from "./pages/Page2";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
+import { useAuth } from "./hooks/useAuth.tsx";
 
 function App() {
+  const { isAuth, user, logout } = useAuth();
+
   return (
     <BrowserRouter>
       <div className="App">
+        {/* це перенести в header цю логіку і звідси винести App має бути чистий */}
+        {isAuth && (
+          <div>
+            <button onClick={() => logout()}>LOGOUT</button>
+            <div>{isAuth && <>{user.email}</>}</div>
+          </div>
+        )}
+
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/page1" element={<Page1 />} />
