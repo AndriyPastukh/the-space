@@ -1,7 +1,12 @@
 import { createContext, useEffect, useState } from "react";
 
 import type { AuthState, LoginDto, RegisterDto } from "./authTypes";
-import { getMeRequest, loginRequest, registerRequest } from "./authApi";
+import {
+  getMeRequest,
+  loginRequest,
+  logoutRequest,
+  registerRequest,
+} from "./authApi";
 
 export const AuthContext = createContext<any>(null);
 
@@ -125,7 +130,15 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (!state.tokens) return;
+
+    try {
+      await logoutRequest(state.tokens);
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+
     localStorage.removeItem("tokens");
     setState(initialState);
   };
