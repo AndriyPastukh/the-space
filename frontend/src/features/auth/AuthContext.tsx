@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: any) => {
         const tokensAsObject = JSON.parse(tokensStr);
 
         // тягнемо дані юзера
-        const userRes = await getMeRequest(tokensAsObject.accessToken);
+        const userRes = await getMeRequest();
         const { email, id } = userRes.data;
 
         setState({
@@ -61,13 +61,13 @@ export const AuthProvider = ({ children }: any) => {
       const loginRes = await loginRequest(data);
       const { accessToken, refreshToken } = loginRes.data;
 
-      const userDataRes = await getMeRequest(accessToken);
-      const { email, id } = userDataRes.data;
-
       localStorage.setItem(
         "tokens",
         JSON.stringify({ accessToken, refreshToken }),
       );
+
+      const userDataRes = await getMeRequest();
+      const { email, id } = userDataRes.data;
 
       setState({
         user: { email, id },
@@ -99,13 +99,13 @@ export const AuthProvider = ({ children }: any) => {
       const registerRes = await registerRequest(data);
       const { accessToken, refreshToken } = registerRes.data;
 
-      const userRes = await getMeRequest(accessToken);
-      const { email, id } = userRes.data;
-
       localStorage.setItem(
         "tokens",
         JSON.stringify({ accessToken, refreshToken }),
       );
+
+      const userRes = await getMeRequest();
+      const { email, id } = userRes.data;
 
       setState({
         user: { email, id },
