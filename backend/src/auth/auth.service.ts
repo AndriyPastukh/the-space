@@ -89,7 +89,7 @@ export class AuthService {
         process.env.JWT_REFRESH_SECRET!,
       ) as any;
 
-      // ПЕРЕВІРКА: Чи існує токен в базі даних (Revocation check)
+      // 1. Шукаємо токен в базі
       const storedToken = await this.prisma.refreshToken.findUnique({
         where: { token: dto.refreshToken },
       });
@@ -100,15 +100,14 @@ export class AuthService {
         });
       }
 
-      const newAccessToken = jwt.sign(
-        { sub: decoded.sub, email: decoded.email },
-        process.env.JWT_ACCESS_SECRET!,
-        { expiresIn: '15m' },
-      );
+      // 2. ВИДАЛЯЄМО використаний refresh токен
+      await this.prisma.refreshToken.delete({
+        where: { token: dto.refreshToken },
+      });
 
-      return {
-        accessToken: newAccessToken,
-      };
+      // 3. Генеруємо та зберігаємо НОВУ пару токенів
+      return this.generateAndSaveTokens(decoded.sub, decoded.email);
+
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
