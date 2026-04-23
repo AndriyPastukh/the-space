@@ -44,7 +44,7 @@ export class AuthService {
       refreshToken,
     };
   }
-  
+
   async register(dto: RegisterDto) {
     const { email, password } = dto;
 
@@ -107,7 +107,6 @@ export class AuthService {
 
       // 3. Генеруємо та зберігаємо НОВУ пару токенів
       return this.generateAndSaveTokens(decoded.sub, decoded.email);
-
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw error;
