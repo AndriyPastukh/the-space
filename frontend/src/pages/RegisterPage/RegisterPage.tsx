@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './RegisterPage.css';
+import { useAuth } from '../../hooks/useAuth';
 
 const INTERESTS = [
   { id: 'web', label: 'web' },
@@ -15,6 +16,8 @@ const INTERESTS = [
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+
+  const {register} = useAuth();
 
   const [form, setForm] = useState({
     pib: '',
@@ -44,7 +47,7 @@ export default function RegisterPage() {
     );
   };
 
-  const handleSubmit = (e: any) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setError('');
 
@@ -53,28 +56,25 @@ export default function RegisterPage() {
       setError("Заповніть всі обов'язкові поля");
       return;
     }
+
     if (form.pass !== form.pass2) {
       setError('Паролі не збігаються');
       return;
     }
+
     if (!form.terms) {
       setError('Прийміть умови платформи');
       return;
     }
 
-    // Замість login з контексту — просто вивід у консоль
-    console.log('Реєстрація користувача:', { 
-      name: form.pib, 
-      nick: form.nick,
-      email: form.email,
-      interests: selectedInterests 
-    });
-    
-    // Замість showToast — звичайний alert
-    alert('Реєстрація успішна!');
-    
-    // Перехід на головну або профіль
-    navigate('/');
+    const registerResult = await register({email:form.email,password:form.pass});
+
+    if (registerResult.success) {
+        navigate('/');
+    } else {
+        setError(registerResult.message);
+    }
+
   };
   return (
     <div className="auth-page">

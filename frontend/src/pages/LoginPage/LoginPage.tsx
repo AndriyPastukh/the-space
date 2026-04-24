@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../RegisterPage/RegisterPage.css'; // той самий CSS
+import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginPage() {
     const navigate = useNavigate();
+
+    const {login} = useAuth();
 
     const [form, setForm] = useState({
         email: '',
         pass: '',
         rememberMe: false
-    });
+    });   
 
     const [error, setError] = useState('');
 
@@ -21,7 +24,7 @@ export default function LoginPage() {
         }));
     };
 
-    const handleSubmit = (e: any) => {
+    const handleSubmit = async (e: any) => {
         e.preventDefault();
         setError('');
 
@@ -30,14 +33,15 @@ export default function LoginPage() {
             setError("Введіть пошту та пароль");
             return;
         }
+        
+        const loginResult = await login({ email: form.email, password: form.pass });
+        
+        if (loginResult.success) {
+            navigate('/');
+        } else {
+            setError(loginResult.message);
+        }
 
-        console.log('Спроба входу:', {
-            email: form.email,
-            remember: form.rememberMe
-        });
-
-        alert('Вхід успішний!');
-        navigate('/'); // Перехід на головну
     };
 
     return (
