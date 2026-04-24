@@ -7,6 +7,9 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
 import { useAuth } from "./hooks/useAuth.tsx";
 
+import { Header } from "./components/Header/Header.tsx";
+import { Footer } from "./components/Footer/Footer.tsx";
+
 function App() {
   const { isAuth, user, logout } = useAuth();
 
