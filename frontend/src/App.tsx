@@ -5,10 +5,12 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { MainPage } from "./pages/MainPage/MainPage.tsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
+
 import { useAuth } from "./hooks/useAuth.tsx";
 
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
+import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 
 function App() {
   const { isAuth, user, logout } = useAuth();
@@ -29,6 +31,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
       </div>
