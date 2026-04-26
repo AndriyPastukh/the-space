@@ -32,6 +32,11 @@ export default function LoginPage() {
     };
 
     const handleSubmit = async (e: any) => {
+
+        if (isLoginSubmitting) {
+            return;
+        }
+
         e.preventDefault();
         setError('');
 

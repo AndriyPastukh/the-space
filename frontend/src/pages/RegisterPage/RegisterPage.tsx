@@ -55,6 +55,11 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (e: any) => {
+
+    if (isRegisterSubmitting) {
+        return;
+    }
+    
     e.preventDefault();
     setError('');
 
