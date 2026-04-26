@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import '../RegisterPage/RegisterPage.css'; // той самий CSS
 import { useAuth } from '../../hooks/useAuth';
@@ -6,8 +6,15 @@ import { useAuth } from '../../hooks/useAuth';
 export default function LoginPage() {
     const navigate = useNavigate();
 
-    const {login} = useAuth();
+    const {isAuthLoading, isAuth, login} = useAuth();
+    const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
 
+    useEffect(() => {
+        if (!isAuthLoading && isAuth && !isLoginSubmitting) {
+            navigate("/");
+        }
+    }, [isAuthLoading, isAuth, isLoginSubmitting])
+ 
     const [form, setForm] = useState({
         email: '',
         pass: '',
@@ -37,6 +44,7 @@ export default function LoginPage() {
         const loginResult = await login({ email: form.email, password: form.pass });
         
         if (loginResult.success) {
+            setIsLoginSubmitting(true);
             navigate('/');
         } else {
             setError(loginResult.message);
