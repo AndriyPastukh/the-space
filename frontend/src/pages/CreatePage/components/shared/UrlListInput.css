@@ -1,0 +1,74 @@
+.url-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.url-input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.url-input-row .form-input {
+    flex: 1;
+}
+
+.url-add-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
+    color: white;
+    font-size: 22px;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+}
+
+.url-add-btn:hover {
+    opacity: 0.85;
+}
+
+.url-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.url-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.url-item a {
+    color: #a78bfa;
+    text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 90%;
+}
+
+.url-item a:hover {
+    text-decoration: underline;
+}
+
+.url-remove-btn {
+    color: #f87171;
+    font-size: 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    flex-shrink: 0;
+}

@@ -1,0 +1,74 @@
+.file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.file-upload-input {
+    display: none;
+}
+
+.file-upload-label {
+    display: inline-block;
+    cursor: pointer;
+}
+
+.file-upload-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #b3b3b3;
+    font-size: 14px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.file-upload-btn:hover {
+    border-color: #a78bfa;
+    color: #a78bfa;
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+.file-name {
+    color: #ffffff;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.file-size {
+    color: #b3b3b3;
+    flex-shrink: 0;
+}
+
+.file-remove-btn {
+    color: #f87171;
+    font-size: 18px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    flex-shrink: 0;
+}
