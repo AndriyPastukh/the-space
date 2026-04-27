@@ -1,4 +1,4 @@
-import React, { useState, type ChangeEvent, type FormEvent } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './RegisterPage.css';
 import { useAuth } from '../../hooks/useAuth';
@@ -22,7 +22,14 @@ const INTERESTS: Interest[] = [
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const {isAuthLoading, isAuth, register } = useAuth();
+  const [isRegisterSubmitting , setIsRegisterSubmitting] = useState(false);
+  
+  useEffect(() => {
+    if (!isAuthLoading && isAuth && !isRegisterSubmitting ) {
+        navigate("/");
+    }
+  }, [isAuthLoading, isAuth, isRegisterSubmitting ])
 
   const [form, setForm] = useState({
     pib: '',
@@ -53,6 +60,11 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+
+    if (isRegisterSubmitting) {
+        return;
+    }
+    
     e.preventDefault();
     setError('');
 
@@ -83,7 +95,8 @@ export default function RegisterPage() {
     });
 
     if (registerResult.success) {
-      navigate('/');
+        setIsRegisterSubmitting(true);
+        navigate('/');
     } else {
       setError(registerResult.message);
     }
