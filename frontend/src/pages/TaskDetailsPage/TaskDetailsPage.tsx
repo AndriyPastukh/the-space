@@ -1,135 +1,140 @@
 import React, { useState } from "react";
-import "./TaskDetailsPage.css";
+import "./TaskDetailsPage.css"; 
 
-const TaskDetails: React.FC = () => {
-  const [viewsCount, setViewsCount] = useState(15);
-  const [responsesCount, setResponsesCount] = useState(5);
+const taskData = {
+  title: "Створити навігаційну панель для сайту автомобілів",
+  description: "Я хочу створити навігаційну панель для свого сайту продажу автомобілів щоб легко можна було переходити між сторінками, а також щоб дизайн був не простий, а схожий до тематики.",
+  deadline: "07.07.2026",
+  categories: ["design", "figma", "html"],
+  stats: { views: 15, responses: 5 },
+  author: { name: "Іван І. М.", rating: 5, reviews: 10 }
+};
+
+const reviewsData = [
+  {
+    id: 1,
+    author: "Ігор П. М.",
+    rating: 5,
+    text: "Чудовий замовник! Дуже детально і чітко розписав що саме хотів отримати!",
+    taskTitle: "Тайтл завдання яке було виконане користувачем",
+    tags: ["design", "figma", "html"]
+  }
+];
+
+const TaskDetailsPage: React.FC = () => {
   const [isApplied, setIsApplied] = useState(false);
+  const [responses, setResponses] = useState(taskData.stats.responses);
 
   const handleApply = () => {
     if (!isApplied) {
-      setResponsesCount((prev) => prev + 1);
+      setResponses(prev => prev + 1);
       setIsApplied(true);
     }
   };
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    setViewsCount((prev) => prev + 1);
-    alert("Посилання скопійовано!");
-  };
-
   return (
-    <div className="task-page-bg">
-      <div className="task-wrapper">
+    <div className="td-page-wrapper">
+      <div className="td-container">
 
-        <div className="task-grid-layout">
-          {/* ЛІВА ЧАСТИНА */}
-          <div className="task-left-column">
-            <div className="status-banner">
-              Завдання вже виконане та є в архіві!
-            </div>
+        <div className="td-layout">
+          <div className="td-left">
+            <div className="td-archive-banner">Завдання вже виконане та є в архіві!</div>
 
-            <div className="main-card">
-              <div className="card-header-flex">
-                <div className="title-area">
-                  <h2 className="job-main-title">Створити навігаційну панель для сайту автомобілів</h2>
-                  <div className="tags-row">
-                    <span className="badge-new">нове</span>
-                    <span className="text-muted">3 год. тому</span>
+            <div className="td-card task-card">
+              <div className="td-card-header">
+                <div className="td-title-block">
+                  <h2 className="td-job-title">{taskData.title}</h2>
+                  <div className="td-meta">
+                    <span className="td-badge-new">нове</span>
+                    <span className="td-muted">3 год. тому</span>
                   </div>
                 </div>
-                <div className="header-aside">
-                  <span className="pin-icon">📌</span>
-                  <p className="deadline-info">Дедлайн: <span>07.04.2026</span></p>
+                <div className="td-header-right">
+                  <span className="td-pin">📌</span>
+                  <p className="td-deadline">Дедлайн: <span>{taskData.deadline}</span></p>
                 </div>
               </div>
 
-              <div className="task-description-body">
-                <section className="info-block">
+              <div className="td-content">
+                <section>
                   <h3>Опис:</h3>
-                  <p>
-                    Я хочу створити навігаційну панель для свого сайту продажу автомобілів щоб легко можна було 
-                    переходити між сторінками, а також щоб дизайн був не простий, а схожий до тематики.
-                  </p>
+                  <p>{taskData.description}</p>
                 </section>
-
-                <section className="info-block">
+                
+                <section>
                   <h3>Вкладені файли:</h3>
-                  <p className="text-empty">Немає</p>
+                  <p className="td-muted">Немає</p>
                 </section>
 
-                <section className="info-block">
+                <section>
                   <h3>Напрями:</h3>
-                  <div className="skill-tags-group">
-                    <span className="skill-tag">design</span>
-                    <span className="skill-tag">figma</span>
-                    <span className="skill-tag">html</span>
+                  <div className="td-tags-row">
+                    {taskData.categories.map(cat => <span key={cat} className="td-tag">{cat}</span>)}
                   </div>
                 </section>
               </div>
             </div>
 
-            <div className="reviews-section">
-              <h3 className="section-subtitle">Відгуки про замовника</h3>
-              <div className="review-card">
-                <div className="review-user-row">
-                  <div className="user-avatar-info">
-                    <div className="avatar-circle">👤</div>
-                    <span className="user-full-name">Ігор П. М. ★ 5</span>
+            <div className="td-card td-add-review">
+              <h3>Залишити відгук про замовника</h3>
+              <textarea placeholder="Ваш відгук..." className="td-textarea"></textarea>
+              <button className="td-btn-submit">Надіслати відгук</button>
+            </div>
+
+            <div className="td-reviews-list">
+              <h3 className="td-section-title">Відгуки про замовника</h3>
+              {reviewsData.map(rev => (
+                <div key={rev.id} className="td-card td-review-item">
+                  <div className="td-review-user">
+                    <span className="td-user-info">👤 {rev.author} ★ {rev.rating}</span>
+                    <span className="td-muted">3 год. тому</span>
                   </div>
-                  <span className="text-muted">3 год. тому</span>
-                </div>
-                <div className="review-task-line">
-                  <p>Завдання: Ще інший таск тут його тайтл такий...</p>
-                  <div className="mini-tags-list">
-                    <span>design</span> <span>figma</span> <span>html</span> <span>+ 3...</span>
+                  <div className="td-review-task-meta">
+                    <p>Завдання: {rev.taskTitle}</p>
+                    <div className="td-mini-tags">
+                      {rev.tags.map(t => <span key={t}>{t} </span>)} <span>+ 3...</span>
+                    </div>
                   </div>
+                  <p className="td-review-text">{rev.text}</p>
                 </div>
-                <p className="review-content-text">
-                  Чудовий замовник! Дуже детально і чітко розписав що саме хотів отримати!
-                </p>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* ПРАВА ЧАСТИНА (Сайдбар) */}
-          <aside className="task-right-sidebar">
-            <div className="sidebar-sticky-card">
-              <div className="action-buttons-stack">
+          <aside className="td-right">
+            <div className="td-card td-sidebar">
+              <div className="td-btn-group">
                 <button 
-                  className={`btn-primary-action ${isApplied ? 'disabled' : ''}`} 
+                  className={`td-btn-apply ${isApplied ? 'applied' : ''}`} 
                   onClick={handleApply}
                   disabled={isApplied}
                 >
-                  {isApplied ? "Ви відгукнулись" : "Відгукнутись"}
+                  {isApplied ? "Ви вже відгукнулись" : "Відгукнутись"}
                 </button>
-                <button className="btn-secondary-action" onClick={handleShare}>
-                  Поділитись <span className="arrow-icon">↗</span>
-                </button>
+                <button className="td-btn-share">Поділитись ↗</button>
               </div>
 
-              <div className="sidebar-line-divider"></div>
+              <div className="td-sidebar-divider"></div>
 
-              <div className="sidebar-client-info">
-                <p className="sidebar-small-label">Замовник:</p>
-                <div className="client-flex">
-                  <div className="avatar-circle-small">👤</div>
-                  <div className="client-meta-data">
-                    <p className="client-name-bold">Іван І. М.</p>
-                    <p className="client-rating-stars">★ 5 <span>(10 відгук.)</span></p>
+              <div className="td-owner-info">
+                <p className="td-muted">Замовник:</p>
+                <div className="td-owner-profile">
+                  <div className="td-avatar-small">👤</div>
+                  <div>
+                    <p className="td-owner-name">{taskData.author.name}</p>
+                    <p className="td-muted">★ {taskData.author.rating} ({taskData.author.reviews} відгук.)</p>
                   </div>
                 </div>
               </div>
 
-              <div className="sidebar-stats-list">
-                <div className="stat-row-item">
-                  <p className="sidebar-small-label">Переглянули:</p>
-                  <p className="stat-number">{viewsCount} людей</p>
+              <div className="td-stats-block">
+                <div className="td-stat-item">
+                  <p className="td-muted">Переглянули:</p>
+                  <p className="td-stat-value">{taskData.stats.views} людей</p>
                 </div>
-                <div className="stat-row-item">
-                  <p className="sidebar-small-label">Відгукнулись:</p>
-                  <p className="stat-number">{responsesCount} людей</p>
+                <div className="td-stat-item">
+                  <p className="td-muted">Відгукнулись:</p>
+                  <p className="td-stat-value">{responses} людей</p>
                 </div>
               </div>
             </div>
@@ -140,4 +145,4 @@ const TaskDetails: React.FC = () => {
   );
 };
 
-export default TaskDetails;
+export default TaskDetailsPage;

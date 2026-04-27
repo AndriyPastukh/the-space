@@ -1,261 +1,245 @@
-/* Базові налаштування */
-.task-page-bg {
-  background-color: #1a0b2e;
+.td-page-wrapper {
+  background-color: #1a0b2e; 
   min-height: 100vh;
   color: #ffffff;
-  padding: 60px 20px;
-  display: flex;
-  justify-content: center;
+  padding: 40px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
-.task-wrapper {
-  width: 100%;
+.td-container {
   max-width: 1200px;
+  margin: 0 auto;
 }
 
-.page-main-heading {
-  font-size: 28px;
-  font-weight: 500;
-  font-style: italic;
+.td-main-title {
+  font-size: 32px;
+  font-weight: 700;
   margin-bottom: 40px;
-  text-align: left;
+  font-style: italic;
+  color: #ffffff;
 }
 
-/* СІТКА (LAYOUT) */
-.task-grid-layout {
+.td-layout {
   display: flex;
-  gap: 40px;
-  align-items: flex-start;
+  gap: 30px;
 }
 
-.task-left-column {
-  flex: 3; /* Займає більше місця */
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.td-left {
+  flex: 3;
 }
 
-.task-right-sidebar {
-  flex: 1; /* Займає менше місця (сайдбар) */
-  min-width: 300px;
+.td-right {
+  flex: 1;
+  min-width: 320px;
 }
 
-/* КАРТКИ */
-.main-card, .review-card, .sidebar-sticky-card {
+.td-card {
   background-color: #2d1b4d;
-  border-radius: 30px;
-  padding: 30px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.status-banner {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 12px;
-  text-align: center;
-  color: #b3a1cf;
-  font-size: 14px;
-}
-
-/* HEADER КАРТКИ */
-.card-header-flex {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 30px;
-}
-
-.job-main-title {
-  font-size: 24px;
-  margin-bottom: 12px;
-  line-height: 1.3;
-}
-
-.tags-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
-.badge-new {
-  background: #fff;
-  color: #000;
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-weight: 800;
-  font-size: 11px;
-  text-transform: uppercase;
-}
-
-.text-muted {
-  color: #b3a1cf;
-  font-size: 14px;
-}
-
-.deadline-info {
-  font-size: 14px;
-  color: #b3a1cf;
-  margin-top: 8px;
-}
-
-.deadline-info span {
-  color: #fff;
-}
-
-/* BODY */
-.info-block {
+  border-radius: 28px;
+  padding: 35px;
   margin-bottom: 25px;
 }
 
-.info-block h3 {
-  font-size: 18px;
-  margin-bottom: 10px;
-}
-
-.info-block p {
-  color: #d1c4e9;
-  line-height: 1.6;
-}
-
-.skill-tags-group {
-  display: flex;
-  gap: 10px;
-}
-
-.skill-tag {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 6px 18px;
-  border-radius: 12px;
-  font-size: 14px;
-}
-
-/* РЕВ'Ю */
-.section-subtitle {
-  font-size: 20px;
-  margin: 20px 0 15px 10px;
-}
-
-.review-user-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-}
-
-.user-avatar-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.avatar-circle {
-  width: 40px;
-  height: 40px;
-  background: #4a3b63;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.review-task-line {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px 0;
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
-  font-size: 14px;
-  color: #b3a1cf;
-}
-
-.mini-tags-list span {
+.td-archive-banner {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 2px 6px;
-  border-radius: 6px;
-  margin-left: 5px;
-  font-size: 11px;
-}
-
-/* SIDEBAR ДЕТАЛІ */
-.action-buttons-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-}
-
-.btn-primary-action {
-  background: #ffffff;
-  color: #1a0b2e;
-  border: none;
-  padding: 14px;
-  border-radius: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.btn-primary-action.disabled {
-  background: #4a3b63;
+  padding: 12px;
+  border-radius: 12px;
+  text-align: center;
   color: #b3a1cf;
-  cursor: default;
-}
-
-.btn-secondary-action {
-  background: transparent;
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  padding: 14px;
-  border-radius: 15px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.sidebar-line-divider {
-  height: 1px;
-  background: rgba(255, 255, 255, 0.1);
-  margin: 25px 0;
-}
-
-.sidebar-small-label {
-  color: #b3a1cf;
+  margin-bottom: 20px;
   font-size: 14px;
-  margin-bottom: 10px;
 }
 
-.client-flex {
+.td-card-header {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  justify-content: space-between;
   margin-bottom: 30px;
 }
 
-.avatar-circle-small {
-  width: 32px;
-  height: 32px;
-  background: #4a3b63;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.td-job-title {
+  font-size: 26px;
+  font-weight: 700;
+  margin-bottom: 10px;
 }
 
-.stat-row-item {
+.td-badge-new {
+  background: #ffffff; 
+  color: #1a0b2e;   
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-right: 15px; 
+  display: inline-block;
+}
+
+.td-muted {
+  color: #b3a1cf;
+  font-size: 14px;
+}
+
+.td-rev-time {
+  margin-left: 15px; 
+  color: #b3a1cf;
+}
+
+.td-content h3 {
+  font-size: 18px;
+  margin: 20px 0 10px 0;
+  color: #ffffff;
+}
+
+.td-tags-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.td-tag {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 6px 18px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+.td-add-review h3 {
+  margin-bottom: 15px;
+}
+
+.td-textarea {
+  width: 100%;
+  background: #1a0b2e;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 15px;
+  padding: 15px;
+  color: white;
+  min-height: 120px;
+  margin-bottom: 15px;
+  font-size: 15px;
+  resize: vertical;
+}
+
+.td-btn-submit {
+  background: #ffffff;
+  color: #1a0b2e;
+  padding: 12px 25px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Відгуки */
+.td-section-title {
+  font-size: 22px;
   margin-bottom: 20px;
 }
 
-.stat-number {
-  font-size: 24px;
-  font-weight: 600;
+.td-review-item {
+  padding: 25px;
 }
 
-/* Адаптивність для мобільних */
-@media (max-width: 950px) {
-  .task-grid-layout {
-    flex-direction: column;
-  }
-  .task-right-sidebar {
-    width: 100%;
-  }
+.td-review-user {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.td-user-info {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.td-review-task-meta {
+  margin-bottom: 15px;
+}
+
+.td-mini-tags {
+  display: flex;
+  gap: 8px; 
+  margin-top: 5px;
+  color: #ffffff;
+  font-size: 14px;
+}
+
+.td-sidebar {
+  position: sticky;
+  top: 20px;
+}
+
+.td-btn-apply {
+  width: 100%;
+  padding: 18px;
+  border-radius: 16px;
+  border: none;
+  background: #ffffff;
+  color: #1a0b2e;
+  font-weight: 800;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.td-btn-apply.applied {
+  background: #5d3fd3; 
+  color: #ffffff;    
+  cursor: default;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.td-btn-share {
+  width: 100%;
+  padding: 16px;
+  border-radius: 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.td-sidebar-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.1);
+  margin: 30px 0;
+}
+
+.td-stat-item {
+  margin-bottom: 20px;
+}
+
+.td-stat-value {
+  font-size: 32px;
+  font-weight: 800;
+  margin-top: 8px;
+  color: #ffffff;
+}
+
+.td-owner-profile {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-top: 15px;
+}
+
+.td-avatar-small {
+  width: 45px;
+  height: 45px;
+  background: #1a0b2e;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.td-owner-name {
+  font-weight: 700;
+  font-size: 16px;
 }
