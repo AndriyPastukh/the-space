@@ -1,40 +1,34 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 
-// Імпортуємо ваші сторінки
 import { MainPage } from "./pages/MainPage/MainPage.tsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
-
-import { useAuth } from "./hooks/useAuth.tsx";
+import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
+import CreatePage from "./pages/CreatePage/CreatePage";
+import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx"; 
 
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
-import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
-import CreatePage from "./pages/CreatePage/CreatePage";
 
 function App() {
-  const { isAuth, user, logout } = useAuth();
-
   return (
     <BrowserRouter>
       <div className="App">
         <Header />
-        {/* це перенести в header цю логіку і звідси винести App має бути чистий */}
-        {isAuth && (
-          <div>
-            <button onClick={() => logout()}>LOGOUT</button>
-            <div>{isAuth && <>{user.email}</>}</div>
-          </div>
-        )}
+
+        {/* Тимчасова кнопка без стилів для перевірки */}
+        <Link to="/test-task">ПЕРЕВІРИТИ СТОРІНКУ ЗАВДАННЯ</Link>
 
         <Routes>
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
-          <Route path="/*" element={<NotFoundPage />} />
           <Route path="/create" element={<CreatePage />} />
+          <Route path="/test-task" element={<TaskDetails />} />
+          <Route path="/*" element={<NotFoundPage />} />
         </Routes>
+        
         <Footer />
       </div>
     </BrowserRouter>
