@@ -1,18 +1,6 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import './TermsPage.css';
 
 export default function TermsPage() {
-  const navigate = useNavigate();
-
-  const handleBack = () => {
-    if (window.opener || window.history.length === 1) {
-      window.close();
-    }
-
-    navigate('/register');
-  };
-
   return (
     <div className="terms-page">
       <div className="terms-container">
@@ -91,12 +79,6 @@ export default function TermsPage() {
             </p>
           </div>
         </section>
-
-        <footer className="terms-footer">
-          <button className="btn-secondary" onClick={handleBack}>
-            Повернутися до сторінки реєстрації
-          </button>
-        </footer>
       </div>
     </div>
   );
