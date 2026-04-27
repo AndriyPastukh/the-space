@@ -50,15 +50,6 @@
   margin-bottom: 10px;
 }
 
-.form-group a {
-  text-decoration: none; /* Прибираємо підкреслення за замовчуванням */
-  transition: text-decoration 0.2s;
-}
-
-.form-group a:hover {
-  text-decoration: underline;
-}
-
 .form-input {
   width: 100%;
   background: var(--surface2);
@@ -90,8 +81,17 @@
   cursor: pointer;
 }
 
-.form-checkbox input {
-  cursor: pointer;
+/* Наш новий стиль для лінку */
+.terms-link {
+  color: var(--purple-lt);
+  text-decoration: none;
+  font-weight: 600;
+  transition: opacity 0.2s;
+}
+
+.terms-link:hover {
+  text-decoration: underline;
+  opacity: 0.8;
 }
 
 .divider {
@@ -151,12 +151,6 @@
   border-color: var(--purple);
 }
 
-.interest-chip:hover {
-  background: rgba(124, 58, 237, 0.25);
-  border-color: var(--purple-lt);
-  color: #ffffff;
-}
-
 .btn-primary {
   background: linear-gradient(90deg, #8b5cf6 0%, #d946ef 100%);
   color: white;
@@ -166,12 +160,11 @@
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
   margin-top: 10px;
 }
 
 .btn-primary:hover {
-  opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 5px 15px rgba(139, 92, 246, 0.4);
 }
@@ -183,11 +176,6 @@
 }
 
 .auth-footer {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 5px;
   margin-top: 24px;
   font-size: 14px;
   color: var(--text-muted);
@@ -198,8 +186,4 @@
   color: var(--purple-lt);
   text-decoration: none;
   font-weight: 600;
-}
-
-.auth-footer a:hover {
-  text-decoration: underline;
 }
