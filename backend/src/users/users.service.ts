@@ -7,33 +7,59 @@ import { PublicProfileDto } from './dto/public-profile.dto';
 export class UsersService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<any | null> {
     return this.prisma.user.findUnique({
       where: { email },
+      include: { profile: true },
     });
   }
 
-  async findById(id: number): Promise<User | null> {
+  async findById(id: number): Promise<any | null> {
     return this.prisma.user.findUnique({
       where: { id },
+      include: { profile: true },
     });
   }
 
-  async findByNickname(nickname: string): Promise<User | null> {
-    return this.prisma.user.findUnique({
+  async findByNickname(nickname: string): Promise<any | null> {
+    const profile = await this.prisma.profile.findUnique({
       where: { nickname },
+      include: { user: true },
     });
+    return profile ? { ...profile.user, profile } : null;
   }
 
-  async update(id: number, data: Partial<User>): Promise<User> {
+  async update(id: number, data: any): Promise<any> {
+    const {
+      firstName,
+      lastName,
+      nickname,
+      bio,
+      avatarUrl,
+      skillTags,
+      interestTags,
+    } = data;
     return this.prisma.user.update({
       where: { id },
-      data,
+      data: {
+        profile: {
+          update: {
+            firstName,
+            lastName,
+            nickname,
+            bio,
+            avatarUrl,
+            skillTags,
+            interestTags,
+          },
+        },
+      },
+      include: { profile: true },
     });
   }
 
   async getPublicProfile(nickname: string): Promise<PublicProfileDto> {
-    const user = await this.prisma.user.findFirst({
+    const profile = await this.prisma.profile.findFirst({
       where: {
         nickname: {
           equals: nickname,
@@ -60,42 +86,42 @@ export class UsersService {
       },
     });
 
-    if (!user) {
+    if (!profile) {
       throw new NotFoundException('User not found');
     }
 
     const rating =
-      user.reviews.length > 0
-        ? user.reviews.reduce((acc, r) => acc + r.rating, 0) /
-          user.reviews.length
+      profile.reviews.length > 0
+        ? profile.reviews.reduce((acc, r) => acc + r.rating, 0) /
+          profile.reviews.length
         : 0;
 
-    const { level, xpProgress } = this.calculateLevel(user.totalXP);
+    const { level, xpProgress } = this.calculateLevel(profile.totalXP);
 
     return {
-      firstName: user.firstName,
-      nickname: user.nickname,
-      avatarUrl: user.avatarUrl,
+      firstName: profile.firstName,
+      nickname: profile.nickname,
+      avatarUrl: profile.avatarUrl,
       tags: {
-        skills: user.skillTags,
-        interests: user.interestTags,
+        skills: profile.skillTags,
+        interests: profile.interestTags,
       },
       stats: {
         rating: parseFloat(rating.toFixed(1)),
         level,
         xpProgress,
       },
-      badges: user.badges.map((ub) => ({
+      badges: profile.badges.map((ub) => ({
         name: ub.badge.name,
         iconUrl: ub.badge.iconUrl,
         description: ub.badge.description,
       })),
-      communities: user.communities.map((uc) => ({
+      communities: profile.communities.map((uc) => ({
         name: uc.community.name,
         slug: uc.community.slug,
         avatarUrl: uc.community.avatarUrl,
       })),
-      portfolio: user.portfolioItems.map((pi) => ({
+      portfolio: profile.portfolioItems.map((pi) => ({
         title: pi.title,
         description: pi.description,
         link: pi.link,

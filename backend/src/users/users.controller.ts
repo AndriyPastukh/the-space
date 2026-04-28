@@ -25,8 +25,8 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const { passwordHash, ...result } = user;
-    return result;
+    const { passwordHash, profile, ...result } = user;
+    return { ...result, ...profile };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -42,8 +42,8 @@ export class UsersController {
     }
 
     const updatedUser = await this.usersService.update(userId, updateProfileDto);
-    const { passwordHash, ...result } = updatedUser;
-    return result;
+    const { passwordHash, profile, ...result } = updatedUser;
+    return { ...result, ...profile };
   }
 
   @Get(':nickname')

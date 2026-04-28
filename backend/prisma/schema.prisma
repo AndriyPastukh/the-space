@@ -7,17 +7,25 @@ datasource db {
 }
 
 model User {
+  id            Int            @id @default(autoincrement())
+  email         String         @unique
+  passwordHash  String
+  refreshTokens RefreshToken[]
+  profile       Profile?
+}
+
+model Profile {
   id             Int             @id @default(autoincrement())
-  email          String          @unique
-  passwordHash   String
+  userId         Int             @unique
+  user           User            @relation(fields: [userId], references: [id])
   firstName      String?
   lastName       String?
-  nickname       String?         @unique
-  avatarUrl      String?
+  nickname       String          @unique
+  bio            String?
+  avatarUrl      String          @default("https://api.dicebear.com/7.x/avataaars/svg?seed=default")
   skillTags      String[]
   interestTags   String[]
   totalXP        Int             @default(0)
-  refreshTokens  RefreshToken[]
   reviews        Review[]        @relation("UserReviews")
   givenReviews   Review[]        @relation("GivenReviews")
   badges         UserBadge[]
@@ -37,10 +45,10 @@ model Review {
   id        Int      @id @default(autoincrement())
   rating    Int
   comment   String?
-  userId    Int
-  user      User     @relation("UserReviews", fields: [userId], references: [id])
+  profileId Int
+  profile   Profile  @relation("UserReviews", fields: [profileId], references: [id])
   authorId  Int
-  author    User     @relation("GivenReviews", fields: [authorId], references: [id])
+  author    Profile  @relation("GivenReviews", fields: [authorId], references: [id])
   createdAt DateTime @default(now())
 }
 
@@ -53,13 +61,13 @@ model Badge {
 }
 
 model UserBadge {
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  profileId Int
+  profile   Profile  @relation(fields: [profileId], references: [id])
   badgeId   Int
   badge     Badge    @relation(fields: [badgeId], references: [id])
   earnedAt  DateTime @default(now())
 
-  @@id([userId, badgeId])
+  @@id([profileId, badgeId])
 }
 
 model Community {
@@ -71,13 +79,13 @@ model Community {
 }
 
 model UserCommunity {
-  userId      Int
-  user        User      @relation(fields: [userId], references: [id])
+  profileId   Int
+  profile     Profile   @relation(fields: [profileId], references: [id])
   communityId Int
   community   Community @relation(fields: [communityId], references: [id])
   joinedAt    DateTime  @default(now())
 
-  @@id([userId, communityId])
+  @@id([profileId, communityId])
 }
 
 model PortfolioItem {
@@ -85,7 +93,7 @@ model PortfolioItem {
   title       String
   description String?
   link        String?
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
+  profileId   Int
+  profile     Profile  @relation(fields: [profileId], references: [id])
   createdAt   DateTime @default(now())
 }

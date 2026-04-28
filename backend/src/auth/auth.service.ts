@@ -30,11 +30,37 @@ export class AuthService {
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    await this.usersService.create(email, passwordHash);
+    const nickname = this.generateNickname();
+
+    const user = await this.prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+        },
+      });
+
+      await tx.profile.create({
+        data: {
+          userId: newUser.id,
+          nickname,
+        },
+      });
+
+      return tx.user.findUnique({
+        where: { id: newUser.id },
+        include: { profile: true },
+      });
+    });
 
     return {
       message: 'User created successfully',
+      user,
     };
+  }
+
+  private generateNickname(): string {
+    return `user_${Math.random().toString(36).substring(2, 10)}`;
   }
 
   async login(dto: LoginDto) {
