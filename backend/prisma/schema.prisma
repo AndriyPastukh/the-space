@@ -15,24 +15,61 @@ model User {
   profile       Profile?
 }
 
+enum UserStatus {
+  STUDENT
+  FREELANCER
+  EMPLOYED
+  ENTREPRENEUR
+}
+
 model Profile {
   id             Int             @id @default(autoincrement())
   userId         Int             @unique
-  user           User            @relation(fields: [userId], references: [id])
-  firstName      String?
-  lastName       String?
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String          @default("New")
+  lastName       String          @default("User")
   nickname       String          @unique
-  bio            String?
+  phoneNumber    String?         @unique
+  bio            String?         @db.Text
   avatarUrl      String          @default("https://api.dicebear.com/7.x/avataaars/svg?seed=default")
-  skillTags      String[]
-  interestTags   String[]
-  totalXP        Int             @default(0)
+  coverImageUrl  String?
+  xpPoints       Int             @default(0)
+  currentLevel   Int             @default(1)
+  reputation     Float           @default(0.0)
+  status         UserStatus      @default(STUDENT)
+  birthday       DateTime?
+  country        String?
+  city           String?
+  deletedAt      DateTime?
+  
+  socialLinks    SocialLink[]
+  skills         Tag[]           @relation("ProfileSkills")
+  interests      Tag[]           @relation("ProfileInterests")
   reviews        Review[]        @relation("UserReviews")
   givenReviews   Review[]        @relation("GivenReviews")
   badges         UserBadge[]
   communities    UserCommunity[]
   portfolioItems PortfolioItem[]
   tasks          Task[]
+
+  @@index([nickname])
+  @@index([phoneNumber])
+  @@index([city])
+}
+
+model SocialLink {
+  id           Int      @id @default(autoincrement())
+  platformName String
+  url          String
+  profileId    Int
+  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id               String    @id @default(uuid())
+  name             String    @unique
+  profilesSkill    Profile[] @relation("ProfileSkills")
+  profilesInterest Profile[] @relation("ProfileInterests")
 }
 
 model RefreshToken {
@@ -60,8 +97,6 @@ model Badge {
   iconUrl     String
   description String?
   users       UserBadge[]
-
-
 }
 
 model UserBadge {

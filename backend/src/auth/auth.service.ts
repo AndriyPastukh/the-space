@@ -44,12 +44,18 @@ export class AuthService {
         data: {
           userId: newUser.id,
           nickname,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
         },
       });
 
       return tx.user.findUnique({
         where: { id: newUser.id },
-        include: { profile: true },
+        include: {
+          profile: {
+            include: { skills: true, interests: true, socialLinks: true },
+          },
+        },
       });
     });
 

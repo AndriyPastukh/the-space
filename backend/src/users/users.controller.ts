@@ -30,7 +30,30 @@ export class UsersController {
       throw new NotFoundException('User not found');
     }
     const { passwordHash, profile, ...result } = user;
-    return { ...result, ...profile };
+
+    // Transform profile for frontend compatibility
+    const transformedProfile = {
+      ...profile,
+      skillTags: profile.skills.map((s: any) => s.name),
+      interestTags: profile.interests.map((i: any) => i.name),
+      socialLinks: profile.socialLinks.map((sl: any) => ({
+        platform: sl.platformName,
+        url: sl.url,
+      })),
+      location: {
+        country: profile.country,
+        city: profile.city,
+      },
+      stats: {
+        level: profile.currentLevel,
+        reputation: profile.reputation,
+        xpPoints: profile.xpPoints,
+      },
+    };
+    delete transformedProfile.skills;
+    delete transformedProfile.interests;
+
+    return { ...result, ...transformedProfile };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -63,7 +86,30 @@ export class UsersController {
 
     const updatedUser = await this.usersService.update(userId, updateProfileDto);
     const { passwordHash, profile, ...result } = updatedUser;
-    return { ...result, ...profile };
+
+    // Transform profile for frontend compatibility
+    const transformedProfile = {
+      ...profile,
+      skillTags: profile.skills.map((s: any) => s.name),
+      interestTags: profile.interests.map((i: any) => i.name),
+      socialLinks: profile.socialLinks.map((sl: any) => ({
+        platform: sl.platformName,
+        url: sl.url,
+      })),
+      location: {
+        country: profile.country,
+        city: profile.city,
+      },
+      stats: {
+        level: profile.currentLevel,
+        reputation: profile.reputation,
+        xpPoints: profile.xpPoints,
+      },
+    };
+    delete transformedProfile.skills;
+    delete transformedProfile.interests;
+
+    return { ...result, ...transformedProfile };
   }
 
   @UseGuards(JwtAuthGuard)

@@ -10,23 +10,39 @@ export class UsersService {
   async findByEmail(email: string): Promise<any | null> {
     return this.prisma.user.findUnique({
       where: { email },
-      include: { profile: true },
+      include: {
+        profile: {
+          where: { deletedAt: null },
+          include: { skills: true, interests: true, socialLinks: true },
+        },
+      },
     });
   }
 
   async findById(id: number): Promise<any | null> {
     return this.prisma.user.findUnique({
       where: { id },
-      include: { profile: true },
+      include: {
+        profile: {
+          where: { deletedAt: null },
+          include: { skills: true, interests: true, socialLinks: true },
+        },
+      },
     });
   }
 
   async findByNickname(nickname: string): Promise<any | null> {
     const profile = await this.prisma.profile.findUnique({
       where: { nickname },
-      include: { user: true },
+      include: {
+        user: true,
+        skills: true,
+        interests: true,
+        socialLinks: true,
+      },
     });
-    return profile ? { ...profile.user, profile } : null;
+    if (!profile || profile.deletedAt) return null;
+    return { ...profile.user, profile };
   }
 
   async update(id: number, data: any): Promise<any> {
@@ -34,12 +50,36 @@ export class UsersService {
       firstName,
       lastName,
       nickname,
+      phoneNumber,
       bio,
       avatarUrl,
+      coverImageUrl,
+      status,
+      birthday,
+      country,
+      city,
       skillTags,
       interestTags,
+      socialLinks,
     } = data;
-    return this.prisma.user.update({
+
+    const prepareTags = (tags: string[]) => {
+      if (!tags) return undefined;
+      const normalized = tags
+        .slice(0, 15)
+        .map((t) => t.trim().toLowerCase())
+        .filter((t) => t.length > 0 && t.length <= 30);
+
+      return {
+        set: [],
+        connectOrCreate: normalized.map((name) => ({
+          where: { name },
+          create: { name },
+        })),
+      };
+    };
+
+    const updatedUser = await this.prisma.user.update({
       where: { id },
       data: {
         profile: {
@@ -47,15 +87,55 @@ export class UsersService {
             firstName,
             lastName,
             nickname,
+            phoneNumber,
             bio,
             avatarUrl,
-            skillTags,
-            interestTags,
+            coverImageUrl,
+            status,
+            birthday: birthday ? new Date(birthday) : undefined,
+            country,
+            city,
+            skills: prepareTags(skillTags),
+            interests: prepareTags(interestTags),
+            socialLinks: socialLinks
+              ? {
+                  deleteMany: {},
+                  create: socialLinks,
+                }
+              : undefined,
           },
         },
       },
-      include: { profile: true },
+      include: {
+        profile: {
+          include: { skills: true, interests: true, socialLinks: true },
+        },
+      },
     });
+
+    if (updatedUser.profile) {
+      await this.syncLevel(updatedUser.profile.id);
+    }
+
+    return updatedUser;
+  }
+
+  private async syncLevel(profileId: number) {
+    const profile = await this.prisma.profile.findUnique({
+      where: { id: profileId },
+      select: { xpPoints: true, currentLevel: true },
+    });
+
+    if (!profile) return;
+
+    const newLevel = Math.floor(profile.xpPoints / 1000) + 1;
+
+    if (newLevel !== profile.currentLevel) {
+      await this.prisma.profile.update({
+        where: { id: profileId },
+        data: { currentLevel: newLevel },
+      });
+    }
   }
 
   async getPublicProfile(nickname: string): Promise<PublicProfileDto> {
@@ -65,8 +145,12 @@ export class UsersService {
           equals: nickname,
           mode: 'insensitive',
         },
+        deletedAt: null,
       },
       include: {
+        skills: true,
+        interests: true,
+        socialLinks: true,
         badges: {
           include: {
             badge: true,
@@ -89,30 +173,40 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Fetch aggregated stats from the Materialized View
     const stats = await this.prisma.userStats.findUnique({
       where: { profileId: profile.id },
     });
 
     const averageRating = stats?.averageRating || 0;
 
-    // Calculate XP from completed tasks
-    const totalXP = profile.tasks.reduce((sum, task) => sum + task.points, 0);
-
-    const { level, xpProgress } = this.calculateLevel(totalXP);
+    // Use de-normalized currentLevel for speed, but fallback if needed
+    const level = profile.currentLevel;
 
     return {
       firstName: profile.firstName,
+      lastName: profile.lastName,
       nickname: profile.nickname,
       avatarUrl: profile.avatarUrl,
+      coverImageUrl: profile.coverImageUrl,
+      bio: profile.bio,
+      status: profile.status,
+      location: {
+        country: profile.country,
+        city: profile.city,
+      },
+      socialLinks: profile.socialLinks.map((sl) => ({
+        platform: sl.platformName,
+        url: sl.url,
+      })),
       tags: {
-        skills: profile.skillTags,
-        interests: profile.interestTags,
+        skills: profile.skills.map((s) => s.name),
+        interests: profile.interests.map((i) => i.name),
       },
       stats: {
         rating: parseFloat(averageRating.toFixed(1)),
         level,
-        xpProgress,
+        xpProgress: Math.floor((profile.xpPoints % 1000) / 10),
+        reputation: profile.reputation,
       },
       badges: profile.badges.map((ub) => ({
         name: ub.badge.name,
