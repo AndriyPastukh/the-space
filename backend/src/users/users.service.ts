@@ -13,6 +13,25 @@ export class UsersService {
     });
   }
 
+  async findById(id: number): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { id },
+    });
+  }
+
+  async findByNickname(nickname: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { nickname },
+    });
+  }
+
+  async update(id: number, data: Partial<User>): Promise<User> {
+    return this.prisma.user.update({
+      where: { id },
+      data,
+    });
+  }
+
   async create(email: string, passwordHash: string): Promise<User> {
     return this.prisma.user.create({
       data: {

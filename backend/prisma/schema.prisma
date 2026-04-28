@@ -10,6 +10,12 @@ model User {
   id            Int            @id @default(autoincrement())
   email         String         @unique
   passwordHash  String
+  firstName     String?
+  lastName      String?
+  nickname      String?        @unique
+  avatarUrl     String?
+  skillTags     String[]
+  interestTags  String[]
   refreshTokens RefreshToken[]
 }
 
