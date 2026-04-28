@@ -1,22 +1,38 @@
 import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-// Імпортуємо ваші сторінки
-import { MainPage } from "./pages/MainPage";
-import { Page1 } from "./pages/Page1";
-import { Page2 } from "./pages/Page2";
-import RegisterPage from "./pages/RegisterPage/RegisterPage"; 
+import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
+import { MainPage } from "./pages/MainPage/MainPage.tsx";
+import RegisterPage from "./pages/RegisterPage/RegisterPage";
+import LoginPage from "./pages/LoginPage/LoginPage.tsx";
+import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
+import CreatePage from "./pages/CreatePage/CreatePage";
+import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx"; 
+import { Header } from "./components/Header/Header.tsx";
+import { Footer } from "./components/Footer/Footer.tsx";
 
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
+        <Header />
+
+        <Link 
+          to="/tasks/12" 
+          style={{color: '#fff', padding: '10px', display: 'block', textAlign: 'center'}}
+        >
+          ПЕРЕВІРИТИ СТОРІНКУ ЗАВДАННЯ (ID: 12)
+        </Link>
+
         <Routes>
           <Route path="/" element={<MainPage />} />
-          <Route path="/page1" element={<Page1 />} />
-          <Route path="/page2" element={<Page2 />} />
+          <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/create" element={<CreatePage />} />
+          {/* Правильний динамічний шлях */}
+          <Route path="/tasks/:id" element={<TaskDetails />} />
+          <Route path="/*" element={<NotFoundPage />} />
         </Routes>
+        
+        <Footer />
       </div>
     </BrowserRouter>
   );
