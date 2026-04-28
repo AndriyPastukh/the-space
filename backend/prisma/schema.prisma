@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -31,6 +32,7 @@ model Profile {
   badges         UserBadge[]
   communities    UserCommunity[]
   portfolioItems PortfolioItem[]
+  tasks          Task[]
 }
 
 model RefreshToken {
@@ -58,6 +60,8 @@ model Badge {
   iconUrl     String
   description String?
   users       UserBadge[]
+
+
 }
 
 model UserBadge {
@@ -96,4 +100,22 @@ model PortfolioItem {
   profileId   Int
   profile     Profile  @relation(fields: [profileId], references: [id])
   createdAt   DateTime @default(now())
+}
+
+model Task {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  points      Int      @default(0)
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED
+  profileId   Int?
+  profile     Profile? @relation(fields: [profileId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+view UserStats {
+  profileId     Int   @unique
+  averageRating Float
+  reviewCount   Int
 }

@@ -67,11 +67,6 @@ export class UsersService {
         },
       },
       include: {
-        reviews: {
-          select: {
-            rating: true,
-          },
-        },
         badges: {
           include: {
             badge: true,
@@ -83,6 +78,10 @@ export class UsersService {
           },
         },
         portfolioItems: true,
+        tasks: {
+          where: { status: 'COMPLETED' },
+          select: { points: true },
+        },
       },
     });
 
@@ -90,13 +89,17 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    const rating =
-      profile.reviews.length > 0
-        ? profile.reviews.reduce((acc, r) => acc + r.rating, 0) /
-          profile.reviews.length
-        : 0;
+    // Fetch aggregated stats from the Materialized View
+    const stats = await this.prisma.userStats.findUnique({
+      where: { profileId: profile.id },
+    });
 
-    const { level, xpProgress } = this.calculateLevel(profile.totalXP);
+    const averageRating = stats?.averageRating || 0;
+
+    // Calculate XP from completed tasks
+    const totalXP = profile.tasks.reduce((sum, task) => sum + task.points, 0);
+
+    const { level, xpProgress } = this.calculateLevel(totalXP);
 
     return {
       firstName: profile.firstName,
@@ -107,7 +110,7 @@ export class UsersService {
         interests: profile.interestTags,
       },
       stats: {
-        rating: parseFloat(rating.toFixed(1)),
+        rating: parseFloat(averageRating.toFixed(1)),
         level,
         xpProgress,
       },
@@ -127,6 +130,11 @@ export class UsersService {
         link: pi.link,
       })),
     };
+  }
+
+  // MVP approach to refresh Materialized View on-demand
+  async refreshUserStats() {
+    await this.prisma.$executeRaw`REFRESH MATERIALIZED VIEW "UserStats"`;
   }
 
   private calculateLevel(xp: number) {
