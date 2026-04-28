@@ -7,6 +7,7 @@ import {
   Req,
   ConflictException,
   NotFoundException,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -43,5 +44,10 @@ export class UsersController {
     const updatedUser = await this.usersService.update(userId, updateProfileDto);
     const { passwordHash, ...result } = updatedUser;
     return result;
+  }
+
+  @Get(':nickname')
+  async getPublicProfile(@Param('nickname') nickname: string) {
+    return this.usersService.getPublicProfile(nickname);
   }
 }

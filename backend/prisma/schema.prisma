@@ -7,16 +7,22 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
-  passwordHash  String
-  firstName     String?
-  lastName      String?
-  nickname      String?        @unique
-  avatarUrl     String?
-  skillTags     String[]
-  interestTags  String[]
-  refreshTokens RefreshToken[]
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  passwordHash   String
+  firstName      String?
+  lastName       String?
+  nickname       String?         @unique
+  avatarUrl      String?
+  skillTags      String[]
+  interestTags   String[]
+  totalXP        Int             @default(0)
+  refreshTokens  RefreshToken[]
+  reviews        Review[]        @relation("UserReviews")
+  givenReviews   Review[]        @relation("GivenReviews")
+  badges         UserBadge[]
+  communities    UserCommunity[]
+  portfolioItems PortfolioItem[]
 }
 
 model RefreshToken {
@@ -25,4 +31,61 @@ model RefreshToken {
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
   createdAt DateTime @default(now())
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String?
+  userId    Int
+  user      User     @relation("UserReviews", fields: [userId], references: [id])
+  authorId  Int
+  author    User     @relation("GivenReviews", fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Badge {
+  id          Int         @id @default(autoincrement())
+  name        String
+  iconUrl     String
+  description String?
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  badgeId   Int
+  badge     Badge    @relation(fields: [badgeId], references: [id])
+  earnedAt  DateTime @default(now())
+
+  @@id([userId, badgeId])
+}
+
+model Community {
+  id        Int             @id @default(autoincrement())
+  name      String
+  slug      String          @unique
+  avatarUrl String?
+  users     UserCommunity[]
+}
+
+model UserCommunity {
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  communityId Int
+  community   Community @relation(fields: [communityId], references: [id])
+  joinedAt    DateTime  @default(now())
+
+  @@id([userId, communityId])
+}
+
+model PortfolioItem {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  link        String?
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
 }
