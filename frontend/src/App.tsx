@@ -5,7 +5,8 @@ import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import CreatePage from "./pages/CreatePage/CreatePage";
-import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx"; 
+import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx";
+import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.tsx";
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/create" element={<CreatePage />} />
           {/* Правильний динамічний шлях */}
           <Route path="/tasks/:id" element={<TaskDetails />} />
+          <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/*" element={<NotFoundPage />} />
         </Routes>
         
