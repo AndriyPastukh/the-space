@@ -21,7 +21,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/terms" element={<TermsPage />} />
-          <Route path="/create" element={<CreatePage />} />
+          <Route path="/create-experience" element={<CreatePage />} />
           <Route path="/tasks/:id" element={<TaskDetails />} />
           <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/*" element={<NotFoundPage />} />
