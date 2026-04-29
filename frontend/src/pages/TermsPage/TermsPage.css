@@ -1,8 +1,6 @@
 .terms-page {
   min-height: 100vh;
-  background: radial-gradient(circle at top, #3d1c5c 0%, #1a0b2e 100%);
   padding: 60px 20px;
-  color: var(--text);
   font-family: sans-serif;
 }
 
@@ -67,26 +65,4 @@
 
 .terms-section li {
   margin-bottom: 10px;
-}
-
-.terms-footer {
-  margin-top: 40px;
-  display: flex;
-  justify-content: center;
-}
-
-.btn-secondary {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 30px;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background: var(--border);
-  border-color: var(--purple-lt);
 }

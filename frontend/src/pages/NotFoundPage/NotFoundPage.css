@@ -4,7 +4,6 @@
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  background: radial-gradient(circle at top, #3d1c5c 0%, #1a0b2e 100%);
 }
 
 .not-found-box {

@@ -22,18 +22,6 @@
     top: 84px;
 }
 
-.archive-banner {
-    background: rgba(248, 113, 113, 0.1);
-    border: 1px solid rgba(248, 113, 113, 0.2);
-    color: #f87171;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    margin-bottom: 24px;
-    font-weight: 600;
-    text-align: center;
-    font-size: 14px;
-}
-
 .td-header {
     display: flex;
     justify-content: space-between;
@@ -56,20 +44,18 @@
     flex-shrink: 0;
 }
 
-/* Кнопка "Збережено" */
-.btn-saved {
-    background: rgba(16, 185, 129, 0.15);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.3);
-    transition: all 0.2s ease;
+.archive-banner {
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.2);
+    color: #f87171;
+    padding: 12px 20px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 24px;
+    font-weight: 600;
+    text-align: center;
+    font-size: 14px;
 }
 
-.btn-saved:hover {
-    background: rgba(16, 185, 129, 0.25);
-    transform: translateY(-1px);
-}
-
-/* Оновлений блок замовника */
 .td-sidebar-heading {
     font-size: 14px;
     font-weight: 600;
@@ -110,7 +96,6 @@
     align-items: center;
 }
 
-/* Оновлений блок статистики */
 .stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -160,20 +145,6 @@
     display: inline-flex;
     align-items: center;
 }
-/* Утиліти */
-.mt-4  { margin-top: 4px; }
-.mt-8  { margin-top: 8px; }
-.mt-12 { margin-top: 12px; }
-.mt-16 { margin-top: 16px; }
-.mb-12 { margin-bottom: 12px; }
-.mb-16 { margin-bottom: 16px; }
-.mb-24 { margin-bottom: 24px; }
-.my-24 { margin: 24px 0; }
-.ml-8  { margin-left: 8px; }
-.ml-auto { margin-left: auto; }
-.text-right { text-align: right; }
-.text-white { color: var(--text); }
-.text-purple { color: var(--purple-lt); }
 
 .td-section {
     margin-top: 28px;
@@ -236,13 +207,16 @@
     .td-layout {
         flex-direction: column;
     }
+
     .td-header {
         flex-direction: column;
     }
+
     .td-header-actions {
         align-items: flex-start;
         margin-top: 16px;
     }
+
     .td-header-actions p {
         text-align: left;
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import "./KnowledgeDetailsPage.css";
+import "../../assets/styles/DetailsPage.css";
 
 const knowledgeData = {
     knowledge: {

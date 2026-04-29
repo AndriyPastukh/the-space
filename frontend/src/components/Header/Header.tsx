@@ -41,7 +41,7 @@ export const Header = () => {
                             <a href="/search" className="dropdown-item">
                                 Знайти завдання
                             </a>
-                            <a href="/create" className="dropdown-item">
+                            <a href="/create-experience?type=task" className="dropdown-item">
                                 Створити завдання
                             </a>
                         </div>
@@ -54,7 +54,7 @@ export const Header = () => {
                             <a href="/search?type=knowledge" className="dropdown-item">
                                 Знайти знання
                             </a>
-                            <a href="/create?type=knowledge" className="dropdown-item">
+                            <a href="/create-experience?type=knowledge" className="dropdown-item">
                                 Запропонувати обмін
                             </a>
                         </div>

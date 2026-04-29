@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import MultiSelect from '../shared/MultiSelect';
+import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
-import './TaskForm.css';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 
@@ -71,7 +70,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
     const descWords = countWords(formState.description);
 
     return (
-        <form className="create-form" onSubmit={handleSubmit}>
+        <form className="form-box form-stack" onSubmit={handleSubmit}>
             {/* Title */}
             <div className="form-group">
                 <label className="form-label">
@@ -154,7 +153,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
                 <button type="button" className="btn-clear" onClick={onClear}>
                     Очистити форму
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn btn-primary">
                     Створити таск
                 </button>
             </div>
