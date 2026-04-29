@@ -9,6 +9,7 @@ import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx";
 import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.tsx";
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
+import TermsPage from "./pages/TermsPage/TermsPage.tsx";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/" element={<MainPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/terms" element={<TermsPage />} />
           <Route path="/create" element={<CreatePage />} />
           {/* Правильний динамічний шлях */}
           <Route path="/tasks/:id" element={<TaskDetails />} />
