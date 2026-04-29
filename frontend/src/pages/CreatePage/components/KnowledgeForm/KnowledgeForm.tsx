@@ -2,7 +2,6 @@ import { useState } from 'react';
 import MultiSelect from '../shared/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
-import './KnowledgeForm.css';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 

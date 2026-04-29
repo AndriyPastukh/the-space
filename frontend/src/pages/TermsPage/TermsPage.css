@@ -74,19 +74,3 @@
   display: flex;
   justify-content: center;
 }
-
-.btn-secondary {
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: 12px 30px;
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s;
-}
-
-.btn-secondary:hover {
-  background: var(--border);
-  border-color: var(--purple-lt);
-}
