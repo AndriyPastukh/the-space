@@ -83,7 +83,7 @@ export function MainPage() {
                             <div className="card-divider"></div>
                             <div className="feature-card-footer">
                                 <span className="text-sm-muted">Відгукнулись: 10</span>
-                                <button className="btn btn-secondary btn-sm">Відгукнутись</button>
+                                <button className="btn btn-primary">Відгукнутись</button>
                             </div>
                         </div>
                     </div>
