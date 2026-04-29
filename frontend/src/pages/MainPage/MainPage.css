@@ -1,0 +1,174 @@
+.hero {
+  text-align: center;
+  padding: clamp(60px, 8vw, 100px) 40px 80px;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-family: var(--font-head);
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -1.5px;
+  background: linear-gradient(135deg, #fff 0%, var(--purple-lt) 60%, var(--pink) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+}
+
+.hero-subtitle {
+  color: var(--text-muted);
+  font-size: 17px;
+  line-height: 1.7;
+  max-width: 560px;
+  margin: 0 auto 40px;
+}
+
+.hero-search {
+  display: flex;
+  max-width: 480px;
+  margin: 0 auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.1), 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.hero-search-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 14px 20px;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text);
+}
+.hero-search-input::placeholder { color: var(--text-muted); }
+.hero-search .btn { border-radius: var(--radius-pill); margin: 4px; }
+.steps-section { padding: 60px 40px; }
+
+.steps-label {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.step-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px;
+  text-align: center;
+  transition: all 0.25s;
+  cursor: default;
+}
+.step-card:hover {
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-3px);
+}
+
+.step-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--purple-lt);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 12px;
+}
+
+.step-text {
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 700;
+}
+.features {
+  padding: 40px 40px 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.feature-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 60px;
+  align-items: center;
+  padding: 64px 0;
+  border-bottom: 1px solid var(--border);
+}
+.feature-row:last-child { border-bottom: none; }
+
+.feature-mockup {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.feature-mockup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-head);
+  font-weight: 700;
+}
+
+.feature-inner-card {
+  background: var(--surface2);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+}
+
+.feature-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--purple-lt);
+  margin-bottom: 12px;
+}
+
+.feature-title {
+  font-family: var(--font-head);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+
+.feature-desc {
+  color: var(--text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+}
+
+.knowledge-exchange { display: flex; gap: 16px; margin-bottom: 10px; }
+.knowledge-col p { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+.feature-card-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.feature-user-info { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.feature-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.feature-community-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.text-sm-muted { font-size: 12px; color: var(--text-muted); }
