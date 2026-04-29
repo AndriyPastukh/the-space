@@ -46,17 +46,21 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const { email, password } = dto;
+    const { email, password, firstName, middleName, lastName, nickname } = dto;
 
     const existingUser = await this.usersService.findByEmail(email);
-
     if (existingUser) {
       throw new ConflictException('Email already exists');
     }
 
-    const passwordHash = await bcrypt.hash(password, 10);
+    const existingNickname = await this.prisma.userDetails.findUnique({
+      where: { nickname },
+    });
+    if (existingNickname) {
+      throw new ConflictException('Nickname already taken');
+    }
 
-    const nickname = this.generateNickname();
+    const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await this.prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
@@ -66,20 +70,21 @@ export class AuthService {
         },
       });
 
-      await tx.profile.create({
+      await tx.userDetails.create({
         data: {
           userId: newUser.id,
+          firstName,
+          middleName,
+          lastName,
           nickname,
-          firstName: dto.firstName,
-          lastName: dto.lastName,
         },
       });
 
       return tx.user.findUnique({
         where: { id: newUser.id },
         include: {
-          profile: {
-            include: { skills: true, interests: true, socialLinks: true },
+          userDetails: {
+            include: { skills: true, interests: true, socialLinks: true, categories: true },
           },
         },
       });

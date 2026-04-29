@@ -7,6 +7,10 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsString()
+  middleName?: string;
+
+  @IsOptional()
+  @IsString()
   lastName?: string;
 
   @IsOptional()
@@ -21,10 +25,5 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  skillTags?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  interestTags?: string[];
+  categories?: string[];
 }

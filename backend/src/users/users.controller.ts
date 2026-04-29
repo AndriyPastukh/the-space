@@ -2,6 +2,8 @@ import {
   Controller,
   Get,
   Patch,
+  Delete,
+  Post,
   Body,
   UseGuards,
   Req,
@@ -22,52 +24,49 @@ export class UsersController {
   ) {}
 
   @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  async getProfile(@Req() req: any) {
+  @Get('me')
+  async getMe(@Req() req: any) {
     const userId = req.user.id;
     const user = await this.usersService.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const { passwordHash, profile, ...result } = user;
+    const { passwordHash, userDetails, ...result } = user;
 
-    // Transform profile for frontend compatibility
+    // Transform for frontend compatibility (merging KAN-86 flattening with rich data)
     const transformedProfile = {
-      ...profile,
-      skillTags: profile.skills.map((s: any) => s.name),
-      interestTags: profile.interests.map((i: any) => i.name),
-      socialLinks: profile.socialLinks.map((sl: any) => ({
+      ...userDetails,
+      skillTags: userDetails.skills.map((s: any) => s.name),
+      interestTags: userDetails.interests.map((i: any) => i.name),
+      categories: userDetails.categories.map((c: any) => c.category),
+      socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,
       })),
       location: {
-        country: profile.country,
-        city: profile.city,
+        country: userDetails.country,
+        city: userDetails.city,
       },
       stats: {
-        level: profile.currentLevel,
-        reputation: profile.reputation,
-        xpPoints: profile.xpPoints,
+        level: userDetails.currentLevel,
+        reputation: userDetails.reputation,
+        xpPoints: userDetails.xpPoints,
       },
     };
     delete transformedProfile.skills;
     delete transformedProfile.interests;
+    delete transformedProfile.id;
 
     return { ...result, ...transformedProfile };
   }
 
   @UseGuards(JwtAuthGuard)
-  @Patch('profile')
-  async updateProfile(
-    @Req() req: any,
-    @Body() updateProfileDto: UpdateProfileDto,
-  ) {
+  @Patch('me')
+  async updateMe(@Req() req: any, @Body() updateProfileDto: UpdateProfileDto) {
     const userId = req.user.id;
 
     if (updateProfileDto.nickname) {
-      const existingUser = await this.usersService.findByNickname(
-        updateProfileDto.nickname,
-      );
+      const existingUser = await this.usersService.findByNickname(updateProfileDto.nickname);
       if (existingUser && existingUser.id !== userId) {
         throw new ConflictException('Nickname already taken');
       }
@@ -76,38 +75,39 @@ export class UsersController {
     // Cleanup old avatar from S3 if updating to a new one
     if (updateProfileDto.avatarUrl) {
       const user = await this.usersService.findById(userId);
-      if (user?.profile?.avatarUrl) {
-        const oldKey = this.s3Service.extractKeyFromUrl(user.profile.avatarUrl);
+      if (user?.userDetails?.avatarUrl) {
+        const oldKey = this.s3Service.extractKeyFromUrl(user.userDetails.avatarUrl);
         if (oldKey) {
           await this.s3Service.deleteFile(oldKey);
         }
       }
     }
 
-    const updatedUser = await this.usersService.update(userId, updateProfileDto);
-    const { passwordHash, profile, ...result } = updatedUser;
+    const updatedUser = await this.usersService.updateMe(userId, updateProfileDto);
+    const { passwordHash, userDetails, ...result } = updatedUser;
 
-    // Transform profile for frontend compatibility
     const transformedProfile = {
-      ...profile,
-      skillTags: profile.skills.map((s: any) => s.name),
-      interestTags: profile.interests.map((i: any) => i.name),
-      socialLinks: profile.socialLinks.map((sl: any) => ({
+      ...userDetails,
+      skillTags: userDetails.skills.map((s: any) => s.name),
+      interestTags: userDetails.interests.map((i: any) => i.name),
+      categories: userDetails.categories.map((c: any) => c.category),
+      socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,
       })),
       location: {
-        country: profile.country,
-        city: profile.city,
+        country: userDetails.country,
+        city: userDetails.city,
       },
       stats: {
-        level: profile.currentLevel,
-        reputation: profile.reputation,
-        xpPoints: profile.xpPoints,
+        level: userDetails.currentLevel,
+        reputation: userDetails.reputation,
+        xpPoints: userDetails.xpPoints,
       },
     };
     delete transformedProfile.skills;
     delete transformedProfile.interests;
+    delete transformedProfile.id;
 
     return { ...result, ...transformedProfile };
   }
@@ -132,8 +132,20 @@ export class UsersController {
     };
   }
 
-  @Get(':nickname')
-  async getPublicProfile(@Param('nickname') nickname: string) {
-    return this.usersService.getPublicProfile(nickname);
+  @Get(':id')
+  async getById(@Param('id') id: string) {
+    const user = await this.usersService.getById(Number(id));
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('me')
+  async deleteMe(@Req() req: any) {
+    const userId = req.user.id;
+    await this.usersService.deleteMe(userId);
+    return { message: 'User deleted successfully' };
   }
 }

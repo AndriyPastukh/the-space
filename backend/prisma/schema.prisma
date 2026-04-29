@@ -12,7 +12,7 @@ model User {
   email         String         @unique
   passwordHash  String
   refreshTokens RefreshToken[]
-  profile       Profile?
+  userDetails   UserDetails?
   knowledges    Knowledge[]
 }
 
@@ -23,12 +23,13 @@ enum UserStatus {
   ENTREPRENEUR
 }
 
-model Profile {
+model UserDetails {
   id             Int             @id @default(autoincrement())
   userId         Int             @unique
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  firstName      String          @default("New")
-  lastName       String          @default("User")
+  firstName      String
+  middleName     String?
+  lastName       String
   nickname       String          @unique
   phoneNumber    String?         @unique
   bio            String?         @db.Text
@@ -43,6 +44,7 @@ model Profile {
   city           String?
   deletedAt      DateTime?
   
+  categories     Category[]
   socialLinks    SocialLink[]
   skills         Tag[]           @relation("ProfileSkills")
   interests      Tag[]           @relation("ProfileInterests")
@@ -58,19 +60,25 @@ model Profile {
   @@index([city])
 }
 
+model Category {
+  id          Int           @id @default(autoincrement())
+  category    String        @unique
+  userDetails UserDetails[]
+}
+
 model SocialLink {
   id           Int      @id @default(autoincrement())
   platformName String
   url          String
-  profileId    Int
-  profile      Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  userDetailsId Int
+  userDetails  UserDetails @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
 }
 
 model Tag {
   id               String    @id @default(uuid())
   name             String    @unique
-  profilesSkill    Profile[] @relation("ProfileSkills")
-  profilesInterest Profile[] @relation("ProfileInterests")
+  profilesSkill    UserDetails[] @relation("ProfileSkills")
+  profilesInterest UserDetails[] @relation("ProfileInterests")
 }
 
 model RefreshToken {
@@ -82,14 +90,14 @@ model RefreshToken {
 }
 
 model Review {
-  id        Int      @id @default(autoincrement())
-  rating    Int
-  comment   String?
-  profileId Int
-  profile   Profile  @relation("UserReviews", fields: [profileId], references: [id])
-  authorId  Int
-  author    Profile  @relation("GivenReviews", fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
+  id            Int         @id @default(autoincrement())
+  rating        Int
+  comment       String?
+  userDetailsId Int
+  userDetails   UserDetails @relation("UserReviews", fields: [userDetailsId], references: [id])
+  authorId      Int
+  author        UserDetails @relation("GivenReviews", fields: [authorId], references: [id])
+  createdAt     DateTime    @default(now())
 }
 
 model Badge {
@@ -101,13 +109,13 @@ model Badge {
 }
 
 model UserBadge {
-  profileId Int
-  profile   Profile  @relation(fields: [profileId], references: [id])
-  badgeId   Int
-  badge     Badge    @relation(fields: [badgeId], references: [id])
-  earnedAt  DateTime @default(now())
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  badgeId       Int
+  badge         Badge       @relation(fields: [badgeId], references: [id])
+  earnedAt      DateTime    @default(now())
 
-  @@id([profileId, badgeId])
+  @@id([userDetailsId, badgeId])
 }
 
 model Community {
@@ -119,35 +127,35 @@ model Community {
 }
 
 model UserCommunity {
-  profileId   Int
-  profile     Profile   @relation(fields: [profileId], references: [id])
-  communityId Int
-  community   Community @relation(fields: [communityId], references: [id])
-  joinedAt    DateTime  @default(now())
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  communityId   Int
+  community     Community   @relation(fields: [communityId], references: [id])
+  joinedAt      DateTime    @default(now())
 
-  @@id([profileId, communityId])
+  @@id([userDetailsId, communityId])
 }
 
 model PortfolioItem {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  link        String?
-  profileId   Int
-  profile     Profile  @relation(fields: [profileId], references: [id])
-  createdAt   DateTime @default(now())
+  id            Int         @id @default(autoincrement())
+  title         String
+  description   String?
+  link          String?
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  createdAt     DateTime    @default(now())
 }
 
 model Task {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  points      Int      @default(0)
-  status      String   @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED
-  profileId   Int?
-  profile     Profile? @relation(fields: [profileId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String?
+  points        Int          @default(0)
+  status        String       @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED
+  userDetailsId Int?
+  userDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model Knowledge {
@@ -160,14 +168,14 @@ model Knowledge {
   author             User       @relation(fields: [authorId], references: [id])
   deletedAt          DateTime?
 
-  offerCategories    Category[] @relation("KnowledgeOffers")
-  requestCategories  Category[] @relation("KnowledgeRequests")
+  offerCategories    KnowledgeCategory[] @relation("KnowledgeOffers")
+  requestCategories  KnowledgeCategory[] @relation("KnowledgeRequests")
 
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
 }
 
-model Category {
+model KnowledgeCategory {
   id                String      @id @default(uuid())
   name              String      @unique
   knowledgeOffers   Knowledge[] @relation("KnowledgeOffers")
@@ -175,7 +183,8 @@ model Category {
 }
 
 view UserStats {
-  profileId     Int   @unique
+  userDetailsId Int   @unique
   averageRating Float
   reviewCount   Int
 }
+

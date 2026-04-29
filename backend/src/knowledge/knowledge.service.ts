@@ -57,7 +57,7 @@ export class KnowledgeService {
           author: {
             select: {
               id: true,
-              profile: {
+              userDetails: {
                 select: { firstName: true, nickname: true, avatarUrl: true },
               },
             },
@@ -85,7 +85,7 @@ export class KnowledgeService {
         author: {
           select: {
             id: true,
-            profile: {
+            userDetails: {
               select: {
                 firstName: true,
                 lastName: true,

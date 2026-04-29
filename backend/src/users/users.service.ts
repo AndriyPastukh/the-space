@@ -11,9 +11,8 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: { email },
       include: {
-        profile: {
-          where: { deletedAt: null },
-          include: { skills: true, interests: true, socialLinks: true },
+        userDetails: {
+          include: { skills: true, interests: true, socialLinks: true, categories: true },
         },
       },
     });
@@ -23,31 +22,32 @@ export class UsersService {
     return this.prisma.user.findUnique({
       where: { id },
       include: {
-        profile: {
-          where: { deletedAt: null },
-          include: { skills: true, interests: true, socialLinks: true },
+        userDetails: {
+          include: { skills: true, interests: true, socialLinks: true, categories: true },
         },
       },
     });
   }
 
   async findByNickname(nickname: string): Promise<any | null> {
-    const profile = await this.prisma.profile.findUnique({
+    const details = await this.prisma.userDetails.findUnique({
       where: { nickname },
       include: {
         user: true,
         skills: true,
         interests: true,
         socialLinks: true,
+        categories: true,
       },
     });
-    if (!profile || profile.deletedAt) return null;
-    return { ...profile.user, profile };
+    if (!details || details.deletedAt) return null;
+    return { ...details.user, userDetails: details };
   }
 
-  async update(id: number, data: any): Promise<any> {
+  async updateMe(userId: number, data: any): Promise<any> {
     const {
       firstName,
+      middleName,
       lastName,
       nickname,
       phoneNumber,
@@ -61,6 +61,7 @@ export class UsersService {
       skillTags,
       interestTags,
       socialLinks,
+      categories,
     } = data;
 
     const prepareTags = (tags: string[]) => {
@@ -80,11 +81,12 @@ export class UsersService {
     };
 
     const updatedUser = await this.prisma.user.update({
-      where: { id },
+      where: { id: userId },
       data: {
-        profile: {
+        userDetails: {
           update: {
             firstName,
+            middleName,
             lastName,
             nickname,
             phoneNumber,
@@ -100,125 +102,126 @@ export class UsersService {
             socialLinks: socialLinks
               ? {
                   deleteMany: {},
-                  create: socialLinks,
+                  create: socialLinks.map((sl: any) => ({
+                    platformName: sl.platform || sl.platformName,
+                    url: sl.url,
+                  })),
+                }
+              : undefined,
+            categories: categories
+              ? {
+                  set: [],
+                  connectOrCreate: categories.map((cat: string) => ({
+                    where: { category: cat },
+                    create: { category: cat },
+                  })),
                 }
               : undefined,
           },
         },
       },
       include: {
-        profile: {
-          include: { skills: true, interests: true, socialLinks: true },
+        userDetails: {
+          include: { skills: true, interests: true, socialLinks: true, categories: true },
         },
       },
     });
 
-    if (updatedUser.profile) {
-      await this.syncLevel(updatedUser.profile.id);
+    if (updatedUser.userDetails) {
+      await this.syncLevel(updatedUser.userDetails.id);
     }
 
     return updatedUser;
   }
 
-  private async syncLevel(profileId: number) {
-    const profile = await this.prisma.profile.findUnique({
-      where: { id: profileId },
+  private async syncLevel(userDetailsId: number) {
+    const details = await this.prisma.userDetails.findUnique({
+      where: { id: userDetailsId },
       select: { xpPoints: true, currentLevel: true },
     });
 
-    if (!profile) return;
+    if (!details) return;
 
-    const newLevel = Math.floor(profile.xpPoints / 1000) + 1;
+    const newLevel = Math.floor(details.xpPoints / 1000) + 1;
 
-    if (newLevel !== profile.currentLevel) {
-      await this.prisma.profile.update({
-        where: { id: profileId },
+    if (newLevel !== details.currentLevel) {
+      await this.prisma.userDetails.update({
+        where: { id: userDetailsId },
         data: { currentLevel: newLevel },
       });
     }
   }
 
-  async getPublicProfile(nickname: string): Promise<PublicProfileDto> {
-    const profile = await this.prisma.profile.findFirst({
-      where: {
-        nickname: {
-          equals: nickname,
-          mode: 'insensitive',
-        },
-        deletedAt: null,
-      },
+  async getById(id: number): Promise<any | null> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
       include: {
-        skills: true,
-        interests: true,
-        socialLinks: true,
-        badges: {
+        userDetails: {
           include: {
-            badge: true,
+            skills: true,
+            interests: true,
+            socialLinks: true,
+            categories: true,
+            badges: { include: { badge: true } },
+            communities: { include: { community: true } },
+            portfolioItems: true,
+            tasks: { where: { status: 'COMPLETED' }, select: { points: true } },
           },
-        },
-        communities: {
-          include: {
-            community: true,
-          },
-        },
-        portfolioItems: true,
-        tasks: {
-          where: { status: 'COMPLETED' },
-          select: { points: true },
         },
       },
     });
 
-    if (!profile) {
-      throw new NotFoundException('User not found');
-    }
+    if (!user || !user.userDetails) return null;
 
-    const stats = await this.prisma.userStats.findUnique({
-      where: { profileId: profile.id },
+    const details = user.userDetails;
+
+    const statsView = await this.prisma.userStats.findUnique({
+      where: { userDetailsId: details.id },
     });
 
-    const averageRating = stats?.averageRating || 0;
+    const averageRating = statsView?.averageRating || 0;
 
-    // Use de-normalized currentLevel for speed, but fallback if needed
-    const level = profile.currentLevel;
-
+    // KAN-86 requirement: Exclude sensitive fields surgically
+    // Also provide the rich data for the public profile
     return {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      nickname: profile.nickname,
-      avatarUrl: profile.avatarUrl,
-      coverImageUrl: profile.coverImageUrl,
-      bio: profile.bio,
-      status: profile.status,
+      firstName: details.firstName,
+      middleName: details.middleName,
+      lastName: details.lastName,
+      nickname: details.nickname,
+      avatarUrl: details.avatarUrl,
+      coverImageUrl: details.coverImageUrl,
+      bio: details.bio,
+      status: details.status,
       location: {
-        country: profile.country,
-        city: profile.city,
+        country: details.country,
+        city: details.city,
       },
-      socialLinks: profile.socialLinks.map((sl) => ({
+      socialLinks: details.socialLinks.map((sl) => ({
         platform: sl.platformName,
         url: sl.url,
       })),
       tags: {
-        skills: profile.skills.map((s) => s.name),
-        interests: profile.interests.map((i) => i.name),
+        skills: details.skills.map((s) => s.name),
+        interests: details.interests.map((i) => i.name),
       },
+      categories: details.categories.map((c: any) => c.category),
       stats: {
         rating: parseFloat(averageRating.toFixed(1)),
-        level,
-        xpProgress: Math.floor((profile.xpPoints % 1000) / 10),
-        reputation: profile.reputation,
+        level: details.currentLevel,
+        xpProgress: Math.floor((details.xpPoints % 1000) / 10),
+        reputation: details.reputation,
       },
-      badges: profile.badges.map((ub) => ({
+      badges: details.badges.map((ub) => ({
         name: ub.badge.name,
         iconUrl: ub.badge.iconUrl,
         description: ub.badge.description,
       })),
-      communities: profile.communities.map((uc) => ({
+      communities: details.communities.map((uc) => ({
         name: uc.community.name,
         slug: uc.community.slug,
         avatarUrl: uc.community.avatarUrl,
       })),
-      portfolio: profile.portfolioItems.map((pi) => ({
+      portfolio: details.portfolioItems.map((pi) => ({
         title: pi.title,
         description: pi.description,
         link: pi.link,
@@ -226,18 +229,13 @@ export class UsersService {
     };
   }
 
-  // MVP approach to refresh Materialized View on-demand
-  async refreshUserStats() {
-    await this.prisma.$executeRaw`REFRESH MATERIALIZED VIEW "UserStats"`;
+  async deleteMe(userId: number): Promise<void> {
+    await this.prisma.user.delete({
+      where: { id: userId },
+    });
   }
 
-  private calculateLevel(xp: number) {
-    const level = Math.floor(xp / 1000) + 1;
-    const xpProgress = Math.floor((xp % 1000) / 10);
-    return { level, xpProgress };
-  }
-
-  async create(email: string, passwordHash: string): Promise<User> {
+  async create(email: string, passwordHash: string): Promise<any> {
     return this.prisma.user.create({
       data: {
         email,
