@@ -70,7 +70,7 @@ export default function KnowledgeForm({ formState, onChange, onClear }: Knowledg
     const wantDescWords = countWords(formState.wantDescription);
 
     return (
-        <form className="create-form" onSubmit={handleSubmit}>
+        <form className="form-box form-stack" onSubmit={handleSubmit}>
             {/* Offer Categories */}
             <div className="form-group">
                 <label className="form-label">
@@ -166,7 +166,7 @@ export default function KnowledgeForm({ formState, onChange, onClear }: Knowledg
                 <button type="button" className="btn-clear" onClick={onClear}>
                     Очистити форму
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn btn-primary">
                     Створити knowledge
                 </button>
             </div>

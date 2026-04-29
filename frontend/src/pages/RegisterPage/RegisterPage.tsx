@@ -1,6 +1,5 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import './RegisterPage.css';
 import { useAuth } from '../../hooks/useAuth';
 
 // Інтерфейс для чіткої типізації сфер інтересів
@@ -103,11 +102,11 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-box">
-        <h1 className="auth-title">Зареєструватись</h1>
+    <div className="form-page form-page--center">
+      <div className="form-box form-container form-container--sm">
+        <h1 className="form-title form-title--center">Зареєструватись</h1>
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="form-stack" onSubmit={handleSubmit}>
           {/* Кнопка Google */}
           <button type="button" className="google-btn">
             <svg width="18" height="18" viewBox="0 0 24 24">
@@ -208,19 +207,19 @@ export default function RegisterPage() {
             />
             <span>
               Я приймаю {' '}
-              <Link to="/terms" className="terms-link" target="_blank">
+              <Link to="/terms" className="url-links" target="_blank">
                 умови платформи
               </Link>
             </span>
           </label>
 
-          <button type="submit" className="btn-primary">
+          <button type="submit" className="btn btn-primary btn-block">
             Зареєструватись
           </button>
         </form>
 
-        <div className="auth-footer">
-          Вже маю акаунт — <Link to="/login">Увійти</Link>
+        <div className="form-footer">
+          Вже маю акаунт — <Link to="/login" className='url-links'>Увійти</Link>
         </div>
       </div>
     </div>

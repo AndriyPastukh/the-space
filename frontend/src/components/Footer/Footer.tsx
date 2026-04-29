@@ -1,5 +1,4 @@
-import '../../pages/MainPage/MainPage.css';
-
+import "./Footer.css"
 export const Footer = () => {
     // Автоматичне оновлення року
     const currentYear = new Date().getFullYear();

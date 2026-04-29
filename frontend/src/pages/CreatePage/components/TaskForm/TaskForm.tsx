@@ -70,7 +70,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
     const descWords = countWords(formState.description);
 
     return (
-        <form className="create-form" onSubmit={handleSubmit}>
+        <form className="form-box form-stack" onSubmit={handleSubmit}>
             {/* Title */}
             <div className="form-group">
                 <label className="form-label">
@@ -153,7 +153,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
                 <button type="button" className="btn-clear" onClick={onClear}>
                     Очистити форму
                 </button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn btn-primary">
                     Створити таск
                 </button>
             </div>
