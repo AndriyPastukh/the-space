@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import MultiSelect from '../shared/MultiSelect';
+import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
 
