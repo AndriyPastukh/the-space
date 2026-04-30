@@ -1,5 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -11,12 +12,179 @@ model User {
   email         String         @unique
   passwordHash  String
   refreshTokens RefreshToken[]
+  userDetails   UserDetails?
+  knowledges    Knowledge[]
+}
+
+enum UserStatus {
+  STUDENT
+  FREELANCER
+  EMPLOYED
+  ENTREPRENEUR
+}
+
+model UserDetails {
+  id             Int             @id @default(autoincrement())
+  userId         Int             @unique
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName      String
+  middleName     String?
+  lastName       String
+  nickname       String          @unique
+  phoneNumber    String?         @unique
+  bio            String?         @db.Text
+  avatarUrl      String          @default("https://api.dicebear.com/7.x/avataaars/svg?seed=default")
+  coverImageUrl  String?
+  xpPoints       Int             @default(0)
+  currentLevel   Int             @default(1)
+  reputation     Float           @default(0.0)
+  status         UserStatus      @default(STUDENT)
+  birthday       DateTime?
+  country        String?
+  city           String?
+  deletedAt      DateTime?
+  
+  categories     Category[]
+  socialLinks    SocialLink[]
+  skills         Tag[]           @relation("ProfileSkills")
+  interests      Tag[]           @relation("ProfileInterests")
+  reviews        Review[]        @relation("UserReviews")
+  givenReviews   Review[]        @relation("GivenReviews")
+  badges         UserBadge[]
+  communities    UserCommunity[]
+  portfolioItems PortfolioItem[]
+  tasks          Task[]
+
+  @@index([nickname])
+  @@index([phoneNumber])
+  @@index([city])
+}
+
+model Category {
+  id          Int           @id @default(autoincrement())
+  category    String        @unique
+  userDetails UserDetails[]
+}
+
+model SocialLink {
+  id           Int      @id @default(autoincrement())
+  platformName String
+  url          String
+  userDetailsId Int
+  userDetails  UserDetails @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
+}
+
+model Tag {
+  id               String    @id @default(uuid())
+  name             String    @unique
+  profilesSkill    UserDetails[] @relation("ProfileSkills")
+  profilesInterest UserDetails[] @relation("ProfileInterests")
 }
 
 model RefreshToken {
   id        Int      @id @default(autoincrement())
   token     String   @unique
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
+
+model Review {
+  id            Int         @id @default(autoincrement())
+  rating        Int
+  comment       String?
+  userDetailsId Int
+  userDetails   UserDetails @relation("UserReviews", fields: [userDetailsId], references: [id])
+  authorId      Int
+  author        UserDetails @relation("GivenReviews", fields: [authorId], references: [id])
+  createdAt     DateTime    @default(now())
+}
+
+model Badge {
+  id          Int         @id @default(autoincrement())
+  name        String
+  iconUrl     String
+  description String?
+  users       UserBadge[]
+}
+
+model UserBadge {
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  badgeId       Int
+  badge         Badge       @relation(fields: [badgeId], references: [id])
+  earnedAt      DateTime    @default(now())
+
+  @@id([userDetailsId, badgeId])
+}
+
+model Community {
+  id        Int             @id @default(autoincrement())
+  name      String
+  slug      String          @unique
+  avatarUrl String?
+  users     UserCommunity[]
+}
+
+model UserCommunity {
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  communityId   Int
+  community     Community   @relation(fields: [communityId], references: [id])
+  joinedAt      DateTime    @default(now())
+
+  @@id([userDetailsId, communityId])
+}
+
+model PortfolioItem {
+  id            Int         @id @default(autoincrement())
+  title         String
+  description   String?
+  link          String?
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  createdAt     DateTime    @default(now())
+}
+
+model Task {
+  id            Int          @id @default(autoincrement())
+  title         String
+  description   String?
+  points        Int          @default(0)
+  status        String       @default("OPEN") // OPEN, IN_PROGRESS, COMPLETED
+  userDetailsId Int?
+  userDetails   UserDetails? @relation(fields: [userDetailsId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model Knowledge {
+  id                 String     @id @default(uuid())
+  offerDescription   String     @db.VarChar(2000)
+  requestDescription String     @db.VarChar(2000)
+  deadline           DateTime
+  urls               String[]
+  authorId           Int
+  author             User       @relation(fields: [authorId], references: [id])
+  deletedAt          DateTime?
+
+  offerCategories    KnowledgeCategory[] @relation("KnowledgeOffers")
+  requestCategories  KnowledgeCategory[] @relation("KnowledgeRequests")
+
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+model KnowledgeCategory {
+  id                String      @id @default(uuid())
+  name              String      @unique
+  knowledgeOffers   Knowledge[] @relation("KnowledgeOffers")
+  knowledgeRequests Knowledge[] @relation("KnowledgeRequests")
+}
+
+view UserStats {
+  userDetailsId Int   @unique
+  averageRating Float
+  reviewCount   Int
+}
+

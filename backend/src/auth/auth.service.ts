@@ -46,20 +46,60 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const { email, password } = dto;
+    const { email, password, firstName, middleName, lastName, nickname } = dto;
 
     const existingUser = await this.usersService.findByEmail(email);
-
     if (existingUser) {
       throw new ConflictException('Email already exists');
     }
 
+    const existingNickname = await this.prisma.userDetails.findUnique({
+      where: { nickname },
+    });
+    if (existingNickname) {
+      throw new ConflictException('Nickname already taken');
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const newUser = await this.usersService.create(email, passwordHash);
+    const user = await this.prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+        },
+      });
 
-    // зразу токени вертаємо
-    return this.generateAndSaveTokens(newUser.id, newUser.email);
+      await tx.userDetails.create({
+        data: {
+          userId: newUser.id,
+          firstName,
+          middleName,
+          lastName,
+          nickname,
+        },
+      });
+
+      return tx.user.findUnique({
+        where: { id: newUser.id },
+        include: {
+          userDetails: {
+            include: { skills: true, interests: true, socialLinks: true, categories: true },
+          },
+        },
+      });
+    });
+
+    if (!user) {
+      throw new ConflictException('Failed to create user');
+    }
+
+    // Return tokens immediately (auto-login after registration)
+    return this.generateAndSaveTokens(user.id, user.email);
+  }
+
+  private generateNickname(): string {
+    return `user_${Math.random().toString(36).substring(2, 10)}`;
   }
 
   async login(dto: LoginDto) {
