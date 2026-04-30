@@ -19,11 +19,11 @@ export class CreateKnowledgeDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsUUID('all', { each: true })
+  @IsString({ each: true })
   offerCategories: string[];
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsUUID('all', { each: true })
+  @IsString({ each: true })
   requestCategories: string[];
 }

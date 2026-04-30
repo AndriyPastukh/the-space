@@ -15,10 +15,16 @@ export class KnowledgeService {
         ...data,
         authorId: userId,
         offerCategories: {
-          connect: offerCategories.map((id) => ({ id })),
+          connectOrCreate: offerCategories.map((name) => ({
+            where: { name },
+            create: { name },
+          })),
         },
         requestCategories: {
-          connect: requestCategories.map((id) => ({ id })),
+          connectOrCreate: requestCategories.map((name) => ({
+            where: { name },
+            create: { name },
+          })),
         },
       },
       include: {
