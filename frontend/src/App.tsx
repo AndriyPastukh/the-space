@@ -12,6 +12,8 @@ import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import CreatePage from "./pages/CreatePage/CreatePage";
+import SearchPage from "./pages/SearchPage/SearchPage";
+
 
 function App() {
   const { isAuth, user, logout } = useAuth();
@@ -34,6 +36,7 @@ function App() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/*" element={<NotFoundPage />} />
           <Route path="/create" element={<CreatePage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Routes>
         <Footer />
       </div>
