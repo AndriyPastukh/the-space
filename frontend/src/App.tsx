@@ -10,6 +10,8 @@ import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 import TermsPage from "./pages/TermsPage/TermsPage.tsx";
+import SearchPage from "./pages/SearchPage/SearchPage.tsx";
+
 
 function App() {
   return (
@@ -25,6 +27,7 @@ function App() {
           <Route path="/tasks/:id" element={<TaskDetails />} />
           <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/*" element={<NotFoundPage />} />
+          <Route path="/search" element={<SearchPage />} />
         </Routes>
         <Footer />
       </div>
