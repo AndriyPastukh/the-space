@@ -1,13 +1,19 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import '../RegisterPage/RegisterPage.css'; // той самий CSS
 import { useAuth } from '../../hooks/useAuth';
 
 export default function LoginPage() {
     const navigate = useNavigate();
 
-    const {login} = useAuth();
+    const {isAuthLoading, isAuth, login} = useAuth();
+    const [isLoginSubmitting, setIsLoginSubmitting] = useState(false);
 
+    useEffect(() => {
+        if (!isAuthLoading && isAuth && !isLoginSubmitting) {
+            navigate("/");
+        }
+    }, [isAuthLoading, isAuth, isLoginSubmitting])
+ 
     const [form, setForm] = useState({
         email: '',
         pass: '',
@@ -25,6 +31,11 @@ export default function LoginPage() {
     };
 
     const handleSubmit = async (e: any) => {
+
+        if (isLoginSubmitting) {
+            return;
+        }
+
         e.preventDefault();
         setError('');
 
@@ -37,6 +48,7 @@ export default function LoginPage() {
         const loginResult = await login({ email: form.email, password: form.pass });
         
         if (loginResult.success) {
+            setIsLoginSubmitting(true);
             navigate('/');
         } else {
             setError(loginResult.message);
@@ -45,11 +57,11 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="auth-page">
-            <div className="auth-box">
-                <h1 className="auth-title">Увійти</h1>
+        <div className="form-page form-page--center">
+            <div className="form-box form-container form-container--sm">
+                <h1 className="form-title form-title--center">Увійти</h1>
 
-                <form className="auth-form" onSubmit={handleSubmit}>
+                <form className="form-stack" onSubmit={handleSubmit}>
                     <button type="button" className="google-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -80,6 +92,7 @@ export default function LoginPage() {
                             <Link
                                 to="/forgot"
                                 style={{ fontSize: '12px', color: 'var(--purple-lt)', marginBottom: '6px' }}
+                                className='url-links'
                             >
                                 Забули пароль?
                             </Link>
@@ -106,13 +119,13 @@ export default function LoginPage() {
                         <span>Запам'ятати мене</span>
                     </label>
 
-                    <button type="submit" className="btn-primary">
+                    <button type="submit" className="btn btn-primary btn-block">
                         Увійти
                     </button>
                 </form>
 
-                <div className="auth-footer">
-                    Немає акаунту? — <Link to="/register">Створити</Link>
+                <div className="form-footer">
+                    Немає акаунту? — <Link to="/register" className='url-links'>Створити</Link>
                 </div>
             </div>
         </div>

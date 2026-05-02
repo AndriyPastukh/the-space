@@ -1,11 +1,12 @@
 import "./Header.css"
 import "../../pages/MainPage/MainPage.css"
 import { useState } from "react";
-
+import { useAuth } from "../../hooks/useAuth";
 
 export const Header = () => {
+    
+    const { isAuth, user, logout } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const toggleMobileMenu = () => {
         setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -40,7 +41,7 @@ export const Header = () => {
                             <a href="/search" className="dropdown-item">
                                 Знайти завдання
                             </a>
-                            <a href="/create" className="dropdown-item">
+                            <a href="/create-experience?type=task" className="dropdown-item">
                                 Створити завдання
                             </a>
                         </div>
@@ -53,7 +54,7 @@ export const Header = () => {
                             <a href="/search?type=knowledge" className="dropdown-item">
                                 Знайти знання
                             </a>
-                            <a href="/create?type=knowledge" className="dropdown-item">
+                            <a href="/create-experience?type=knowledge" className="dropdown-item">
                                 Запропонувати обмін
                             </a>
                         </div>
@@ -77,11 +78,11 @@ export const Header = () => {
                 </div>
 
                 <div className="nav-auth">
-                    {isLoggedIn ? (
+                    {isAuth ? (
                         <div className="nav-dropdown profile-dropdown">
                             <button className="nav-link profile-btn">
                                 <div className="profile-avatar">ІП</div>
-                                <span>Профіль</span>
+                                <span>{user.email}</span>
                             </button>
                             <div className="dropdown-menu">
                                 <a href="/profile" className="dropdown-item">
@@ -89,7 +90,7 @@ export const Header = () => {
                                 </a>
                                 <div className="dropdown-divider"></div>
                                 <button
-                                    onClick={() => setIsLoggedIn(false)}
+                                    onClick={() => logout()}
                                     className="dropdown-item danger"
                                 >
                                     Вийти
@@ -135,13 +136,13 @@ export const Header = () => {
                 <div className="mobile-nav-divider"></div>
 
                 <div className="mobile-nav-auth">
-                    {isLoggedIn ? (
+                    {isAuth ? (
                         <>
                             <a href="/profile" className="mobile-nav-link">
                                 Мій кабінет
                             </a>
                             <button
-                                onClick={() => setIsLoggedIn(false)}
+                                onClick={() => logout()}
                                 className="mobile-nav-link danger"
                                 style={{
                                     background: "none",
