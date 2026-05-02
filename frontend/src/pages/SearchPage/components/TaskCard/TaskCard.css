@@ -1,6 +1,7 @@
 .task-card {
-    background: #2d1b4e;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    width: 400px;
     border-radius: 20px;
     padding: 24px;
     cursor: pointer;

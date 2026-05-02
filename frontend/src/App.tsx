@@ -10,7 +10,7 @@ import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 import TermsPage from "./pages/TermsPage/TermsPage.tsx";
-import SearchPage from "./pages/SearchPage/SearchPage";
+import SearchPage from "./pages/SearchPage/SearchPage.tsx";
 
 
 function App() {

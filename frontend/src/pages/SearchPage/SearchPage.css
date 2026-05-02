@@ -1,6 +1,5 @@
 .search-page {
     min-height: calc(100vh - 64px);
-    background: radial-gradient(circle at top, #3d1c5c 0%, #1a0b2e 100%);
     padding: 48px 20px;
 }
 
@@ -36,7 +35,6 @@
 .search-results {
     flex: 1;
     display: flex;
-    flex-direction: column;
     gap: 16px;
 }
 

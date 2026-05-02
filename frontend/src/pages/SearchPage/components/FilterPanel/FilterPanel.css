@@ -1,5 +1,5 @@
 .filter-panel {
-    background: #2d1b4e;
+    background: var(--bg2);
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 20px;
     padding: 24px;

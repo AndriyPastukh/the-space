@@ -137,7 +137,6 @@ export default function SearchPage() {
     return (
         <div className="search-page">
             <div className="search-page-container">
-                <h1 className="search-page-title">Пошук</h1>
 
                 <SearchBar
                     value={search}
