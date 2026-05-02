@@ -12,7 +12,12 @@ export class UsersService {
       where: { email },
       include: {
         userDetails: {
-          include: { skills: true, interests: true, socialLinks: true, categories: true },
+          include: {
+            skills: true,
+            interests: true,
+            socialLinks: true,
+            categories: true,
+          },
         },
       },
     });
@@ -23,7 +28,12 @@ export class UsersService {
       where: { id },
       include: {
         userDetails: {
-          include: { skills: true, interests: true, socialLinks: true, categories: true },
+          include: {
+            skills: true,
+            interests: true,
+            socialLinks: true,
+            categories: true,
+          },
         },
       },
     });
@@ -122,7 +132,12 @@ export class UsersService {
       },
       include: {
         userDetails: {
-          include: { skills: true, interests: true, socialLinks: true, categories: true },
+          include: {
+            skills: true,
+            interests: true,
+            socialLinks: true,
+            categories: true,
+          },
         },
       },
     });
@@ -156,6 +171,15 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
+        tasks: {
+          where: {
+            status: 'COMPLETED',
+            deletedAt: null,
+          },
+          select: {
+            points: true,
+          },
+        },
         userDetails: {
           include: {
             skills: true,
@@ -165,7 +189,6 @@ export class UsersService {
             badges: { include: { badge: true } },
             communities: { include: { community: true } },
             portfolioItems: true,
-            tasks: { where: { status: 'COMPLETED' }, select: { points: true } },
           },
         },
       },
@@ -181,8 +204,11 @@ export class UsersService {
 
     const averageRating = statsView?.averageRating || 0;
 
-    // KAN-86 requirement: Exclude sensitive fields surgically
-    // Also provide the rich data for the public profile
+    const completedTaskPoints = user.tasks.reduce(
+      (sum, task) => sum + task.points,
+      0,
+    );
+
     return {
       firstName: details.firstName,
       middleName: details.middleName,
@@ -210,6 +236,7 @@ export class UsersService {
         level: details.currentLevel,
         xpProgress: Math.floor((details.xpPoints % 1000) / 10),
         reputation: details.reputation,
+        completedTaskPoints,
       },
       badges: details.badges.map((ub) => ({
         name: ub.badge.name,
