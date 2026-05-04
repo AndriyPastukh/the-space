@@ -1,0 +1,71 @@
+.portfolio-card {
+    border-bottom: 1px solid var(--border);
+    padding: 16px 0;
+}
+
+.portfolio-card:last-child {
+    border-bottom: none;
+}
+
+.pcard-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.pcard-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--surface2);
+    flex-shrink: 0;
+}
+
+.pcard-author-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.pcard-author-rating {
+    font-size: 13px;
+    color: #f59e0b;
+}
+
+.pcard-badge {
+    margin-left: auto;
+}
+
+.pcard-time {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.pcard-action-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.pcard-action-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.pcard-title {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+}
+
+.pcard-review {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+}

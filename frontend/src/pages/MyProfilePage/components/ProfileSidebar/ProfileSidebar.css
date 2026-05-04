@@ -1,0 +1,179 @@
+.profile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Shared sidebar block */
+.sidebar-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+}
+
+/* Identity block */
+.sidebar-profile-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+}
+
+.sidebar-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+}
+
+.sidebar-name-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.sidebar-name {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    color: var(--text);
+}
+
+.sidebar-rating {
+    font-size: 15px;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+.sidebar-username {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.sidebar-socials {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.social-link {
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.social-link:hover {
+    color: var(--purple-lt);
+}
+
+.btn-edit {
+    width: 100%;
+    padding: 9px 20px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-edit:hover {
+    border-color: var(--purple-lt);
+    color: var(--purple-lt);
+}
+
+/* Stats block */
+.sidebar-block-title {
+    font-size: 13px;
+    color: var(--text-muted);
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.sidebar-block-title strong {
+    color: var(--text);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.stat-cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px;
+    text-align: center;
+}
+
+.stat-val {
+    font-family: var(--font-head);
+    font-size: 20px;
+    font-weight: 800;
+    display: block;
+}
+
+.stat-lbl {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-top: 2px;
+}
+
+.stat-rat {
+    font-size: 12px;
+    color: #f59e0b;
+    display: block;
+    margin-top: 3px;
+}
+
+/* Directions */
+.section-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+    display: block;
+}
+
+/* Communities / Teams */
+.sidebar-empty {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.community-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.community-row:last-child {
+    border-bottom: none;
+}
+
+.community-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+.community-count {
+    font-size: 11px;
+    color: var(--text-muted);
+}

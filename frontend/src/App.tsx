@@ -11,6 +11,7 @@ import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 import TermsPage from "./pages/TermsPage/TermsPage.tsx";
 import SearchPage from "./pages/SearchPage/SearchPage.tsx";
+import MyProfilePage from "./pages/MyProfilePage/MyProfilePage";
 
 
 function App() {
@@ -28,6 +29,7 @@ function App() {
           <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/*" element={<NotFoundPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/profile" element={<MyProfilePage />} />
         </Routes>
         <Footer />
       </div>
