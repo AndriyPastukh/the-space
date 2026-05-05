@@ -12,6 +12,7 @@ import { Footer } from "./components/Footer/Footer.tsx";
 import TermsPage from "./pages/TermsPage/TermsPage.tsx";
 import SearchPage from "./pages/SearchPage/SearchPage.tsx";
 import MyProfilePage from "./pages/MyProfilePage/MyProfilePage";
+import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/*" element={<NotFoundPage />} />
           <Route path="/search" element={<SearchPage />} />
           <Route path="/profile" element={<MyProfilePage />} />
+          <Route path="/create-space" element={<CreateSpacePage />} />
         </Routes>
         <Footer />
       </div>

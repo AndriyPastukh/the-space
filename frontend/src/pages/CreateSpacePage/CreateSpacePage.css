@@ -1,0 +1,67 @@
+/* ─── Page Header ──────────────────────────────────────────────── */
+.create-space-header {
+    margin-bottom: 28px;
+}
+
+.create-space-title {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    margin-bottom: 6px;
+}
+
+.create-space-subtitle {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* ─── Toggle Tabs ───────────────────────────────────────────────── */
+.space-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 5px;
+    width: fit-content;
+}
+
+.space-tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 22px;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.22s ease;
+    border: 1px solid transparent;
+    white-space: nowrap;
+}
+
+.space-tab-btn:hover {
+    color: var(--text);
+}
+
+.space-tab-btn--active {
+    background: linear-gradient(135deg, var(--purple) 0%, var(--pink) 100%);
+    color: #fff;
+    border-color: transparent;
+    box-shadow: 0 3px 14px rgba(124, 58, 237, 0.45);
+}
+
+.space-tab-btn__icon {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* ─── Hidden form (preserve state without unmounting) ───────────── */
+.create-space-form--hidden {
+    display: none;
+}

@@ -1,0 +1,125 @@
+.avatar-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.avatar-upload__input {
+    display: none;
+}
+
+.avatar-upload__zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 20px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 2px dashed rgba(255, 255, 255, 0.12);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+}
+
+.avatar-upload__zone:hover,
+.avatar-upload__zone:focus {
+    outline: none;
+    border-color: var(--purple-lt);
+    background: rgba(124, 58, 237, 0.07);
+}
+
+.avatar-upload__zone--dragover {
+    border-color: var(--purple-lt);
+    background: rgba(124, 58, 237, 0.12);
+    transform: scale(1.01);
+}
+
+.avatar-upload__zone--error {
+    border-color: #f87171;
+}
+
+.avatar-upload__icon {
+    color: var(--text-muted);
+    transition: color 0.2s;
+}
+
+.avatar-upload__zone:hover .avatar-upload__icon,
+.avatar-upload__zone--dragover .avatar-upload__icon {
+    color: var(--purple-lt);
+}
+
+.avatar-upload__hint {
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+.avatar-upload__cta {
+    color: var(--purple-lt);
+    font-weight: 500;
+}
+
+.avatar-upload__meta {
+    font-size: 12px;
+    color: #5a4f6e;
+}
+
+/* Preview */
+.avatar-upload__preview {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+.avatar-upload__img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(124, 58, 237, 0.4);
+    flex-shrink: 0;
+}
+
+.avatar-upload__preview-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.avatar-upload__filename {
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.avatar-upload__filesize {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.avatar-upload__remove {
+    background: none;
+    border: none;
+    color: #f87171;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0;
+    margin-top: 4px;
+    width: fit-content;
+    transition: opacity 0.2s;
+}
+
+.avatar-upload__remove:hover {
+    opacity: 0.75;
+}
