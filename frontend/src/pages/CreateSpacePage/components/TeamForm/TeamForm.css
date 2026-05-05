@@ -1,0 +1,11 @@
+.team-form {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.team-form__actions {
+    margin-top: 8px;
+}
+
+.word-count--over {
+    color: #f87171;
+}

@@ -1,0 +1,11 @@
+.community-form {
+    animation: fadeInUp 0.3s ease forwards;
+}
+
+.community-form__actions {
+    margin-top: 8px;
+}
+
+.word-count--over {
+    color: #f87171;
+}
