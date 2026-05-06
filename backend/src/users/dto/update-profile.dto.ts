@@ -1,4 +1,11 @@
-import { IsArray, IsOptional, IsString, IsUrl } from 'class-validator';
+import {
+  IsArray,
+  IsOptional,
+  IsString,
+  IsUrl,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -24,6 +31,7 @@ export class UpdateProfileDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  categories?: string[];
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  categories?: number[];
 }

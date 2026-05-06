@@ -29,7 +29,7 @@ export class TasksController {
   @Get()
   findAll(
     @Query() query: TaskQueryDto,
-    @Query('category') category?: string | string[],
+    @Query('categoryId') categoryId?: string | string[],
     @Query('authorId') authorId?: string,
   ) {
     return this.tasksService.findAll({
@@ -37,10 +37,10 @@ export class TasksController {
       limit: query.limit,
       status: query.status,
       authorId: authorId ? Number(authorId) : undefined,
-      categories: Array.isArray(category)
-        ? category
-        : category
-          ? [category]
+      categories: Array.isArray(categoryId)
+        ? categoryId.map(Number)
+        : categoryId
+          ? [Number(categoryId)]
           : undefined,
     });
   }

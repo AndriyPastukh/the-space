@@ -12,23 +12,18 @@ export class KnowledgeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateKnowledgeDto) {
-    const { offerCategories, requestCategories, ...data } = dto;
+    const { offerCategories, requestCategories, deadline, ...data } = dto;
 
     return this.prisma.knowledge.create({
       data: {
         ...data,
+        deadline: new Date(deadline),
         authorId: userId,
         offerCategories: {
-          connectOrCreate: offerCategories.map((name) => ({
-            where: { name },
-            create: { name },
-          })),
+          connect: offerCategories.map((id) => ({ id })),
         },
         requestCategories: {
-          connectOrCreate: requestCategories.map((name) => ({
-            where: { name },
-            create: { name },
-          })),
+          connect: requestCategories.map((id) => ({ id })),
         },
       },
       include: {
@@ -41,8 +36,8 @@ export class KnowledgeService {
   async findAll(query: {
     page?: number;
     limit?: number;
-    offerCat?: string[];
-    requestCat?: string[];
+    offerCat?: number[];
+    requestCat?: number[];
   }) {
     const { page = 1, limit = 10, offerCat, requestCat } = query;
     const skip = (Number(page) - 1) * Number(limit);
@@ -50,24 +45,12 @@ export class KnowledgeService {
 
     const where: any = { deletedAt: null };
 
-    if (offerCat) {
-      where.offerCategories = {
-        some: {
-          name: {
-            in: offerCat,
-          },
-        },
-      };
+    if (offerCat && offerCat.length > 0) {
+      where.offerCategories = { some: { id: { in: offerCat } } };
     }
 
-    if (requestCat) {
-      where.requestCategories = {
-        some: {
-          name: {
-            in: requestCat,
-          },
-        },
-      };
+    if (requestCat && requestCat.length > 0) {
+      where.requestCategories = { some: { id: { in: requestCat } } };
     }
 
     const [items, total] = await Promise.all([
@@ -137,19 +120,17 @@ export class KnowledgeService {
       );
     }
 
-    const { offerCategories, requestCategories, ...data } = dto;
+    const { offerCategories, requestCategories, deadline, ...data } = dto;
 
     return this.prisma.knowledge.update({
       where: { id },
       data: {
         ...data,
+        deadline: deadline !== undefined ? new Date(deadline) : undefined,
         offerCategories: offerCategories
           ? {
               set: [],
-              connectOrCreate: offerCategories.map((name) => ({
-                where: { name },
-                create: { name },
-              })),
+              connect: offerCategories.map((id) => ({ id })),
             }
           : undefined,
         requestCategories: requestCategories

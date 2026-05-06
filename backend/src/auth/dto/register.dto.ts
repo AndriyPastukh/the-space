@@ -1,4 +1,14 @@
-import { IsEmail, MinLength, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEmail,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  Min,
+  MinLength,
+  ArrayMinSize,
+} from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -8,6 +18,7 @@ export class RegisterDto {
   password!: string;
 
   @IsNotEmpty()
+  @IsString()
   firstName!: string;
 
   @IsOptional()
@@ -15,8 +26,16 @@ export class RegisterDto {
   middleName?: string;
 
   @IsNotEmpty()
+  @IsString()
   lastName!: string;
 
   @IsNotEmpty()
+  @IsString()
   nickname!: string;
+
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  categories!: number[];
 }

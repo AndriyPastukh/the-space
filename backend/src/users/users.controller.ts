@@ -38,7 +38,10 @@ export class UsersController {
       ...userDetails,
       skillTags: userDetails.skills.map((s: any) => s.name),
       interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => c.name),
+      categories: userDetails.categories.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+      })),
       socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,
@@ -66,7 +69,9 @@ export class UsersController {
     const userId = req.user.id;
 
     if (updateProfileDto.nickname) {
-      const existingUser = await this.usersService.findByNickname(updateProfileDto.nickname);
+      const existingUser = await this.usersService.findByNickname(
+        updateProfileDto.nickname,
+      );
       if (existingUser && existingUser.id !== userId) {
         throw new ConflictException('Nickname already taken');
       }
@@ -76,21 +81,29 @@ export class UsersController {
     if (updateProfileDto.avatarUrl) {
       const user = await this.usersService.findById(userId);
       if (user?.userDetails?.avatarUrl) {
-        const oldKey = this.s3Service.extractKeyFromUrl(user.userDetails.avatarUrl);
+        const oldKey = this.s3Service.extractKeyFromUrl(
+          user.userDetails.avatarUrl,
+        );
         if (oldKey) {
           await this.s3Service.deleteFile(oldKey);
         }
       }
     }
 
-    const updatedUser = await this.usersService.updateMe(userId, updateProfileDto);
+    const updatedUser = await this.usersService.updateMe(
+      userId,
+      updateProfileDto,
+    );
     const { passwordHash, userDetails, ...result } = updatedUser;
 
     const transformedProfile = {
       ...userDetails,
       skillTags: userDetails.skills.map((s: any) => s.name),
       interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => c.name),
+      categories: userDetails.categories.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+      })),
       socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,

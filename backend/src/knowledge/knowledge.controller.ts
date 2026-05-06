@@ -29,14 +29,22 @@ export class KnowledgeController {
   findAll(
     @Query('page') page?: number,
     @Query('limit') limit?: number,
-    @Query('offerCat') offerCat?: string | string[],
-    @Query('requestCat') requestCat?: string | string[],
+    @Query('offerCategoryId') offerCategoryId?: string | string[],
+    @Query('requestCategoryId') requestCategoryId?: string | string[],
   ) {
     return this.knowledgeService.findAll({
       page,
       limit,
-      offerCat: Array.isArray(offerCat) ? offerCat : offerCat ? [offerCat] : undefined,
-      requestCat: Array.isArray(requestCat) ? requestCat : requestCat ? [requestCat] : undefined,
+      offerCat: Array.isArray(offerCategoryId)
+        ? offerCategoryId.map(Number)
+        : offerCategoryId
+          ? [Number(offerCategoryId)]
+          : undefined,
+      requestCat: Array.isArray(requestCategoryId)
+        ? requestCategoryId.map(Number)
+        : requestCategoryId
+          ? [Number(requestCategoryId)]
+          : undefined,
     });
   }
 

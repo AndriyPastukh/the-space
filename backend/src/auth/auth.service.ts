@@ -46,7 +46,15 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const { email, password, firstName, middleName, lastName, nickname } = dto;
+    const {
+      email,
+      password,
+      firstName,
+      middleName,
+      lastName,
+      nickname,
+      categories,
+    } = dto;
 
     const existingUser = await this.usersService.findByEmail(email);
     if (existingUser) {
@@ -56,11 +64,32 @@ export class AuthService {
     const existingNickname = await this.prisma.userDetails.findUnique({
       where: { nickname },
     });
+
     if (existingNickname) {
       throw new ConflictException('Nickname already taken');
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
+
+    const uniqueCategoryIds = [...new Set(categories)]
+      .map(Number)
+      .filter((id) => Number.isInteger(id) && id > 0);
+
+    if (uniqueCategoryIds.length === 0) {
+      throw new ConflictException('At least one valid category is required');
+    }
+
+    const categoriesCount = await this.prisma.category.count({
+      where: {
+        id: {
+          in: uniqueCategoryIds,
+        },
+      },
+    });
+
+    if (categoriesCount !== uniqueCategoryIds.length) {
+      throw new ConflictException('One or more categories do not exist');
+    }
 
     const user = await this.prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
@@ -77,6 +106,9 @@ export class AuthService {
           middleName,
           lastName,
           nickname,
+          categories: {
+            connect: uniqueCategoryIds.map((id) => ({ id })),
+          },
         },
       });
 
@@ -84,7 +116,12 @@ export class AuthService {
         where: { id: newUser.id },
         include: {
           userDetails: {
-            include: { skills: true, interests: true, socialLinks: true, categories: true },
+            include: {
+              skills: true,
+              interests: true,
+              socialLinks: true,
+              categories: true,
+            },
           },
         },
       });
@@ -94,7 +131,6 @@ export class AuthService {
       throw new ConflictException('Failed to create user');
     }
 
-    // Return tokens immediately (auto-login after registration)
     return this.generateAndSaveTokens(user.id, user.email);
   }
 

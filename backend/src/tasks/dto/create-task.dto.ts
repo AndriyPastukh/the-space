@@ -40,9 +40,9 @@ export class CreateTaskDto {
   status?: TaskStatusDto;
 
   @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  categories?: string[];
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  categories?: number[];
 
   @IsDateString()
   @IsOptional()

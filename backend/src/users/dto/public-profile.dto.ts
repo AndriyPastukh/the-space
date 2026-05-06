@@ -19,7 +19,10 @@ export class PublicProfileDto {
     skills: string[];
     interests: string[];
   };
-  categories: string[];
+  categories: {
+    id: number;
+    name: string;
+  }[];
   stats: {
     rating: number;
     level: number;
