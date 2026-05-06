@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateKnowledgeDto } from './dto/create-knowledge.dto';
 import { UpdateKnowledgeDto } from './dto/update-knowledge.dto';
@@ -8,23 +12,18 @@ export class KnowledgeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async create(userId: number, dto: CreateKnowledgeDto) {
-    const { offerCategories, requestCategories, ...data } = dto;
+    const { offerCategories, requestCategories, deadline, ...data } = dto;
 
     return this.prisma.knowledge.create({
       data: {
         ...data,
+        deadline: new Date(deadline),
         authorId: userId,
         offerCategories: {
-          connectOrCreate: offerCategories.map((name) => ({
-            where: { name },
-            create: { name },
-          })),
+          connect: offerCategories.map((id) => ({ id })),
         },
         requestCategories: {
-          connectOrCreate: requestCategories.map((name) => ({
-            where: { name },
-            create: { name },
-          })),
+          connect: requestCategories.map((id) => ({ id })),
         },
       },
       include: {
@@ -37,8 +36,8 @@ export class KnowledgeService {
   async findAll(query: {
     page?: number;
     limit?: number;
-    offerCat?: string[];
-    requestCat?: string[];
+    offerCat?: number[];
+    requestCat?: number[];
   }) {
     const { page = 1, limit = 10, offerCat, requestCat } = query;
     const skip = (Number(page) - 1) * Number(limit);
@@ -46,11 +45,12 @@ export class KnowledgeService {
 
     const where: any = { deletedAt: null };
 
-    if (offerCat) {
-      where.offerCategories = { some: { id: { in: Array.isArray(offerCat) ? offerCat : [offerCat] } } };
+    if (offerCat && offerCat.length > 0) {
+      where.offerCategories = { some: { id: { in: offerCat } } };
     }
-    if (requestCat) {
-      where.requestCategories = { some: { id: { in: Array.isArray(requestCat) ? requestCat : [requestCat] } } };
+
+    if (requestCat && requestCat.length > 0) {
+      where.requestCategories = { some: { id: { in: requestCat } } };
     }
 
     const [items, total] = await Promise.all([
@@ -115,15 +115,18 @@ export class KnowledgeService {
   async update(id: string, userId: number, dto: UpdateKnowledgeDto) {
     const item = await this.findOne(id);
     if (item.authorId !== userId) {
-      throw new ForbiddenException('You can only edit your own knowledge entries');
+      throw new ForbiddenException(
+        'You can only edit your own knowledge entries',
+      );
     }
 
-    const { offerCategories, requestCategories, ...data } = dto;
+    const { offerCategories, requestCategories, deadline, ...data } = dto;
 
     return this.prisma.knowledge.update({
       where: { id },
       data: {
         ...data,
+        deadline: deadline !== undefined ? new Date(deadline) : undefined,
         offerCategories: offerCategories
           ? {
               set: [],
@@ -147,7 +150,9 @@ export class KnowledgeService {
   async remove(id: string, userId: number) {
     const item = await this.findOne(id);
     if (item.authorId !== userId) {
-      throw new ForbiddenException('You can only delete your own knowledge entries');
+      throw new ForbiddenException(
+        'You can only delete your own knowledge entries',
+      );
     }
 
     return this.prisma.knowledge.update({

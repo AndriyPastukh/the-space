@@ -1,4 +1,14 @@
-import { IsString, IsArray, IsOptional, MaxLength, IsDateString, IsUUID, ArrayMinSize, IsUrl } from 'class-validator';
+import {
+  IsString,
+  IsArray,
+  IsOptional,
+  MaxLength,
+  IsDateString,
+  ArrayMinSize,
+  IsUrl,
+  IsInt,
+  Min,
+} from 'class-validator';
 
 export class CreateKnowledgeDto {
   @IsString()
@@ -19,11 +29,13 @@ export class CreateKnowledgeDto {
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsString({ each: true })
-  offerCategories: string[];
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  offerCategories: number[];
 
   @IsArray()
   @ArrayMinSize(1)
-  @IsString({ each: true })
-  requestCategories: string[];
+  @IsInt({ each: true })
+  @Min(1, { each: true })
+  requestCategories: number[];
 }

@@ -7,6 +7,7 @@ import { UsersModule } from './users/users.module';
 import { S3Module } from './s3/s3.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { TasksModule } from './tasks/tasks.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { TasksModule } from './tasks/tasks.module';
     S3Module,
     KnowledgeModule,
     TasksModule,
+    CategoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

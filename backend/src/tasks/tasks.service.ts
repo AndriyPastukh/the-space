@@ -24,38 +24,28 @@ export class TasksService {
     },
   } as const;
 
-  private normalizeCategories(categories?: string[]): string[] | undefined {
-    if (!Array.isArray(categories)) {
+  private normalizeCategoryIds(categoryIds?: number[]): number[] | undefined {
+    if (!Array.isArray(categoryIds)) {
       return undefined;
     }
 
     return [
       ...new Set(
-        categories
-          .map((category) => category?.trim())
-          .filter(
-            (category): category is string =>
-              typeof category === 'string' &&
-              category.length > 0 &&
-              category.length <= 60,
-          ),
+        categoryIds.map(Number).filter((id) => Number.isInteger(id) && id > 0),
       ),
     ];
   }
 
-  private buildCategoriesRelation(categories?: string[], replace = false) {
-    const normalizedCategories = this.normalizeCategories(categories);
+  private buildCategoriesRelation(categoryIds?: number[], replace = false) {
+    const ids = this.normalizeCategoryIds(categoryIds);
 
-    if (normalizedCategories === undefined) {
+    if (ids === undefined) {
       return undefined;
     }
 
     return {
       ...(replace ? { set: [] } : {}),
-      connectOrCreate: normalizedCategories.map((category) => ({
-        where: { category },
-        create: { category },
-      })),
+      connect: ids.map((id) => ({ id })),
     };
   }
 
@@ -93,15 +83,13 @@ export class TasksService {
     limit?: number;
     status?: TaskStatusDto;
     authorId?: number;
-    categories?: string[];
+    categories?: number[];
   }) {
     const { page = 1, limit = 10, status, authorId, categories } = query;
 
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.min(Math.max(1, Number(limit) || 10), 100);
     const skip = (safePage - 1) * safeLimit;
-
-    const normalizedCategories = this.normalizeCategories(categories);
 
     const where: any = {
       deletedAt: null,
@@ -115,11 +103,11 @@ export class TasksService {
       where.authorId = authorId;
     }
 
-    if (normalizedCategories && normalizedCategories.length > 0) {
+    if (categories && categories.length > 0) {
       where.categories = {
         some: {
-          category: {
-            in: normalizedCategories,
+          id: {
+            in: categories,
           },
         },
       };

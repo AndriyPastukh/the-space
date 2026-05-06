@@ -118,15 +118,7 @@ export class UsersService {
                   })),
                 }
               : undefined,
-            categories: categories
-              ? {
-                  set: [],
-                  connectOrCreate: categories.map((cat: string) => ({
-                    where: { category: cat },
-                    create: { category: cat },
-                  })),
-                }
-              : undefined,
+            categories: this.prepareCategoryIds(categories),
           },
         },
       },
@@ -166,6 +158,19 @@ export class UsersService {
       });
     }
   }
+
+  private prepareCategoryIds = (categoryIds?: number[]) => {
+    if (!Array.isArray(categoryIds)) return undefined;
+
+    const ids = [...new Set(categoryIds)]
+      .map(Number)
+      .filter((id) => Number.isInteger(id) && id > 0);
+
+    return {
+      set: [],
+      connect: ids.map((id) => ({ id })),
+    };
+  };
 
   async getById(id: number): Promise<any | null> {
     const user = await this.prisma.user.findUnique({
@@ -230,7 +235,10 @@ export class UsersService {
         skills: details.skills.map((s) => s.name),
         interests: details.interests.map((i) => i.name),
       },
-      categories: details.categories.map((c: any) => c.category),
+      categories: details.categories.map((c: any) => ({
+        id: c.id,
+        name: c.name,
+      })),
       stats: {
         rating: parseFloat(averageRating.toFixed(1)),
         level: details.currentLevel,

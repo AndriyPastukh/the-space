@@ -9,6 +9,7 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // видаляє зайві поля при отриманні запитів
+      transform: true,
     }),
   );
   await app.listen(process.env.PORT ?? 3000);
