@@ -121,9 +121,9 @@ export class UsersService {
             categories: categories
               ? {
                   set: [],
-                  connectOrCreate: categories.map((cat: string) => ({
-                    where: { category: cat },
-                    create: { category: cat },
+                  connectOrCreate: categories.map((name: string) => ({
+                    where: { name },
+                    create: { name },
                   })),
                 }
               : undefined,
@@ -230,7 +230,7 @@ export class UsersService {
         skills: details.skills.map((s) => s.name),
         interests: details.interests.map((i) => i.name),
       },
-      categories: details.categories.map((c: any) => c.category),
+      categories: details.categories.map((c: any) => c.name),
       stats: {
         rating: parseFloat(averageRating.toFixed(1)),
         level: details.currentLevel,

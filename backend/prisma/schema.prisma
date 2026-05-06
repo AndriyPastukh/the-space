@@ -61,9 +61,13 @@ model UserDetails {
 }
 
 model Category {
-  id          Int           @id @default(autoincrement())
-  category    String        @unique
-  userDetails UserDetails[]
+  id       Int    @id @default(autoincrement())
+  name     String @unique
+
+  userDetails       UserDetails[]
+  tasks             Task[]
+  knowledgeOffers   Knowledge[] @relation("KnowledgeOffers")
+  knowledgeRequests Knowledge[] @relation("KnowledgeRequests")
 }
 
 model SocialLink {
@@ -166,7 +170,7 @@ model Task {
   authorId    Int
   author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
-  categories  TaskCategory[]
+  categories Category[]
 
   deletedAt   DateTime?
   createdAt   DateTime   @default(now())
@@ -176,13 +180,6 @@ model Task {
   @@index([status])
   @@index([deletedAt])
   @@index([createdAt])
-}
-
-model TaskCategory {
-  id       Int    @id @default(autoincrement())
-  category String @unique
-
-  tasks    Task[]
 }
 
 model Knowledge {
@@ -195,18 +192,11 @@ model Knowledge {
   author             User       @relation(fields: [authorId], references: [id])
   deletedAt          DateTime?
 
-  offerCategories    KnowledgeCategory[] @relation("KnowledgeOffers")
-  requestCategories  KnowledgeCategory[] @relation("KnowledgeRequests")
+  offerCategories    Category[] @relation("KnowledgeOffers")
+  requestCategories  Category[] @relation("KnowledgeRequests")
 
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
-}
-
-model KnowledgeCategory {
-  id                String      @id @default(uuid())
-  name              String      @unique
-  knowledgeOffers   Knowledge[] @relation("KnowledgeOffers")
-  knowledgeRequests Knowledge[] @relation("KnowledgeRequests")
 }
 
 view UserStats {

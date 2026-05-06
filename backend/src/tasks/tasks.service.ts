@@ -52,9 +52,9 @@ export class TasksService {
 
     return {
       ...(replace ? { set: [] } : {}),
-      connectOrCreate: normalizedCategories.map((category) => ({
-        where: { category },
-        create: { category },
+      connectOrCreate: normalizedCategories.map((name) => ({
+        where: { name },
+        create: { name },
       })),
     };
   }
@@ -118,7 +118,7 @@ export class TasksService {
     if (normalizedCategories && normalizedCategories.length > 0) {
       where.categories = {
         some: {
-          category: {
+          name: {
             in: normalizedCategories,
           },
         },

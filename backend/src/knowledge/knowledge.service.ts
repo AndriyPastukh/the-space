@@ -1,4 +1,8 @@
-import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ForbiddenException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateKnowledgeDto } from './dto/create-knowledge.dto';
 import { UpdateKnowledgeDto } from './dto/update-knowledge.dto';
@@ -47,10 +51,23 @@ export class KnowledgeService {
     const where: any = { deletedAt: null };
 
     if (offerCat) {
-      where.offerCategories = { some: { id: { in: Array.isArray(offerCat) ? offerCat : [offerCat] } } };
+      where.offerCategories = {
+        some: {
+          name: {
+            in: offerCat,
+          },
+        },
+      };
     }
+
     if (requestCat) {
-      where.requestCategories = { some: { id: { in: Array.isArray(requestCat) ? requestCat : [requestCat] } } };
+      where.requestCategories = {
+        some: {
+          name: {
+            in: requestCat,
+          },
+        },
+      };
     }
 
     const [items, total] = await Promise.all([
@@ -115,7 +132,9 @@ export class KnowledgeService {
   async update(id: string, userId: number, dto: UpdateKnowledgeDto) {
     const item = await this.findOne(id);
     if (item.authorId !== userId) {
-      throw new ForbiddenException('You can only edit your own knowledge entries');
+      throw new ForbiddenException(
+        'You can only edit your own knowledge entries',
+      );
     }
 
     const { offerCategories, requestCategories, ...data } = dto;
@@ -127,7 +146,10 @@ export class KnowledgeService {
         offerCategories: offerCategories
           ? {
               set: [],
-              connect: offerCategories.map((id) => ({ id })),
+              connectOrCreate: offerCategories.map((name) => ({
+                where: { name },
+                create: { name },
+              })),
             }
           : undefined,
         requestCategories: requestCategories
@@ -147,7 +169,9 @@ export class KnowledgeService {
   async remove(id: string, userId: number) {
     const item = await this.findOne(id);
     if (item.authorId !== userId) {
-      throw new ForbiddenException('You can only delete your own knowledge entries');
+      throw new ForbiddenException(
+        'You can only delete your own knowledge entries',
+      );
     }
 
     return this.prisma.knowledge.update({

@@ -38,7 +38,7 @@ export class UsersController {
       ...userDetails,
       skillTags: userDetails.skills.map((s: any) => s.name),
       interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => c.category),
+      categories: userDetails.categories.map((c: any) => c.name),
       socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,
@@ -90,7 +90,7 @@ export class UsersController {
       ...userDetails,
       skillTags: userDetails.skills.map((s: any) => s.name),
       interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => c.category),
+      categories: userDetails.categories.map((c: any) => c.name),
       socialLinks: userDetails.socialLinks.map((sl: any) => ({
         platform: sl.platformName,
         url: sl.url,

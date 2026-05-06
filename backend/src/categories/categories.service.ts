@@ -6,16 +6,14 @@ export class CategoriesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async getCategories() {
-    const categories = await this.prisma.category.findMany({
+    return this.prisma.category.findMany({
       orderBy: {
-        category: 'asc',
+        name: 'asc',
       },
       select: {
         id: true,
-        category: true,
+        name: true,
       },
     });
-
-    return categories;
   }
 }
