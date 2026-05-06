@@ -23,7 +23,9 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
-    pib: "",
+    firstName:"",
+    middleName:"",
+    lastName:"",
     nick: "",
     email: "",
     pass: "",
@@ -53,7 +55,7 @@ export default function RegisterPage() {
 
     setError("");
 
-    if (!form.pib || !form.nick || !form.email || !form.pass) {
+    if (!form.firstName || !form.lastName || !form.nick || !form.email || !form.pass) {
       setError("Заповніть всі обов'язкові поля");
       return;
     }
@@ -74,9 +76,11 @@ export default function RegisterPage() {
     const registerResult = await register({
       email: form.email,
       password: form.pass,
-      pib: form.pib,
+      firstName:form.firstName,
+      middleName:form.middleName,
+      lastName:form.lastName,
       nickname: form.nick,
-      interests: selectedInterests,
+      categories: [1],
     });
 
     if (registerResult.success) {
@@ -106,15 +110,39 @@ export default function RegisterPage() {
 
           <div className="divider">або</div>
 
-          <div className="form-group">
-            <label className="form-label">ПІБ*</label>
+         <div className="form-group">
+            <label className="form-label">Ім'я*</label>
             <input
               className="form-input"
               type="text"
-              id="pib"
-              value={form.pib}
+              id="firstName"
+              value={form.firstName}
               onChange={handleInputChange}
-              placeholder="Прізвище Ім'я Побатькові"
+              placeholder="Ім'я"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Прізвище*</label>
+            <input
+              className="form-input"
+              type="text"
+              id="lastName"
+              value={form.lastName}
+              onChange={handleInputChange}
+              placeholder="Прізвище"
+            />
+          </div>
+
+         <div className="form-group">
+            <label className="form-label">Побатькові</label>
+            <input
+              className="form-input"
+              type="text"
+              id="middleName"
+              value={form.middleName}
+              onChange={handleInputChange}
+              placeholder="Побатькові"
             />
           </div>
 
