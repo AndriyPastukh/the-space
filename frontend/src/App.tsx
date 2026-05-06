@@ -13,6 +13,7 @@ import TermsPage from "./pages/TermsPage/TermsPage.tsx";
 import SearchPage from "./pages/SearchPage/SearchPage.tsx";
 import MyProfilePage from "./pages/MyProfilePage/MyProfilePage";
 import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
+import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreatedExperiencesPage";
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
 
 
@@ -33,6 +34,7 @@ function App() {
           <Route path="/search" element={<SearchPage />} />
           <Route path="/profile" element={<MyProfilePage />} />
           <Route path="/create-space" element={<CreateSpacePage />} />
+          <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
           <Route path="/search-space" element={<SearchSpacePage />} />
         </Routes>
         <Footer />
