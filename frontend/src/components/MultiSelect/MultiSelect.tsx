@@ -1,41 +1,61 @@
 import "./MultiSelect.css";
 
-// Дозволяємо передавати як масив рядків, так і масив будь-яких об'єктів
-interface MultiSelectProps {
-  options: any[];
-  selected: (string | number)[];
-  onChange: (selected: (string | number)[]) => void;
-  valueKey?: string; // ключ для ID (за замовчуванням шукатиме id або value)
-  labelKey?: string; // ключ для назви (за замовчуванням шукатиме name або label)
+type MultiSelectValue = string | number;
+
+type PrimitiveOption<TValue extends MultiSelectValue> = TValue;
+
+type ObjectOption<TValue extends MultiSelectValue> = {
+  [key: string]: unknown;
+} & {
+  id?: TValue;
+  value?: TValue;
+  name?: string;
+  label?: string;
+};
+
+type MultiSelectOption<TValue extends MultiSelectValue> =
+  | PrimitiveOption<TValue>
+  | ObjectOption<TValue>;
+
+interface MultiSelectProps<TValue extends MultiSelectValue> {
+  options: MultiSelectOption<TValue>[];
+  selected: TValue[];
+  onChange: (selected: TValue[]) => void;
+  valueKey?: string;
+  labelKey?: string;
   error?: string;
 }
 
-export default function MultiSelect({
+export default function MultiSelect<TValue extends MultiSelectValue>({
   options,
   selected,
   onChange,
   valueKey,
   labelKey,
   error,
-}: MultiSelectProps) {
-  
-  // Універсальна нормалізація опцій
+}: MultiSelectProps<TValue>) {
   const normalizedOptions = options.map((opt) => {
     if (typeof opt === "string" || typeof opt === "number") {
-      return { value: opt, label: String(opt) };
+      return {
+        value: opt,
+        label: String(opt),
+      };
     }
-    // Беремо значення по вказаному ключу, або шукаємо стандартні
+
+    const rawValue = valueKey ? opt[valueKey] : (opt.id ?? opt.value);
+    const rawLabel = labelKey ? opt[labelKey] : (opt.name ?? opt.label);
+
     return {
-      value: valueKey ? opt[valueKey] : (opt.id ?? opt.value),
-      label: labelKey ? opt[labelKey] : (opt.name ?? opt.label),
+      value: rawValue as TValue,
+      label: String(rawLabel ?? rawValue ?? ""),
     };
   });
 
-  const toggle = (value: string | number) => {
+  const toggle = (value: TValue) => {
     onChange(
       selected.includes(value)
         ? selected.filter((v) => v !== value)
-        : [...selected, value]
+        : [...selected, value],
     );
   };
 
@@ -47,7 +67,7 @@ export default function MultiSelect({
 
           return (
             <button
-              key={option.value}
+              key={String(option.value)}
               type="button"
               className={`chip ${isActive ? "chip--active" : ""}`}
               onClick={() => toggle(option.value)}
