@@ -2,34 +2,40 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import MultiSelect from "../../components/MultiSelect/MultiSelect";
-
-const INTERESTS = [
-  "web",
-  "mobile",
-  "gamedev",
-  "ui/ux design",
-  "QA/testing",
-  "Data Science",
-  "backend",
-  "DevOps",
-];
+import { getCategories, type Category } from "../../features/auth/categories/categoryApi";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { isAuthLoading, isAuth, register } = useAuth();
-
+  const [categories, setCategories] = useState<Category[]>([]);
+  
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<(string | number)[]>([]);
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
-    pib: "",
+    firstName:"",
+    middleName:"",
+    lastName:"",
     nick: "",
     email: "",
     pass: "",
     pass2: "",
     terms: false,
   });
+
+  useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const { data } = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Categories loading error:", error);
+    }
+  };
+
+  loadCategories();
+}, []);
 
   useEffect(() => {
     if (!isAuthLoading && isAuth && !isRegisterSubmitting) {
@@ -53,7 +59,7 @@ export default function RegisterPage() {
 
     setError("");
 
-    if (!form.pib || !form.nick || !form.email || !form.pass) {
+    if (!form.firstName || !form.lastName || !form.nick || !form.email || !form.pass) {
       setError("Заповніть всі обов'язкові поля");
       return;
     }
@@ -74,9 +80,11 @@ export default function RegisterPage() {
     const registerResult = await register({
       email: form.email,
       password: form.pass,
-      pib: form.pib,
+      firstName:form.firstName,
+      middleName:form.middleName,
+      lastName:form.lastName,
       nickname: form.nick,
-      interests: selectedInterests,
+      categories: selectedInterests,
     });
 
     if (registerResult.success) {
@@ -106,15 +114,39 @@ export default function RegisterPage() {
 
           <div className="divider">або</div>
 
-          <div className="form-group">
-            <label className="form-label">ПІБ*</label>
+         <div className="form-group">
+            <label className="form-label">Ім'я*</label>
             <input
               className="form-input"
               type="text"
-              id="pib"
-              value={form.pib}
+              id="firstName"
+              value={form.firstName}
               onChange={handleInputChange}
-              placeholder="Прізвище Ім'я Побатькові"
+              placeholder="Ім'я"
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Прізвище*</label>
+            <input
+              className="form-input"
+              type="text"
+              id="lastName"
+              value={form.lastName}
+              onChange={handleInputChange}
+              placeholder="Прізвище"
+            />
+          </div>
+
+         <div className="form-group">
+            <label className="form-label">Побатькові</label>
+            <input
+              className="form-input"
+              type="text"
+              id="middleName"
+              value={form.middleName}
+              onChange={handleInputChange}
+              placeholder="Побатькові"
             />
           </div>
 
@@ -145,7 +177,7 @@ export default function RegisterPage() {
           <div className="form-group">
             <label className="form-label">Сфери інтересів</label>
             <MultiSelect
-              options={INTERESTS}
+              options={categories}
               selected={selectedInterests}
               onChange={setSelectedInterests}
             />

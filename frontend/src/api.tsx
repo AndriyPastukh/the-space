@@ -5,91 +5,82 @@ const api = axios.create({
 });
 
 api.interceptors.request.use((config) => {
-  const tokens = localStorage.getItem("tokens");
-  if (tokens) {
+  const tokensString = localStorage.getItem("tokens");
+  if (tokensString) {
     try {
-      const parsed = JSON.parse(tokens);
-      if (parsed?.accessToken) {
-        config.headers.Authorization = `Bearer ${parsed.accessToken}`;
+      const { accessToken } = JSON.parse(tokensString);
+      if (accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
       }
     } catch (e) {
       localStorage.removeItem("tokens");
     }
   }
-
   return config;
 });
 
 let isRefreshing = false;
-let failedQueue: {
-  resolve: (token: string) => void;
-  reject: (error: any) => void;
-}[] = [];
-
-const processQueue = (error: any | null, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      if (token) prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-};
+let failedQueue: { resolve: any; reject: any; config: any }[] = [];
 
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
 
-    if (!originalRequest) return Promise.reject(error);
+    if (!originalRequest || !error.response) {
+      return Promise.reject(error);
+    }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
-      if (isRefreshing) {
-        return new Promise<string>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            originalRequest.headers.Authorization = `Bearer ${token}`;
-            return api(originalRequest);
-          })
-          .catch((err) => Promise.reject(err));
-      }
+    if (
+      originalRequest.url?.includes("/login") ||
+      originalRequest.url?.includes("/auth/refresh")
+    ) {
+      return Promise.reject(error);
+    }
 
-      originalRequest._retry = true;
-      isRefreshing = true;
+    if (error.response.status === 401 && !originalRequest._retry) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        originalRequest._retry = true;
 
-      return new Promise(async (resolve, reject) => {
         try {
           const tokensString = localStorage.getItem("tokens");
           if (!tokensString) throw new Error("No tokens");
 
           const { refreshToken } = JSON.parse(tokensString);
 
-          const { data } = await axios.post<{
-            accessToken: string;
-            refreshToken: string;
-          }>("http://localhost:3000/auth/refresh", { refreshToken });
+          const { data } = await axios.post(
+            "http://localhost:3000/auth/refresh",
+            { refreshToken },
+          );
 
-          const { accessToken } = data;
           localStorage.setItem("tokens", JSON.stringify(data));
 
-          // оновлюємо загальний заголовок
           api.defaults.headers.common["Authorization"] =
-            `Bearer ${accessToken}`;
-          // оновлюємо заголовок поточного запиту
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+            `Bearer ${data.accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
 
-          processQueue(null, accessToken);
-          resolve(api(originalRequest));
+          failedQueue.forEach(({ config, resolve, reject }) => {
+            config.headers.Authorization = `Bearer ${data.accessToken}`;
+            api.request(config).then(resolve).catch(reject);
+          });
+          failedQueue = [];
+
+          return api(originalRequest);
         } catch (refreshError) {
-          processQueue(refreshError, null);
+          failedQueue.forEach(({ reject }) => reject(refreshError));
+          failedQueue = [];
+
           localStorage.removeItem("tokens");
           window.location.href = "/login";
-          reject(refreshError);
+          return Promise.reject(refreshError);
         } finally {
           isRefreshing = false;
         }
+      }
+
+      return new Promise((resolve, reject) => {
+        failedQueue.push({ config: originalRequest, resolve, reject });
       });
     }
 
