@@ -31,7 +31,7 @@ function App() {
           <Route path="/tasks/:id" element={<TaskDetails />} />
           <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/*" element={<NotFoundPage />} />
-          <Route path="/search" element={<SearchPage />} />
+          <Route path="/search-experience" element={<SearchPage />} />
           <Route path="/profile" element={<MyProfilePage />} />
           <Route path="/create-space" element={<CreateSpacePage />} />
           <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
