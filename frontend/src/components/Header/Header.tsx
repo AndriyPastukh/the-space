@@ -2,6 +2,7 @@ import "./Header.css"
 import "../../pages/MainPage/MainPage.css"
 import { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { Link } from "react-router-dom";
 
 export const Header = () => {
     
@@ -28,9 +29,9 @@ export const Header = () => {
     return (
         <>
             <nav className="navbar">
-                <a href="/" className="navbar-logo">
+                <Link to="/" className="navbar-logo">
                     the space
-                </a>
+                </Link>
 
                 <div className="nav-links">
                     <div className="nav-dropdown">
@@ -38,12 +39,12 @@ export const Header = () => {
                             Завдання <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <a href="/search" className="dropdown-item">
+                            <Link to="/search" className="dropdown-item">
                                 Знайти завдання
-                            </a>
-                            <a href="/create-experience?type=task" className="dropdown-item">
+                            </Link>
+                            <Link to="/create-experience?type=task" className="dropdown-item">
                                 Створити завдання
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     <div className="nav-dropdown">
@@ -51,12 +52,12 @@ export const Header = () => {
                             Знання <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <a href="/search?type=knowledge" className="dropdown-item">
+                            <Link to="/search?type=knowledge" className="dropdown-item">
                                 Знайти знання
-                            </a>
-                            <a href="/create-experience?type=knowledge" className="dropdown-item">
+                            </Link>
+                            <Link to="/create-experience?type=knowledge" className="dropdown-item">
                                 Запропонувати обмін
-                            </a>
+                            </Link>
                         </div>
                     </div>
                     <div className="nav-dropdown">
@@ -64,15 +65,15 @@ export const Header = () => {
                             Простір <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <a href="/space" className="dropdown-item">
+                            <Link to="/space" className="dropdown-item">
                                 Люди
-                            </a>
-                            <a href="/space?tab=community" className="dropdown-item">
+                            </Link>
+                            <Link to="/space?tab=community" className="dropdown-item">
                                 Спільноти
-                            </a>
-                            <a href="/space?tab=team" className="dropdown-item">
+                            </Link>
+                            <Link to="/space?tab=team" className="dropdown-item">
                                 Команди
-                            </a>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -85,9 +86,9 @@ export const Header = () => {
                                 <span>{user.email}</span>
                             </button>
                             <div className="dropdown-menu">
-                                <a href="/profile" className="dropdown-item">
+                                <Link to="/profile" className="dropdown-item">
                                     Мій кабінет
-                                </a>
+                                </Link>
                                 <div className="dropdown-divider"></div>
                                 <button
                                     onClick={() => logout()}
@@ -99,12 +100,12 @@ export const Header = () => {
                         </div>
                     ) : (
                         <>
-                            <a href="/login" className="btn btn-ghost">
+                            <Link to="/login" className="btn btn-ghost">
                                 Увійти
-                            </a>
-                            <a href="/register" className="btn btn-primary">
+                            </Link>
+                            <Link to="/register" className="btn btn-primary">
                                 Реєстрація
-                            </a>
+                            </Link>
                         </>
                     )}
                 </div>
@@ -123,24 +124,24 @@ export const Header = () => {
             {/* Мобільне меню */}
             <div className={`mobile-nav ${isMobileMenuOpen ? "open" : ""}`}>
                 <div className="mobile-nav-group-label">Навігація</div>
-                <a href="/search" className="mobile-nav-link">
+                <Link to="/search" className="mobile-nav-link">
                     Завдання
-                </a>
-                <a href="/search?type=knowledge" className="mobile-nav-link">
+                </Link>
+                <Link to="/search?type=knowledge" className="mobile-nav-link">
                     Знання
-                </a>
-                <a href="/space" className="mobile-nav-link">
+                </Link>
+                <Link to="/space" className="mobile-nav-link">
                     Простір
-                </a>
+                </Link>
 
                 <div className="mobile-nav-divider"></div>
 
                 <div className="mobile-nav-auth">
                     {isAuth ? (
                         <>
-                            <a href="/profile" className="mobile-nav-link">
+                            <Link to="/profile" className="mobile-nav-link">
                                 Мій кабінет
-                            </a>
+                            </Link>
                             <button
                                 onClick={() => logout()}
                                 className="mobile-nav-link danger"
@@ -156,12 +157,12 @@ export const Header = () => {
                         </>
                     ) : (
                         <>
-                            <a href="/login" className="mobile-nav-link">
+                            <Link to="/login" className="mobile-nav-link">
                                 Увійти
-                            </a>
-                            <a href="/register" className="btn btn-primary btn-block">
+                            </Link>
+                            <Link to="/register" className="btn btn-primary btn-block">
                                 Реєстрація
-                            </a>
+                            </Link>
                         </>
                     )}
                 </div>
