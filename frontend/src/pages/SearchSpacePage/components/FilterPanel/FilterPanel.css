@@ -1,0 +1,131 @@
+.filter-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.filter-panel__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.filter-panel__title {
+    font-family: var(--font-head);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.filter-panel__reset {
+    font-size: 12px;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    transition: color 0.15s;
+}
+
+.filter-panel__reset:hover {
+    color: #f87171;
+}
+
+/* Tabs */
+.filter-tabs {
+    display: flex;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    padding: 3px;
+    gap: 3px;
+}
+
+.filter-tab {
+    flex: 1;
+    padding: 7px;
+    border-radius: var(--radius-pill);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.filter-tab:hover { color: var(--text); }
+
+.filter-tab--active {
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    color: #fff;
+    font-weight: 600;
+}
+
+/* Checkbox */
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--purple);
+    cursor: pointer;
+}
+
+/* Section */
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.filter-section__label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+/* Chips */
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-chip {
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--tag-border);
+    background: var(--tag-bg);
+    color: var(--purple-lt);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.filter-chip:hover {
+    background: rgba(124, 58, 237, 0.3);
+    color: #fff;
+}
+
+.filter-chip--active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: #fff;
+}

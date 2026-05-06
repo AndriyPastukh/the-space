@@ -1,0 +1,199 @@
+.search-space-page {
+    padding: 36px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.search-space-title {
+    font-family: var(--font-head);
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+}
+
+/* Search bar row */
+.search-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.filter-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 14px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.filter-toggle-btn:hover,
+.filter-toggle-btn--active {
+    border-color: var(--purple-lt);
+    color: var(--purple-lt);
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.search-input-wrap {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 15px;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 10px 36px 10px 40px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: var(--font-body);
+    transition: border-color 0.2s;
+    outline: none;
+}
+
+.search-input:focus { border-color: var(--purple); }
+.search-input::placeholder { color: var(--text-muted); }
+
+.search-clear {
+    position: absolute;
+    right: 12px;
+    color: var(--text-muted);
+    font-size: 20px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.search-clear:hover { color: var(--text); }
+
+/* Sort */
+.sort-wrap {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.sort-btn {
+    padding: 10px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-family: var(--font-body);
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.sort-btn:hover {
+    border-color: var(--purple-lt);
+    color: var(--purple-lt);
+}
+
+.sort-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 6px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 10;
+    min-width: 220px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.sort-option {
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.12s;
+}
+
+.sort-option:hover {
+    background: rgba(124, 58, 237, 0.15);
+    color: var(--text);
+}
+
+.sort-option--active {
+    color: var(--purple-lt);
+    background: rgba(124, 58, 237, 0.1);
+}
+
+/* Layout */
+.search-layout {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.search-layout--with-sidebar .search-sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 80px;
+}
+
+.search-results {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 16px;
+}
+
+/* Empty */
+.search-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 80px 20px;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.search-empty p {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+}
+
+@media (max-width: 768px) {
+    .search-space-page { padding: 20px; }
+    .search-results { grid-template-columns: 1fr; }
+    .sort-btn { font-size: 12px; padding: 10px 10px; }
+}

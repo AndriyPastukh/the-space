@@ -1,0 +1,83 @@
+.person-card {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.person-card__header {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+}
+
+.person-card__avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface2);
+}
+
+.person-card__info {
+    flex: 1;
+    min-width: 0;
+}
+
+.person-card__name-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+}
+
+.person-card__name {
+    font-family: var(--font-head);
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.person-card__rating {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f59e0b;
+}
+
+.person-card__bio {
+    font-size: 13px;
+    color: var(--text-muted);
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.person-card__tags {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.person-card__tag-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.tag--interest {
+    background: rgba(192, 38, 211, 0.15);
+    border-color: rgba(192, 38, 211, 0.3);
+    color: #e879f9;
+}
+
+.person-card__footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 4px;
+}
