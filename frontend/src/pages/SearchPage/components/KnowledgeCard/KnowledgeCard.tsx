@@ -47,7 +47,7 @@ export default function KnowledgeCard({
         new Date(iso).toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
 
     return (
-        <div className="knowledge-card" onClick={() => navigate(`/knowledge/${id}`)}>
+        <div className="knowledge-card" onClick={() => navigate(`/knowledges/${id}`)}>
             <div className="card-header">
                 <div className="card-author">
                     <img

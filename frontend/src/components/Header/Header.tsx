@@ -39,7 +39,7 @@ export const Header = () => {
                             Завдання <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <Link to="/search" className="dropdown-item">
+                            <Link to="/search-experience?type=task" className="dropdown-item">
                                 Знайти завдання
                             </Link>
                             <Link to="/create-experience?type=task" className="dropdown-item">
@@ -52,7 +52,7 @@ export const Header = () => {
                             Знання <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <Link to="/search?type=knowledge" className="dropdown-item">
+                            <Link to="/search-experience?type=knowledge" className="dropdown-item">
                                 Знайти знання
                             </Link>
                             <Link to="/create-experience?type=knowledge" className="dropdown-item">
@@ -65,13 +65,13 @@ export const Header = () => {
                             Простір <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <Link to="/space" className="dropdown-item">
+                            <Link to="/search-space" className="dropdown-item">
                                 Люди
                             </Link>
-                            <Link to="/space?tab=community" className="dropdown-item">
+                            <Link to="/search-space" className="dropdown-item">
                                 Спільноти
                             </Link>
-                            <Link to="/space?tab=team" className="dropdown-item">
+                            <Link to="/search-space" className="dropdown-item">
                                 Команди
                             </Link>
                         </div>
@@ -124,13 +124,13 @@ export const Header = () => {
             {/* Мобільне меню */}
             <div className={`mobile-nav ${isMobileMenuOpen ? "open" : ""}`}>
                 <div className="mobile-nav-group-label">Навігація</div>
-                <Link to="/search" className="mobile-nav-link">
+                <Link to="/search-experience?type=task" className="mobile-nav-link">
                     Завдання
                 </Link>
-                <Link to="/search?type=knowledge" className="mobile-nav-link">
+                <Link to="/search-experience?type=knowledge" className="mobile-nav-link">
                     Знання
                 </Link>
-                <Link to="/space" className="mobile-nav-link">
+                <Link to="/search-space" className="mobile-nav-link">
                     Простір
                 </Link>
 

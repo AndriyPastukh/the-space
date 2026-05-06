@@ -97,7 +97,7 @@ export function MainPage() {
                             Кожне успішне завдання автоматично поповнює твоє портфоліо.
                             Будуй репутацію через реальну роботу, а не просто резюме.
                         </p>
-                        <Link to="search.html" className="btn btn-outline">
+                        <Link to="/search-experience?type=task" className="btn btn-outline">
                             Знайти завдання
                         </Link>
                     </div>
@@ -115,7 +115,7 @@ export function MainPage() {
                             Вчися на практиці та допомагай вчитися іншим. Система обміну
                             досвідом об'єднує людей з різних напрямків.
                         </p>
-                        <Link to="search.html?type=knowledge" className="btn btn-outline">
+                        <Link to="/search-experience?type=knowledge" className="btn btn-outline">
                             Обмінятися досвідом
                         </Link>
                     </div>
@@ -187,7 +187,7 @@ export function MainPage() {
                             Розвивайся серед тих, хто теж починає свій шлях. Разом легше
                             вчитись, знаходити проєкти і рости.
                         </p>
-                        <Link to="space.html" className="btn btn-outline">
+                        <Link to="/search-space" className="btn btn-outline">
                             Знайти простір
                         </Link>
                     </div>
