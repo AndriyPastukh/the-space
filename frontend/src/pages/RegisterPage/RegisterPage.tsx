@@ -2,24 +2,15 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import MultiSelect from "../../components/MultiSelect/MultiSelect";
-
-const INTERESTS = [
-  "web",
-  "mobile",
-  "gamedev",
-  "ui/ux design",
-  "QA/testing",
-  "Data Science",
-  "backend",
-  "DevOps",
-];
+import { getCategories, type Category } from "../../features/auth/categories/categoryApi";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
   const { isAuthLoading, isAuth, register } = useAuth();
-
+  const [categories, setCategories] = useState<Category[]>([]);
+  
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedInterests, setSelectedInterests] = useState<(string | number)[]>([]);
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
@@ -32,6 +23,19 @@ export default function RegisterPage() {
     pass2: "",
     terms: false,
   });
+
+  useEffect(() => {
+  const loadCategories = async () => {
+    try {
+      const { data } = await getCategories();
+      setCategories(data);
+    } catch (error) {
+      console.error("Categories loading error:", error);
+    }
+  };
+
+  loadCategories();
+}, []);
 
   useEffect(() => {
     if (!isAuthLoading && isAuth && !isRegisterSubmitting) {
@@ -80,7 +84,7 @@ export default function RegisterPage() {
       middleName:form.middleName,
       lastName:form.lastName,
       nickname: form.nick,
-      categories: [1],
+      categories: selectedInterests,
     });
 
     if (registerResult.success) {
@@ -173,7 +177,7 @@ export default function RegisterPage() {
           <div className="form-group">
             <label className="form-label">Сфери інтересів</label>
             <MultiSelect
-              options={INTERESTS}
+              options={categories}
               selected={selectedInterests}
               onChange={setSelectedInterests}
             />
