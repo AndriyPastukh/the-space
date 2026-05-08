@@ -2,6 +2,7 @@ import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
+import type { Category } from '../../../../features/categories/categoryApi';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 
@@ -9,7 +10,7 @@ const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).le
 
 interface TaskFormState {
     title: string;
-    categories: string[];
+    categories: number[];
     description: string;
     deadline: string;
     urls: string[];
@@ -20,9 +21,10 @@ interface TaskFormProps {
     formState: TaskFormState;
     onChange: (state: TaskFormState) => void;
     onClear: () => void;
+    categories: Category[];
 }
 
-export default function TaskForm({ formState, onChange, onClear }: TaskFormProps) {
+export default function TaskForm({ formState, onChange, onClear, categories }: TaskFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof TaskFormState, string>>>({});
 
     const update = (field: keyof TaskFormState, value: any) => {
@@ -93,7 +95,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
                     Категорія <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={CATEGORIES}
+                    options={categories}
                     selected={formState.categories}
                     onChange={val => update('categories', val)}
                     error={errors.categories}

@@ -5,6 +5,7 @@ import KnowledgeForm from './components/KnowledgeForm/KnowledgeForm';
 import type { TaskFormState } from './components/TaskForm/TaskForm';
 import type { KnowledgeFormState } from './components/KnowledgeForm/KnowledgeForm';
 import './CreateExperiencePage.css';
+import { useCategories } from '../../hooks/useCategories';
 
 type Tab = 'task' | 'knowledge';
 
@@ -35,6 +36,8 @@ export default function CreateExperiencePage() {
     const [taskForm, setTaskForm] = useState<TaskFormState>(initialTaskState);
     const [knowledgeForm, setKnowledgeForm] = useState<KnowledgeFormState>(initialKnowledgeState);
 
+    const {categories} = useCategories();
+
     return (
         <div className="form-page">
             <div className="form-container">
@@ -60,12 +63,14 @@ export default function CreateExperiencePage() {
                     <TaskForm
                         formState={taskForm}
                         onChange={setTaskForm}
+                        categories={categories}
                         onClear={() => setTaskForm(initialTaskState)}
                     />
                 ) : (
                     <KnowledgeForm
                         formState={knowledgeForm}
                         onChange={setKnowledgeForm}
+                        categories={categories}
                         onClear={() => setKnowledgeForm(initialKnowledgeState)}
                     />
                 )}

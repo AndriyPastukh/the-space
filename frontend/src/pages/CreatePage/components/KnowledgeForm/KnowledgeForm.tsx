@@ -2,15 +2,16 @@ import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
+import type { Category } from '../../../../features/categories/categoryApi';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 interface KnowledgeFormState {
-    offerCategories: string[];
+    offerCategories: number[];
     offerDescription: string;
-    wantCategories: string[];
+    wantCategories: number[];
     wantDescription: string;
     deadline: string;
     urls: string[];
@@ -21,9 +22,10 @@ interface KnowledgeFormProps {
     formState: KnowledgeFormState;
     onChange: (state: KnowledgeFormState) => void;
     onClear: () => void;
+    categories: Category[];
 }
 
-export default function KnowledgeForm({ formState, onChange, onClear }: KnowledgeFormProps) {
+export default function KnowledgeForm({ formState, onChange, onClear,categories }: KnowledgeFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof KnowledgeFormState, string>>>({});
 
     const update = (field: keyof KnowledgeFormState, value: any) => {
@@ -77,7 +79,7 @@ export default function KnowledgeForm({ formState, onChange, onClear }: Knowledg
                     Категорія — що пропонуєш <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={CATEGORIES}
+                    options={categories}
                     selected={formState.offerCategories}
                     onChange={val => update('offerCategories', val)}
                     error={errors.offerCategories}
@@ -106,7 +108,7 @@ export default function KnowledgeForm({ formState, onChange, onClear }: Knowledg
                     Категорія — що хочеш отримати <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={CATEGORIES}
+                    options={categories}
                     selected={formState.wantCategories}
                     onChange={val => update('wantCategories', val)}
                     error={errors.wantCategories}
