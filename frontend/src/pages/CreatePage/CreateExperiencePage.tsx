@@ -21,8 +21,8 @@ const initialTaskState: TaskFormState = {
 const initialKnowledgeState: KnowledgeFormState = {
     offerCategories: [],
     offerDescription: '',
-    wantCategories: [],
-    wantDescription: '',
+    requestCategories: [],
+    requestDescription: '',
     deadline: '',
     urls: [],
     files: [],

@@ -3,6 +3,7 @@ import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
 import type { Category } from '../../../../features/categories/categoryApi';
+import { createKnowledge } from '../../../../features/knowledges/knowledgeApi';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 
@@ -11,8 +12,8 @@ const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).le
 interface KnowledgeFormState {
     offerCategories: number[];
     offerDescription: string;
-    wantCategories: number[];
-    wantDescription: string;
+    requestCategories: number[];
+    requestDescription: string;
     deadline: string;
     urls: string[];
     files: File[];
@@ -44,13 +45,13 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories 
         else if (countWords(formState.offerDescription) > 300)
             newErrors.offerDescription = 'Максимум 300 слів';
 
-        if (formState.wantCategories.length === 0)
-            newErrors.wantCategories = 'Оберіть хоча б одну категорію';
+        if (formState.requestCategories.length === 0)
+            newErrors.requestCategories = 'Оберіть хоча б одну категорію';
 
-        if (!formState.wantDescription.trim())
-            newErrors.wantDescription = 'Опис обовʼязковий';
-        else if (countWords(formState.wantDescription) > 300)
-            newErrors.wantDescription = 'Максимум 300 слів';
+        if (!formState.requestDescription.trim())
+            newErrors.requestDescription = 'Опис обовʼязковий';
+        else if (countWords(formState.requestDescription) > 300)
+            newErrors.requestDescription = 'Максимум 300 слів';
 
         if (!formState.deadline)
             newErrors.deadline = 'Дедлайн обовʼязковий';
@@ -61,15 +62,16 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories 
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
         console.log('Knowledge form data:', formState);
-        // createKnowledge(formState);
+        const result = await createKnowledge(formState);
+        console.log(result);
     };
 
     const offerDescWords = countWords(formState.offerDescription);
-    const wantDescWords = countWords(formState.wantDescription);
+    const wantDescWords = countWords(formState.requestDescription);
 
     return (
         <form className="form-box form-stack" onSubmit={handleSubmit}>
@@ -109,9 +111,9 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories 
                 </label>
                 <MultiSelect
                     options={categories}
-                    selected={formState.wantCategories}
-                    onChange={val => update('wantCategories', val)}
-                    error={errors.wantCategories}
+                    selected={formState.requestCategories}
+                    onChange={val => update('requestCategories', val)}
+                    error={errors.requestCategories}
                 />
             </div>
 
@@ -122,13 +124,13 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories 
                     <span className="word-count">{wantDescWords}/300</span>
                 </label>
                 <textarea
-                    className={`form-input form-textarea ${errors.wantDescription ? 'form-input--error' : ''}`}
-                    value={formState.wantDescription}
-                    onChange={e => update('wantDescription', e.target.value)}
+                    className={`form-input form-textarea ${errors.requestDescription ? 'form-input--error' : ''}`}
+                    value={formState.requestDescription}
+                    onChange={e => update('requestDescription', e.target.value)}
                     placeholder="Що ти хочеш отримати взамін..."
                     rows={4}
                 />
-                {errors.wantDescription && <span className="field-error">{errors.wantDescription}</span>}
+                {errors.requestDescription && <span className="field-error">{errors.requestDescription}</span>}
             </div>
 
             {/* Deadline */}

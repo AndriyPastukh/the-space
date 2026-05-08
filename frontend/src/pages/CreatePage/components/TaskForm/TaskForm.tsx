@@ -3,6 +3,7 @@ import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
 import type { Category } from '../../../../features/categories/categoryApi';
+import { createTask } from '../../../../features/tasks/taskApi';
 
 const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 
@@ -61,11 +62,12 @@ export default function TaskForm({ formState, onChange, onClear, categories }: T
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
         console.log('Task form data:', formState);
-        // createTask(formState);
+        const result = await createTask(formState);
+        console.log(result);
     };
 
     const titleWords = countWords(formState.title);
