@@ -28,7 +28,7 @@ export default function SpaceCard({
     const hiddenCount = categories.length - MAX_TAGS;
 
     return (
-        <div className="space-card card" onClick={() => navigate(type === 'COMMUNITY' ? `/community/${slug}` : `/teams/${slug}`)}>
+        <div className="space-card card" onClick={() => navigate(type === 'COMMUNITY' ? `/communities/${slug}` : `/teams/${slug}`)}>
             <div className="space-card__header">
                 <img src={getAvatar(avatarUrl, name)} alt={name} className="space-card__avatar" />
                 <div className="space-card__info">
@@ -53,7 +53,7 @@ export default function SpaceCard({
             <div className="space-card__footer">
                 <button
                     className="btn btn-primary btn-sm"
-                    onClick={e => { e.stopPropagation(); navigate(type === 'COMMUNITY' ? `/community/${slug}` : `/teams/${slug}`); }}
+                    onClick={e => { e.stopPropagation(); navigate(type === 'COMMUNITY' ? `/communities/${slug}` : `/teams/${slug}`); }}
                 >
                     Приєднатись
                 </button>
