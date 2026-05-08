@@ -49,9 +49,6 @@ const TeamDetailsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-              <div className="td-header-actions">
-                <button className="btn btn-saved">📌 Зберегти</button>
-              </div>
             </div>
 
             <div className="card-divider mt-16 mb-24"></div>

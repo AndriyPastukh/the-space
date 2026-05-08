@@ -22,7 +22,6 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Header />
-        <main className="content">
           <Routes>
             <Route path="/" element={<MainPage />} />
             <Route path="/login" element={<LoginPage />} />
@@ -39,7 +38,6 @@ function App() {
             <Route path="/search-space" element={<SearchSpacePage />} />
             <Route path="/*" element={<NotFoundPage />} />
           </Routes>
-        </main>
         <Footer />
       </div>
     </BrowserRouter>
