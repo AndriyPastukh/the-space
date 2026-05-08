@@ -4,7 +4,7 @@ import TaskForm from './components/TaskForm/TaskForm';
 import KnowledgeForm from './components/KnowledgeForm/KnowledgeForm';
 import type { TaskFormState } from './components/TaskForm/TaskForm';
 import type { KnowledgeFormState } from './components/KnowledgeForm/KnowledgeForm';
-import './CreatePage.css';
+import './CreateExperiencePage.css';
 
 type Tab = 'task' | 'knowledge';
 
@@ -27,7 +27,7 @@ const initialKnowledgeState: KnowledgeFormState = {
     files: [],
 };
 
-export default function CreatePage() {
+export default function CreateExperiencePage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const typeParam = searchParams.get("type");
     const activeTab: Tab = typeParam === "knowledge" ? "knowledge" : "task";
