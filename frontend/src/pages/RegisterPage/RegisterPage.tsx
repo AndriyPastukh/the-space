@@ -2,7 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import MultiSelect from "../../components/MultiSelect/MultiSelect";
-import { getCategories, type Category } from "../../features/auth/categories/categoryApi";
+import { getCategories, type Category } from "../../features/categories/categoryApi";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
