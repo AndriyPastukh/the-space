@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import "./TeamDetailsPage.css";
 
-// Типізація
 interface TeamMember {
   id: number;
   name: string;
@@ -14,7 +13,6 @@ const TeamDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const [joinStatus, setJoinStatus] = useState<'guest' | 'pending' | 'member'>('guest');
 
-  // Дані команди
   const team = {
     name: "Gamers",
     memberCount: 20,
@@ -35,25 +33,19 @@ const TeamDetailsPage: React.FC = () => {
     { id: 4, name: "Дмитро Л.", avatar: "https://via.placeholder.com/40", role: 'Member' },
   ];
 
-  const handleJoin = () => setJoinStatus('pending');
-
   return (
     <div className="task-details-page">
       <div className="td-layout">
-        
-        {/* ЛІВА ПАНЕЛЬ */}
+
         <div className="td-main">
-          {/* Картка інформації */}
-          <div className="card mb-24">
+          <div className="card main-card">
             <div className="td-header">
-              <div className="td-title-block">
-                <div className="team-header-flex">
-                  <div className="team-avatar-square">G</div>
-                  <div>
-                    <h2 className="td-title">{team.name}</h2>
-                    <div className="team-stats-row">
-                      <span className="text-sm-muted">{team.memberCount} учасників</span>
-                    </div>
+              <div className="team-header-flex">
+                <div className="team-avatar-square">G</div>
+                <div>
+                  <h2 className="td-title">{team.name}</h2>
+                  <div className="team-stats-row">
+                    <span className="text-sm-muted">{team.memberCount} учасників</span>
                   </div>
                 </div>
               </div>
@@ -87,17 +79,17 @@ const TeamDetailsPage: React.FC = () => {
                   ))}
                 </div>
               </section>
-              <p className="text-sm-muted mt-24 fs-12">Дата створення: {team.createdAt}</p>
+              <p className="text-sm-muted mt-auto pt-24 fs-12">Дата створення: {team.createdAt}</p>
             </div>
           </div>
         </div>
 
         {/* ПРАВА ПАНЕЛЬ */}
         <aside className="td-sidebar-wrap">
-          <div className="card td-sidebar">
+          <div className="card sidebar-card">
             <div className="sidebar-actions">
               {joinStatus === 'guest' && (
-                <button className="btn btn-primary btn-block" onClick={handleJoin}>Доєднатися</button>
+                <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>Доєднатися</button>
               )}
               {joinStatus === 'pending' && (
                 <button className="btn btn-secondary btn-block" disabled>Запит надіслано</button>
@@ -107,7 +99,7 @@ const TeamDetailsPage: React.FC = () => {
 
             <div className="card-divider my-24"></div>
 
-            <div className="td-owner">
+            <div className="td-roster">
               <h3 className="td-sidebar-heading mb-12">Склад команди</h3>
               {['Admin', 'Helper', 'Member'].map(role => (
                 <div key={role} className="roster-group mb-12">
@@ -122,7 +114,7 @@ const TeamDetailsPage: React.FC = () => {
               ))}
             </div>
 
-            <div className="card-divider my-24"></div>
+            <div className="card-divider mt-auto my-24"></div>
 
             <div className="td-stats">
               <h3 className="td-sidebar-heading mb-12">Статистика</h3>

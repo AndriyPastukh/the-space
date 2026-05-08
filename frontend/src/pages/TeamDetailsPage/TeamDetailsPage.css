@@ -61,7 +61,6 @@
   display: block;
 }
 
-/* Адаптивність для мобілок */
 @media (max-width: 768px) {
   .td-layout {
     display: flex;
