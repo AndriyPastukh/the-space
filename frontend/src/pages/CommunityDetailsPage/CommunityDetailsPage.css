@@ -2,10 +2,8 @@
 
 .task-details-page {
   padding: 60px 20px;
-  min-height: 100vh;
   display: flex;
   justify-content: center;
-  background-color: #0f0817;
 }
 
 .td-layout {
