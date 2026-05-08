@@ -15,28 +15,31 @@ import MyProfilePage from "./pages/MyProfilePage/MyProfilePage";
 import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
 import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreatedExperiencesPage";
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
-
+import TeamDetailsPage from "./pages/TeamDetailsPage/TeamDetailsPage.tsx"; 
 
 function App() {
   return (
     <BrowserRouter>
       <div className="App">
         <Header />
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/create-experience" element={<CreatePage />} />
-          <Route path="/tasks/:id" element={<TaskDetails />} />
-          <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
-          <Route path="/*" element={<NotFoundPage />} />
-          <Route path="/search-experience" element={<SearchPage />} />
-          <Route path="/profile" element={<MyProfilePage />} />
-          <Route path="/create-space" element={<CreateSpacePage />} />
-          <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
-          <Route path="/search-space" element={<SearchSpacePage />} />
-        </Routes>
+        <main className="content">
+          <Routes>
+            <Route path="/" element={<MainPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/create-experience" element={<CreatePage />} />
+            <Route path="/tasks/:id" element={<TaskDetails />} />
+            <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
+            <Route path="/teams/:id" element={<TeamDetailsPage />} />
+            <Route path="/search-experience" element={<SearchPage />} />
+            <Route path="/profile" element={<MyProfilePage />} />
+            <Route path="/create-space" element={<CreateSpacePage />} />
+            <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
+            <Route path="/search-space" element={<SearchSpacePage />} />
+            <Route path="/*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
         <Footer />
       </div>
     </BrowserRouter>
