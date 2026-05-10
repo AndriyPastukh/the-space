@@ -31,10 +31,12 @@ export class KnowledgeController {
     @Query('limit') limit?: number,
     @Query('offerCategoryId') offerCategoryId?: string | string[],
     @Query('requestCategoryId') requestCategoryId?: string | string[],
+    @Query('search') search?: string,
   ) {
     return this.knowledgeService.findAll({
       page,
       limit,
+      search,
       offerCat: Array.isArray(offerCategoryId)
         ? offerCategoryId.map(Number)
         : offerCategoryId

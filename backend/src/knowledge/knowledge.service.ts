@@ -36,14 +36,34 @@ export class KnowledgeService {
   async findAll(query: {
     page?: number;
     limit?: number;
+    search?: string;
     offerCat?: number[];
     requestCat?: number[];
   }) {
-    const { page = 1, limit = 10, offerCat, requestCat } = query;
+    const { page = 1, limit = 10, search, offerCat, requestCat } = query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
     const where: any = { deletedAt: null };
+
+    const normalizedSearch = search?.trim();
+
+    if (normalizedSearch) {
+      where.OR = [
+        {
+          offerDescription: {
+            contains: normalizedSearch,
+            mode: 'insensitive',
+          },
+        },
+        {
+          requestDescription: {
+            contains: normalizedSearch,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
 
     if (offerCat && offerCat.length > 0) {
       where.offerCategories = { some: { id: { in: offerCat } } };
