@@ -44,3 +44,7 @@ export const getTasks = ({
 
   return api.get(`/api/tasks?${params.toString()}`, { signal });
 };
+
+export const getTaskById = (id: string, signal?: AbortSignal) => {
+  return api.get(`/api/tasks/${id}`, { signal });
+};
