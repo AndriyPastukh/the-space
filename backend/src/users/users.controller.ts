@@ -10,6 +10,9 @@ import {
   ConflictException,
   NotFoundException,
   Param,
+  Query,
+  DefaultValuePipe,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -143,6 +146,19 @@ export class UsersController {
       fileName,
       publicUrl: `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileName}`,
     };
+  }
+
+  @Get('search')
+  async searchUsers(
+    @Query('search') search = '',
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(6), ParseIntPipe) limit: number,
+  ) {
+    return this.usersService.searchUsers({
+      search,
+      page,
+      limit,
+    });
   }
 
   @Get(':id')

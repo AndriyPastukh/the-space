@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { Prisma } from '@prisma/client';
 import { User } from '@prisma/client';
 import { PublicProfileDto } from './dto/public-profile.dto';
 
@@ -171,6 +172,129 @@ export class UsersService {
       connect: ids.map((id) => ({ id })),
     };
   };
+
+  async searchUsers(params: {
+    search?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    const page = Math.max(1, Number(params.page) || 1);
+    const limit = Math.min(Math.max(1, Number(params.limit) || 6), 50);
+    const search = params.search?.trim();
+
+    const where: Prisma.UserDetailsWhereInput = {
+      deletedAt: null,
+      ...(search
+        ? {
+            OR: [
+              {
+                firstName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                middleName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                lastName: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+              {
+                bio: {
+                  contains: search,
+                  mode: Prisma.QueryMode.insensitive,
+                },
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const [total, users] = await this.prisma.$transaction([
+      this.prisma.userDetails.count({
+        where,
+      }),
+      this.prisma.userDetails.findMany({
+        where,
+        skip: (page - 1) * limit,
+        take: limit,
+        orderBy: [{ reputation: 'desc' }, { id: 'desc' }],
+        include: {
+          skills: true,
+          interests: true,
+          categories: true,
+        },
+      }),
+    ]);
+
+    const userDetailsIds = users.map((user) => user.id);
+
+    const stats = await this.prisma.userStats.findMany({
+      where: {
+        userDetailsId: {
+          in: userDetailsIds,
+        },
+      },
+    });
+
+    const statsByUserDetailsId = new Map(
+      stats.map((stat) => [stat.userDetailsId, stat]),
+    );
+
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+
+    return {
+      data: users.map((details) => {
+        const userStats = statsByUserDetailsId.get(details.id);
+
+        return {
+          id: String(details.userId),
+          userDetailsId: details.id,
+
+          firstName: details.firstName,
+          middleName: details.middleName,
+          lastName: details.lastName,
+          nickname: details.nickname,
+
+          avatarUrl: details.avatarUrl,
+          coverImageUrl: details.coverImageUrl,
+          bio: details.bio,
+          status: details.status,
+
+          location: {
+            country: details.country,
+            city: details.city,
+          },
+
+          rating: Number((userStats?.averageRating ?? 0).toFixed(1)),
+          reviewCount: userStats?.reviewCount ?? 0,
+
+          level: details.currentLevel,
+          xpPoints: details.xpPoints,
+          reputation: details.reputation,
+
+          directions: details.categories.map((category) => category.name),
+          interests: details.interests.map((interest) => interest.name),
+          skills: details.skills.map((skill) => skill.name),
+        };
+      }),
+
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
+      },
+    };
+  }
 
   async getById(id: number): Promise<any | null> {
     const user = await this.prisma.user.findUnique({
