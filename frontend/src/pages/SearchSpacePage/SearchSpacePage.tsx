@@ -1,9 +1,11 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PersonCard from './components/PersonCard/PersonCard';
 import SpaceCard from './components/SpaceCard/SpaceCard';
 import FilterPanel from './components/FilterPanel/FilterPanel';
 import Pagination from './components/Pagination/Pagination';
 import type { FilterState } from './components/FilterPanel/FilterPanel';
+import { communitiesApi } from '../../features/communities/communitiesApi';
+import { teamsApi } from '../../features/teams/teamsApi';
 import './SearchSpacePage.css';
 
 const MOCK_PEOPLE = [
@@ -13,41 +15,6 @@ const MOCK_PEOPLE = [
         bio: 'Full-stack розробник, люблю React і Node.js. Шукаю цікаві проєкти.',
         directions: ['web', 'backend', 'mobile'],
         interests: ['gamedev', 'ui/ux design', 'Data Science'],
-    },
-    {
-        id: '2', firstName: 'Марія', lastName: 'Коваль', nickname: 'maria_k',
-        avatarUrl: '', rating: 4.7,
-        bio: 'UI/UX дизайнер з 3 роками досвіду. Працюю з Figma і Sketch.',
-        directions: ['ui/ux design', 'web'],
-        interests: ['mobile', 'gamedev'],
-    },
-    {
-        id: '3', firstName: 'Олег', lastName: 'Сидоренко', nickname: 'oleg_s',
-        avatarUrl: '', rating: 5.0,
-        bio: 'Data Scientist, ML ентузіаст. Python, TensorFlow, sklearn.',
-        directions: ['Data Science', 'backend'],
-        interests: ['web', 'QA/testing'],
-    },
-];
-
-const MOCK_SPACES = [
-    {
-        id: '4', type: 'COMMUNITY' as const, name: 'Дизайнери UA', slug: 'designers-ua',
-        avatarUrl: '', rating: 4.8, membersCount: 1240,
-        categories: ['ui/ux design', 'web', 'mobile', 'gamedev'],
-        description: 'Спільнота українських дизайнерів. Обмін досвідом, фідбек, колаборації.',
-    },
-    {
-        id: '5', type: 'TEAM' as const, name: 'React Builders', slug: 'react-builders',
-        avatarUrl: '', rating: 4.6, membersCount: 12,
-        categories: ['web', 'mobile'],
-        description: 'Команда розробників що будує SaaS продукти на React і Next.js.',
-    },
-    {
-        id: '6', type: 'COMMUNITY' as const, name: 'GameDev UA', slug: 'gamedev-ua',
-        avatarUrl: '', rating: 4.9, membersCount: 580,
-        categories: ['gamedev', 'ui/ux design'],
-        description: 'Розробники ігор в Україні. Unity, Unreal, Godot.',
     },
 ];
 
@@ -75,10 +42,14 @@ export default function SearchSpacePage() {
     const [sortOpen, setSortOpen] = useState(false);
     const [page, setPage] = useState(1);
 
+    const [spaces, setSpaces] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [totalSpaces, setTotalSpaces] = useState(0);
+
     const handleFilterChange = (newState: FilterState) => {
         setFilterState(newState);
+        setPage(Page);
         setPage(1);
-        console.log('Filter state:', newState);
     };
 
     const handleReset = () => {
@@ -87,49 +58,78 @@ export default function SearchSpacePage() {
         setPage(1);
     };
 
-    const filtered = useMemo(() => {
-        const q = search.toLowerCase();
+    useEffect(() => {
+        if (filterState.tab === 'SPACES') {
+            const fetchSpaces = async () => {
+                setLoading(true);
+                try {
+                    const params = {
+                        page,
+                        limit: ITEMS_PER_PAGE,
+                        search,
+                    };
 
-        if (filterState.tab === 'PEOPLE') {
-            return MOCK_PEOPLE.filter(p => {
-                const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-                if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q)) return false;
-                if (filterState.directions.length > 0) {
-                    const match = filterState.directions.some(d => p.directions.includes(d));
-                    if (!match) return false;
+                    let items: any[] = [];
+                    let total = 0;
+
+                    if (filterState.spaceType === 'all' || filterState.spaceType === 'community') {
+                        const comms = await communitiesApi.findAll(params);
+                        items = [...items, ...comms.items.map(i => ({ ...i, type: 'COMMUNITY' }))];
+                        total += comms.meta.total;
+                    }
+
+                    if (filterState.spaceType === 'all' || filterState.spaceType === 'team') {
+                        const teams = await teamsApi.findAll(params);
+                        items = [...items, ...teams.items.map(i => ({ ...i, type: 'TEAM' }))];
+                        total += teams.meta.total;
+                    }
+
+                    items.sort((a, b) => {
+                        if (sort === 'members_desc') return (b.memberCount || 0) - (a.memberCount || 0);
+                        if (sort === 'members_asc') return (a.memberCount || 0) - (b.memberCount || 0);
+                        return (b.rating || 0) - (a.rating || 0);
+                    });
+
+                    setSpaces(items.slice(0, ITEMS_PER_PAGE));
+                    setTotalSpaces(total);
+                } catch (err) {
+                    console.error('Failed to fetch spaces:', err);
+                } finally {
+                    setLoading(false);
                 }
-                return true;
-            }).sort((a, b) => {
-                if (sort === 'rating_asc') return a.rating - b.rating;
-                return b.rating - a.rating;
-            });
-        } else {
-            return MOCK_SPACES.filter(s => {
-                if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false;
-                if (filterState.directions.length > 0) {
-                    const match = filterState.directions.some(d => s.categories.includes(d));
-                    if (!match) return false;
-                }
-                if (filterState.spaceType !== 'all' && s.type !== filterState.spaceType) return false;
-                return true;
-            }).sort((a, b) => {
-                if (sort === 'rating_asc') return a.rating - b.rating;
-                if (sort === 'members_desc') return b.membersCount - a.membersCount;
-                if (sort === 'members_asc') return a.membersCount - b.membersCount;
-                return b.rating - a.rating;
-            });
+            };
+            fetchSpaces();
         }
+    }, [search, filterState, sort, page]);
+
+    const filteredPeople = useMemo(() => {
+        if (filterState.tab !== 'PEOPLE') return [];
+        const q = search.toLowerCase();
+        return MOCK_PEOPLE.filter(p => {
+            const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
+            if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q)) return false;
+            if (filterState.directions.length > 0) {
+                const match = filterState.directions.some(d => p.directions.includes(d));
+                if (!match) return false;
+            }
+            return true;
+        }).sort((a, b) => {
+            if (sort === 'rating_asc') return a.rating - b.rating;
+            return b.rating - a.rating;
+        });
     }, [search, filterState, sort]);
 
-    const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-    const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    const totalPages = filterState.tab === 'PEOPLE' 
+        ? Math.max(1, Math.ceil(filteredPeople.length / ITEMS_PER_PAGE))
+        : Math.max(1, Math.ceil(totalSpaces / ITEMS_PER_PAGE));
+
+    const paginatedPeople = filteredPeople.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
 
     return (
         <div className="search-space-page">
             <div className="search-space-container">
                 <h1 className="search-space-title">Пошук</h1>
 
-                {/* Search bar row */}
                 <div className="search-bar-row">
                     <button
                         className={`filter-toggle-btn ${filterOpen ? 'filter-toggle-btn--active' : ''}`}
@@ -172,7 +172,6 @@ export default function SearchSpacePage() {
                     </div>
                 </div>
 
-                {/* Layout */}
                 <div className={`search-layout ${filterOpen ? 'search-layout--with-sidebar' : ''}`}>
                     {filterOpen && (
                         <aside className="search-sidebar">
@@ -185,19 +184,27 @@ export default function SearchSpacePage() {
                     )}
 
                     <div className="search-results">
-                        {paginated.length === 0 ? (
+                        {loading ? (
+                            <div className="search-loading">Завантаження...</div>
+                        ) : (filterState.tab === 'PEOPLE' ? paginatedPeople : spaces).length === 0 ? (
                             <div className="search-empty">
                                 <span style={{ fontSize: 40, opacity: 0.4 }}>🔍</span>
                                 <p>Нічого не знайдено</p>
                                 <span>Спробуй змінити запит або фільтри</span>
                             </div>
                         ) : filterState.tab === 'PEOPLE' ? (
-                            (paginated as typeof MOCK_PEOPLE).map(p => (
+                            paginatedPeople.map(p => (
                                 <PersonCard key={p.id} {...p} />
                             ))
                         ) : (
-                            (paginated as typeof MOCK_SPACES).map(s => (
-                                <SpaceCard key={s.id} {...s} />
+                            spaces.map(s => (
+                                <SpaceCard 
+                                    key={`${s.type}-${s.id}`} 
+                                    {...s} 
+                                    categories={s.directions?.map((d: any) => d.name) || []}
+                                    membersCount={s.memberCount}
+                                    rating={s.rating || 0}
+                                />
                             ))
                         )}
                     </div>

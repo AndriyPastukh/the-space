@@ -15,6 +15,8 @@ model User {
   userDetails   UserDetails?
   knowledges    Knowledge[]
   tasks         Task[]
+  communities   Community[]
+  teams         Team[]
 }
 
 enum UserStatus {
@@ -53,6 +55,9 @@ model UserDetails {
   givenReviews   Review[]        @relation("GivenReviews")
   badges         UserBadge[]
   communities    UserCommunity[]
+  teams          UserTeam[]
+  communityJoinRequests CommunityJoinRequest[]
+  teamJoinRequests      TeamJoinRequest[]
   portfolioItems PortfolioItem[]
 
   @@index([nickname])
@@ -68,6 +73,8 @@ model Category {
   tasks             Task[]
   knowledgeOffers   Knowledge[] @relation("KnowledgeOffers")
   knowledgeRequests Knowledge[] @relation("KnowledgeRequests")
+  communities       Community[]
+  teams             Team[]
 }
 
 model SocialLink {
@@ -122,22 +129,114 @@ model UserBadge {
   @@id([userDetailsId, badgeId])
 }
 
+enum SpaceMemberRole {
+  OWNER
+  MODERATOR
+  CONTRIBUTOR
+  MEMBER
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 model Community {
-  id        Int             @id @default(autoincrement())
-  name      String
-  slug      String          @unique
-  avatarUrl String?
-  users     UserCommunity[]
+  id           Int      @id @default(autoincrement())
+  name         String
+  slug         String   @unique
+  description  String?  @db.Text
+  avatarUrl    String?
+  authorId     Int
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  directions   Category[]
+  users        UserCommunity[]
+  joinRequests CommunityJoinRequest[]
+  viewsCount   Int      @default(0)
+  postsCount   Int      @default(0)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([slug])
+  @@index([deletedAt])
+  @@index([createdAt])
+}
+
+model Team {
+  id           Int      @id @default(autoincrement())
+  name         String
+  slug         String   @unique
+  description  String?  @db.Text
+  avatarUrl    String?
+  authorId     Int
+  author       User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  directions   Category[]
+  users        UserTeam[]
+  joinRequests TeamJoinRequest[]
+  viewsCount   Int      @default(0)
+  postsCount   Int      @default(0)
+  deletedAt    DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([authorId])
+  @@index([slug])
+  @@index([deletedAt])
+  @@index([createdAt])
 }
 
 model UserCommunity {
   userDetailsId Int
-  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id])
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
   communityId   Int
-  community     Community   @relation(fields: [communityId], references: [id])
-  joinedAt      DateTime    @default(now())
+  community     Community   @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  role          SpaceMemberRole @default(MEMBER)
+  joinedAt      DateTime @default(now())
 
   @@id([userDetailsId, communityId])
+}
+
+model UserTeam {
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
+  teamId        Int
+  team          Team        @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  role          SpaceMemberRole @default(MEMBER)
+  joinedAt      DateTime @default(now())
+
+  @@id([userDetailsId, teamId])
+}
+
+model CommunityJoinRequest {
+  id            Int               @id @default(autoincrement())
+  communityId   Int
+  community     Community         @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  userDetailsId Int
+  userDetails   UserDetails       @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
+  status        JoinRequestStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([communityId, userDetailsId])
+  @@index([status])
+}
+
+model TeamJoinRequest {
+  id            Int               @id @default(autoincrement())
+  teamId        Int
+  team          Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userDetailsId Int
+  userDetails   UserDetails       @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
+  status        JoinRequestStatus @default(PENDING)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([teamId, userDetailsId])
+  @@index([status])
 }
 
 model PortfolioItem {

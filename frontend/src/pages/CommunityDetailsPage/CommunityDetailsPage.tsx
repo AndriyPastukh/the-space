@@ -1,53 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
+import { communitiesApi } from "../../features/communities/communitiesApi";
+import type { Community } from "../../features/communities/communitiesApi";
 import "./CommunityDetailsPage.css";
 
-interface CommunityMember {
-  id: number;
-  name: string;
-  avatar: string;
-  role: 'Moderator' | 'Contributor' | 'Member';
-}
-
 const CommunityDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [joinStatus, setJoinStatus] = useState<'guest' | 'pending' | 'member'>('guest');
+  const { id: slug } = useParams<{ id: string }>();
+  const [community, setCommunity] = useState<Community | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [joinStatus, setJoinStatus] = useState<string>('GUEST');
 
-  const community = {
-    name: "AI Enthusiasts",
-    memberCount: 150,
-    description: "Наша місія — об'єднати людей, які цікавляться штучним інтелектом, для спільного навчання, розробки проєктів та обміну досвідом у сфері ML та Data Science. Ми віримо, що майбутнє за технологіями, і хочемо зробити їх доступними для кожного.",
-    topics: ["#machine_learning", "#data_science", "#python", "#neural_networks"],
-    rules: [
-      "Будьте ввічливими та поважайте інших учасників.",
-      "Діліться лише перевіреною інформацією та корисними ресурсами.",
-      "Жодного спаму або несанкціонованої реклами.",
-      "Допомагайте новачкам розібратися в складних темах."
-    ],
-    createdAt: "10.01.2025",
-    statistics: { views: 1240, posts: 89 },
-    links: [
-      { label: "Discord", url: "https://discord.com" },
-      { label: "Telegram", url: "https://t.me" },
-      { label: "Сайт", url: "https://google.com" }
-    ]
+  useEffect(() => {
+    if (slug) {
+      const fetchCommunity = async () => {
+        setLoading(true);
+        try {
+          const data = await communitiesApi.findOne(slug);
+          setCommunity(data);
+          setJoinStatus(data.currentUserStatus);
+        } catch (err) {
+          console.error("Failed to fetch community:", err);
+          setError("Спільноту не знайдено");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchCommunity();
+    }
+  }, [slug]);
+
+  const handleJoin = async () => {
+    if (!community) return;
+    try {
+      await communitiesApi.joinRequest(community.id);
+      setJoinStatus('PENDING');
+    } catch (err) {
+      console.error("Failed to join community:", err);
+    }
   };
 
-  const members: CommunityMember[] = [
-    { id: 1, name: "Олексій М.", avatar: "https://via.placeholder.com/40", role: 'Moderator' },
-    { id: 2, name: "Анна К.", avatar: "https://via.placeholder.com/40", role: 'Contributor' },
-    { id: 3, name: "Максим Р.", avatar: "https://via.placeholder.com/40", role: 'Member' },
-  ];
+  if (loading) return <div className="loading-screen">Завантаження...</div>;
+  if (error || !community) return <div className="error-screen">{error || "Помилка завантаження"}</div>;
 
   return (
     <div className="task-details-page">
       <div className="td-layout">
-
         <div className="td-main">
           <div className="card main-card">
             <div className="td-header">
               <div className="community-header-flex">
-                <div className="community-avatar-circle">AI</div>
+                <div className="community-avatar-circle">
+                  {community.avatarUrl ? (
+                    <img src={community.avatarUrl} alt={community.name} />
+                  ) : (
+                    community.name.substring(0, 2).toUpperCase()
+                  )}
+                </div>
                 <div>
                   <h2 className="td-title-large">{community.name}</h2>
                   <div className="team-stats-row">
@@ -65,35 +74,20 @@ const CommunityDetailsPage: React.FC = () => {
                 <p className="td-text-large">{community.description}</p>
               </section>
 
-              <section className="td-section community-rules-box">
-                <h3 className="td-section-title-large">Правила спільноти</h3>
-                <ul className="rules-list">
-                  {community.rules.map((rule, index) => (
-                    <li key={index}>• {rule}</li>
-                  ))}
-                </ul>
-              </section>
+              {community.directions && community.directions.length > 0 && (
+                <section className="td-section">
+                  <h3 className="td-section-title-large">Теми</h3>
+                  <div className="tags-large">
+                    {community.directions.map(dir => (
+                      <span key={dir.id} className="tag-large topic-tag">#{dir.name}</span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-              <section className="td-section">
-                <h3 className="td-section-title-large">Теми</h3>
-                <div className="tags-large">
-                  {community.topics.map(topic => (
-                    <span key={topic} className="tag-large topic-tag">{topic}</span>
-                  ))}
-                </div>
-              </section>
-
-              <section className="td-section mt-24">
-                <h3 className="td-section-title-large">Корисні посилання</h3>
-                <div className="social-links-list-large">
-                  {community.links.map(link => (
-                    <a key={link.label} href={link.url} target="_blank" rel="noreferrer" className="text-purple">
-                      {link.label} ↗
-                    </a>
-                  ))}
-                </div>
-              </section>
-              <p className="text-sm-muted mt-auto pt-24 fs-12">Дата створення: {community.createdAt}</p>
+              <p className="text-sm-muted mt-auto pt-24 fs-12">
+                Дата створення: {new Date(community.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
         </div>
@@ -101,9 +95,15 @@ const CommunityDetailsPage: React.FC = () => {
         <aside className="td-sidebar-wrap">
           <div className="card sidebar-card">
             <div className="sidebar-actions">
-              <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>
-                {joinStatus === 'pending' ? 'Запит надіслано' : 'Доєднатися'}
-              </button>
+              {joinStatus === 'GUEST' ? (
+                <button className="btn btn-primary btn-block" onClick={handleJoin}>
+                  Доєднатися
+                </button>
+              ) : (
+                <button className="btn btn-primary btn-block" disabled>
+                  {joinStatus === 'PENDING' ? 'Запит надіслано' : 'Ви учасник'}
+                </button>
+              )}
               <button className="btn btn-outline btn-block mt-12">Поділитись ↗</button>
             </div>
 
@@ -111,19 +111,23 @@ const CommunityDetailsPage: React.FC = () => {
 
             <div className="td-roster">
               <h3 className="td-sidebar-heading mb-12">Учасники</h3>
-              {['Moderator', 'Contributor', 'Member'].map(role => (
-                <div key={role} className="roster-group mb-12">
-                  <p className="role-label-sidebar">
-                    {role === 'Moderator' ? 'Модератори' : role === 'Contributor' ? 'Контриб\'ютори' : 'Учасники'}
-                  </p>
-                  {members.filter(m => m.role === role).map(m => (
+              {community.members && community.members.length > 0 ? (
+                <div className="roster-group mb-12">
+                  {community.members.map(m => (
                     <div key={m.id} className="member-row-sidebar">
-                      <img src={m.avatar} className="avatar-sidebar" alt="" />
+                      {m.avatarUrl ? (
+                        <img src={m.avatarUrl} className="avatar-sidebar" alt="" />
+                      ) : (
+                        <div className="avatar-sidebar-placeholder">{m.name.charAt(0)}</div>
+                      )}
                       <span className="text-white fs-14">{m.name}</span>
+                      <span className="role-badge-sidebar">{m.role}</span>
                     </div>
                   ))}
                 </div>
-              ))}
+              ) : (
+                <p className="text-sm-muted">Немає учасників</p>
+              )}
             </div>
 
             <div className="card-divider mt-auto my-24"></div>
@@ -142,7 +146,6 @@ const CommunityDetailsPage: React.FC = () => {
             </div>
           </div>
         </aside>
-
       </div>
     </div>
   );

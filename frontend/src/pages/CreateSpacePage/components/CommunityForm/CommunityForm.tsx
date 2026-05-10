@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
+import { communitiesApi } from '../../../../features/communities/communitiesApi';
 import './CommunityForm.css';
 
 const DIRECTIONS = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
@@ -54,16 +55,38 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        console.log('[createCommunity] form data:', {
-            name: formState.name,
-            directions: formState.directions,
-            description: formState.description,
-            avatar: formState.avatar,
-        });
-        // createCommunity(formState);
+        
+        try {
+            let avatarUrl = '';
+            if (formState.avatar) {
+                const { uploadUrl, publicUrl } = await communitiesApi.getPresignedUrl(
+                    formState.avatar.name,
+                    formState.avatar.type
+                );
+                
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: formState.avatar,
+                    headers: { 'Content-Type': formState.avatar.type }
+                });
+                avatarUrl = publicUrl;
+            }
+
+            const community = await communitiesApi.create({
+                name: formState.name,
+                description: formState.description,
+                directions: formState.directions.map(d => DIRECTIONS.indexOf(d) + 1), // Assuming ID mapping
+                avatarUrl
+            });
+
+            window.location.href = `/communities/${community.slug}`;
+        } catch (err) {
+            console.error('Failed to create community:', err);
+            setAvatarError('Сталася помилка при створенні спільноти');
+        }
     };
 
     const descWords = countWords(formState.description);

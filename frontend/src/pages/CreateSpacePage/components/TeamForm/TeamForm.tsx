@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
+import { teamsApi } from '../../../../features/teams/teamsApi';
 import './TeamForm.css';
 
 const DIRECTIONS = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
@@ -54,16 +55,38 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        console.log('[createTeam] form data:', {
-            name: formState.name,
-            directions: formState.directions,
-            description: formState.description,
-            avatar: formState.avatar,
-        });
-        // createTeam(formState);
+        
+        try {
+            let avatarUrl = '';
+            if (formState.avatar) {
+                const { uploadUrl, publicUrl } = await teamsApi.getPresignedUrl(
+                    formState.avatar.name,
+                    formState.avatar.type
+                );
+                
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: formState.avatar,
+                    headers: { 'Content-Type': formState.avatar.type }
+                });
+                avatarUrl = publicUrl;
+            }
+
+            const team = await teamsApi.create({
+                name: formState.name,
+                description: formState.description,
+                directions: formState.directions.map(d => DIRECTIONS.indexOf(d) + 1),
+                avatarUrl
+            });
+
+            window.location.href = `/teams/${team.slug}`;
+        } catch (err) {
+            console.error('Failed to create team:', err);
+            setAvatarError('Сталася помилка при створенні команди');
+        }
     };
 
     const descWords = countWords(formState.description);
