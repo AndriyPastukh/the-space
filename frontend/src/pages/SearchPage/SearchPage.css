@@ -35,6 +35,7 @@
 .search-results {
     flex: 1;
     display: flex;
+    flex-direction: column;
     gap: 16px;
 }
 
@@ -63,4 +64,30 @@
 
 .search-empty span {
     font-size: 14px;
+}
+.pagination-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 32px 0 16px;
+    width: 100%;
+}
+
+.pagination__info {
+    font-size: 13px;
+    color: var(--color-text-secondary, #8a8f9e);
+    letter-spacing: 0.02em;
+}
+
+/* ДОДАНО в кінець файлу */
+@media (max-width: 768px) {
+    .search-layout {
+        flex-direction: column;
+    }
+    .search-sidebar {
+        width: 100%;
+        position: relative; /* Вимикаємо sticky на мобільному */
+        top: 0;
+    }
 }

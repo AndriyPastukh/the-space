@@ -8,6 +8,9 @@
     display: flex;
     flex-direction: column;
     gap: 16px;
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
 }
 
 .knowledge-card:hover {
@@ -81,6 +84,7 @@
     gap: 8px;
     padding: 14px;
     border-radius: 14px;
+    min-width: 0
 }
 
 .exchange-block--offer {
@@ -133,6 +137,7 @@
     -webkit-line-clamp: 2;
     line-clamp: 3;
     -webkit-box-orient: vertical;
+    word-break: break-word;
     overflow: hidden;
 }
 
@@ -147,6 +152,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    flex-wrap: wrap; /* Додано */
+    gap: 12px;       /* Додано */
 }
 
 .card-stats {
