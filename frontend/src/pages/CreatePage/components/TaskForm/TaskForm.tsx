@@ -2,14 +2,14 @@ import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
-
-const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
+import type { Category } from '../../../../features/categories/categoryApi';
+import { createTask } from '../../../../features/tasks/taskApi';
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 interface TaskFormState {
     title: string;
-    categories: string[];
+    categories: number[];
     description: string;
     deadline: string;
     urls: string[];
@@ -20,9 +20,12 @@ interface TaskFormProps {
     formState: TaskFormState;
     onChange: (state: TaskFormState) => void;
     onClear: () => void;
+    setMessage: (msg: { text: string; type: 'success' | 'error' } | null) => void;
+    onSuccess: (id: string) => void;
+    categories: Category[];
 }
 
-export default function TaskForm({ formState, onChange, onClear }: TaskFormProps) {
+export default function TaskForm({ formState, onChange, onClear, categories,setMessage,onSuccess }: TaskFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof TaskFormState, string>>>({});
 
     const update = (field: keyof TaskFormState, value: any) => {
@@ -59,11 +62,28 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
         console.log('Task form data:', formState);
-        // createTask(formState);
+        try {
+            const result = await createTask(formState);
+            setMessage({ text: 'Task успішно створено!', type: 'success' });
+            
+            setTimeout(() => {
+                onSuccess(result.data.id);
+            }, 1000);
+
+        } catch (error: any) {
+    const backendError = error.response?.data?.message || error.response?.data;
+
+    setMessage({
+        text: Array.isArray(backendError)
+            ? backendError.join('\n')
+            : backendError || 'Помилка створення Knowledge',
+        type: 'error',
+    });
+}
     };
 
     const titleWords = countWords(formState.title);
@@ -93,7 +113,7 @@ export default function TaskForm({ formState, onChange, onClear }: TaskFormProps
                     Категорія <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={CATEGORIES}
+                    options={categories}
                     selected={formState.categories}
                     onChange={val => update('categories', val)}
                     error={errors.categories}

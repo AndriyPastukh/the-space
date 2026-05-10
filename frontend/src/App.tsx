@@ -4,7 +4,7 @@ import { MainPage } from "./pages/MainPage/MainPage.tsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
 import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
-import CreatePage from "./pages/CreatePage/CreatePage";
+import CreateExperiencePage from "./pages/CreatePage/CreateExperiencePage.tsx";
 import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx";
 import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.tsx";
 import TeamDetailsPage from "./pages/TeamDetailsPage/TeamDetailsPage.tsx"; 
@@ -29,7 +29,7 @@ function App() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/terms" element={<TermsPage />} />
-          <Route path="/create-experience" element={<CreatePage />} />
+          <Route path="/create-experience" element={<CreateExperiencePage />} />
           <Route path="/tasks/:id" element={<TaskDetails />} />
           <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
           <Route path="/teams/:id" element={<TeamDetailsPage />} />
