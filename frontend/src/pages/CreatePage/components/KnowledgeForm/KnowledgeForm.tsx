@@ -5,8 +5,6 @@ import FileUpload from '../shared/FileUpload';
 import type { Category } from '../../../../features/categories/categoryApi';
 import { createKnowledge } from '../../../../features/knowledges/knowledgeApi';
 
-const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
-
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 interface KnowledgeFormState {
@@ -23,10 +21,12 @@ interface KnowledgeFormProps {
     formState: KnowledgeFormState;
     onChange: (state: KnowledgeFormState) => void;
     onClear: () => void;
+    setMessage: (msg: { text: string; type: 'success' | 'error' } | null) => void;
+    onSuccess: (id: string) => void;
     categories: Category[];
 }
 
-export default function KnowledgeForm({ formState, onChange, onClear,categories }: KnowledgeFormProps) {
+export default function KnowledgeForm({ formState, onChange, onClear,categories,setMessage,onSuccess }: KnowledgeFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof KnowledgeFormState, string>>>({});
 
     const update = (field: keyof KnowledgeFormState, value: any) => {
@@ -64,10 +64,26 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories 
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        console.log(formState);
+
         if (!validate()) return;
-        console.log('Knowledge form data:', formState);
-        const result = await createKnowledge(formState);
-        console.log(result);
+        try {
+            const result = await createKnowledge(formState);
+            setMessage({ text: 'Knowledge успішно створено!', type: 'success' });  
+            setTimeout(() => {
+                onSuccess(result.data.id);
+            }, 1000);
+        } catch (error: any) {
+        const backendError = error.response?.data?.message;
+            
+        setMessage({
+            text: Array.isArray(backendError)
+                ? backendError.join('\n')
+                : backendError || 'Помилка створення Knowledge',
+            type: 'error',
+        });
+}
     };
 
     const offerDescWords = countWords(formState.offerDescription);

@@ -5,8 +5,6 @@ import FileUpload from '../shared/FileUpload';
 import type { Category } from '../../../../features/categories/categoryApi';
 import { createTask } from '../../../../features/tasks/taskApi';
 
-const CATEGORIES = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
-
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
 
 interface TaskFormState {
@@ -22,10 +20,12 @@ interface TaskFormProps {
     formState: TaskFormState;
     onChange: (state: TaskFormState) => void;
     onClear: () => void;
+    setMessage: (msg: { text: string; type: 'success' | 'error' } | null) => void;
+    onSuccess: (id: string) => void;
     categories: Category[];
 }
 
-export default function TaskForm({ formState, onChange, onClear, categories }: TaskFormProps) {
+export default function TaskForm({ formState, onChange, onClear, categories,setMessage,onSuccess }: TaskFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof TaskFormState, string>>>({});
 
     const update = (field: keyof TaskFormState, value: any) => {
@@ -66,8 +66,24 @@ export default function TaskForm({ formState, onChange, onClear, categories }: T
         e.preventDefault();
         if (!validate()) return;
         console.log('Task form data:', formState);
-        const result = await createTask(formState);
-        console.log(result);
+        try {
+            const result = await createTask(formState);
+            setMessage({ text: 'Task успішно створено!', type: 'success' });
+            
+            setTimeout(() => {
+                onSuccess(result.data.id);
+            }, 1000);
+
+        } catch (error: any) {
+    const backendError = error.response?.data?.message || error.response?.data;
+
+    setMessage({
+        text: Array.isArray(backendError)
+            ? backendError.join('\n')
+            : backendError || 'Помилка створення Knowledge',
+        type: 'error',
+    });
+}
     };
 
     const titleWords = countWords(formState.title);
