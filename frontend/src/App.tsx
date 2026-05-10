@@ -17,6 +17,7 @@ import MyProfilePage from "./pages/MyProfilePage/MyProfilePage";
 import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
 import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreatedExperiencesPage";
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
+import MyChatsPage from "./pages/MyChatsPage/MyChatsPage";
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="/create-space" element={<CreateSpacePage />} />
           <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
           <Route path="/search-space" element={<SearchSpacePage />} />
+          <Route path="/chats" element={<MyChatsPage />} />
           <Route path="/*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
