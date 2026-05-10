@@ -1,0 +1,118 @@
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { getKnowledges } from "../features/knowledges/knowledgeApi";
+
+type UseKnowledgesParams = {
+  page: number;
+  limit: number;
+  search: string;
+  sortBy?: string;
+  offerCategoryIds: number[];
+  requestCategoryIds: number[];
+  enabled?: boolean;
+};
+
+const mapKnowledge = (item: any) => {
+  const authorInfo = {
+    id: item.author.id,
+    name:
+      item.author.userDetails?.nickname || item.author.email || "Користувач",
+    avatarUrl: item.author.userDetails?.avatarUrl || "",
+    rating: 0,
+    reviewsCount: 0,
+  };
+
+  return {
+    ...item,
+    type: "KNOWLEDGE",
+    offer: {
+      categories: item.offerCategories || [],
+      description: item.offerDescription,
+    },
+    want: {
+      categories: item.requestCategories || [],
+      description: item.requestDescription,
+    },
+    author: authorInfo,
+    statistics: { viewsCount: 0, proposalsCount: 0 },
+    viewer: { isSaved: false, myProposalId: null },
+  };
+};
+
+export const useKnowledges = ({
+  page,
+  limit,
+  search,
+  sortBy,
+  offerCategoryIds,
+  requestCategoryIds,
+  enabled = true,
+}: UseKnowledgesParams) => {
+  const [data, setData] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    if (!enabled) return;
+
+    const fetchKnowledges = async () => {
+      setIsLoading(true);
+
+      abortControllerRef.current?.abort();
+
+      const controller = new AbortController();
+      abortControllerRef.current = controller;
+
+      try {
+        const { data: result } = await getKnowledges({
+          page,
+          limit,
+          search,
+          sortBy,
+          offerCategoryIds,
+          requestCategoryIds,
+          signal: controller.signal,
+        });
+
+        const mappedItems = result.items.map(mapKnowledge);
+
+        setData(mappedItems);
+        setTotalItems(result.total ?? result.items.length);
+        setTotalPages(
+          result.totalPages ??
+            Math.ceil((result.total ?? result.items.length) / limit),
+        );
+      } catch (error: any) {
+        if (axios.isCancel(error)) return;
+        console.error("Помилка при завантаженні знань:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(fetchKnowledges, 300);
+
+    return () => {
+      clearTimeout(timeoutId);
+      abortControllerRef.current?.abort();
+    };
+  }, [
+    enabled,
+    page,
+    limit,
+    search,
+    sortBy,
+    offerCategoryIds,
+    requestCategoryIds,
+  ]);
+
+  return {
+    data,
+    isLoading,
+    totalPages,
+    totalItems,
+  };
+};
