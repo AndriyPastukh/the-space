@@ -1,77 +1,185 @@
-import './FilterPanel.css';
+import { useCategories } from "../../../../hooks/useCategories";
+import "./FilterPanel.css";
 
-type TabType = 'TASK' | 'KNOWLEDGE';
+export type TabType = "TASK" | "KNOWLEDGE";
 
-interface FilterState {
-    tab: TabType;
-    categories: string[];
-    sortBy: string;
+export interface FilterState {
+  tab: TabType;
+  categoryIds: number[];
+  offerCategoryIds: number[];
+  requestCategoryIds: number[];
+  sortBy: string;
 }
 
 interface FilterPanelProps {
-    filterState: FilterState;
-    onChange: (state: FilterState) => void;
+  filterState: FilterState;
+  onChange: (state: FilterState) => void;
 }
-
-const TASK_CATEGORIES = ['Mobile Development', 'Web Development', 'Design', 'Backend', 'DevOps', 'ML/AI', 'Gamedev'];
-const KNOWLEDGE_CATEGORIES = ['python', 'api', 'design', 'figma', 'react', 'node.js', 'ml/ai'];
 
 export default function FilterPanel({ filterState, onChange }: FilterPanelProps) {
-    const categories = filterState.tab === 'TASK' ? TASK_CATEGORIES : KNOWLEDGE_CATEGORIES;
+  const { categories, isLoading, error } = useCategories();
 
-    const toggleCategory = (cat: string) => {
-        const updated = filterState.categories.includes(cat)
-            ? filterState.categories.filter(c => c !== cat)
-            : [...filterState.categories, cat];
-        onChange({ ...filterState, categories: updated });
-    };
+  const isTaskTab = filterState.tab === "TASK";
+  const isKnowledgeTab = filterState.tab === "KNOWLEDGE";
 
-    const setTab = (tab: TabType) => {
-        onChange({ ...filterState, tab, categories: [] });
-    };
+  const toggleTaskCategory = (categoryId: number) => {
+    const updated = filterState.categoryIds.includes(categoryId)
+      ? filterState.categoryIds.filter(id => id !== categoryId)
+      : [...filterState.categoryIds, categoryId];
 
-    return (
-        <div className="filter-panel">
-            <div className="filter-tabs">
-                <button
-                    className={`filter-tab ${filterState.tab === 'TASK' ? 'filter-tab--active' : ''}`}
-                    onClick={() => setTab('TASK')}
-                >
-                    Task
-                </button>
-                <button
-                    className={`filter-tab ${filterState.tab === 'KNOWLEDGE' ? 'filter-tab--active' : ''}`}
-                    onClick={() => setTab('KNOWLEDGE')}
-                >
-                    Knowledge
-                </button>
-            </div>
+    onChange({ ...filterState, categoryIds: updated });
+  };
 
-            <div className="filter-section">
-                <span className="filter-section-label">Категорії</span>
-                <div className="filter-chips">
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            className={`filter-chip ${filterState.categories.includes(cat) ? 'filter-chip--active' : ''}`}
-                            onClick={() => toggleCategory(cat)}
-                        >
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
+  const toggleOfferCategory = (categoryId: number) => {
+    const updated = filterState.offerCategoryIds.includes(categoryId)
+      ? filterState.offerCategoryIds.filter(id => id !== categoryId)
+      : [...filterState.offerCategoryIds, categoryId];
 
-            {filterState.categories.length > 0 && (
-                <button
-                    className="filter-clear"
-                    onClick={() => onChange({ ...filterState, categories: [] })}
-                >
-                    Скинути фільтри
-                </button>
-            )}
+    onChange({ ...filterState, offerCategoryIds: updated });
+  };
+
+  const toggleRequestCategory = (categoryId: number) => {
+    const updated = filterState.requestCategoryIds.includes(categoryId)
+      ? filterState.requestCategoryIds.filter(id => id !== categoryId)
+      : [...filterState.requestCategoryIds, categoryId];
+
+    onChange({ ...filterState, requestCategoryIds: updated });
+  };
+
+  const setTab = (tab: TabType) => {
+    onChange({
+      ...filterState,
+      tab,
+      categoryIds: [],
+      offerCategoryIds: [],
+      requestCategoryIds: [],
+    });
+  };
+
+  const clearFilters = () => {
+    onChange({
+      ...filterState,
+      categoryIds: [],
+      offerCategoryIds: [],
+      requestCategoryIds: [],
+    });
+  };
+
+  const hasSelectedFilters =
+    filterState.categoryIds.length > 0 ||
+    filterState.offerCategoryIds.length > 0 ||
+    filterState.requestCategoryIds.length > 0;
+
+  return (
+    <div className="filter-panel">
+      <div className="filter-tabs">
+        <button
+          type="button"
+          className={`filter-tab ${
+            filterState.tab === "TASK" ? "filter-tab--active" : ""
+          }`}
+          onClick={() => setTab("TASK")}
+        >
+          Task
+        </button>
+
+        <button
+          type="button"
+          className={`filter-tab ${
+            filterState.tab === "KNOWLEDGE" ? "filter-tab--active" : ""
+          }`}
+          onClick={() => setTab("KNOWLEDGE")}
+        >
+          Knowledge
+        </button>
+      </div>
+
+      {isLoading ? (
+        <div className="filter-section">
+          <span className="filter-section-loading">Завантаження...</span>
         </div>
-    );
-}
+      ) : error ? (
+        <div className="filter-section">
+          <span className="filter-section-error">{error}</span>
+        </div>
+      ) : (
+        <>
+          {isTaskTab && (
+            <div className="filter-section">
+              <span className="filter-section-label">Категорії</span>
 
-export type { FilterState, TabType };
+              <div className="filter-chips">
+                {categories.map(cat => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`filter-chip ${
+                      filterState.categoryIds.includes(cat.id)
+                        ? "filter-chip--active"
+                        : ""
+                    }`}
+                    onClick={() => toggleTaskCategory(cat.id)}
+                  >
+                    {cat.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isKnowledgeTab && (
+            <>
+              <div className="filter-section">
+                <span className="filter-section-label">Пропоную</span>
+
+                <div className="filter-chips">
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`filter-chip ${
+                        filterState.offerCategoryIds.includes(cat.id)
+                          ? "filter-chip--active"
+                          : ""
+                      }`}
+                      onClick={() => toggleOfferCategory(cat.id)}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="filter-section">
+                <span className="filter-section-label">Шукаю</span>
+
+                <div className="filter-chips">
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      type="button"
+                      className={`filter-chip ${
+                        filterState.requestCategoryIds.includes(cat.id)
+                          ? "filter-chip--active"
+                          : ""
+                      }`}
+                      onClick={() => toggleRequestCategory(cat.id)}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
+
+      {hasSelectedFilters && (
+        <button type="button" className="filter-clear" onClick={clearFilters}>
+          Скинути фільтри
+        </button>
+      )}
+    </div>
+  );
+}
