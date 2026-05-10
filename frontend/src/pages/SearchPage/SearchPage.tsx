@@ -1,31 +1,40 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import SearchBar from "./components/SearchBar/SearchBar";
 import FilterPanel from "./components/FilterPanel/FilterPanel";
 import TaskCard from "./components/TaskCard/TaskCard";
 import KnowledgeCard from "./components/KnowledgeCard/KnowledgeCard";
 import Pagination from "../SearchSpacePage/components/Pagination/Pagination";
-import type { FilterState } from "./components/FilterPanel/FilterPanel";
+import type {
+  FilterState,
+  TabType,
+} from "./components/FilterPanel/FilterPanel";
 import { useTasks } from "../../hooks/useTasks";
 import { useKnowledges } from "../../hooks/useKnowledges";
 import "./SearchPage.css";
 
 const PAGE_LIMIT = 10;
 
-const initialFilter: FilterState = {
-  tab: "TASK",
-  categoryIds: [],
-  offerCategoryIds: [],
-  requestCategoryIds: [],
-  sortBy: "createdAt",
+const getInitialTabFromUrl = (type: string | null): TabType => {
+  if (type === "knowledge") return "KNOWLEDGE";
+  return "TASK";
 };
 
 export default function SearchPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [search, setSearch] = useState("");
   const [filterOpen, setFilterOpen] = useState(false);
-  const [filterState, setFilterState] = useState<FilterState>(initialFilter);
   const [savedIds, setSavedIds] = useState<string[]>([]);
-
   const [page, setPage] = useState(1);
+
+  const [filterState, setFilterState] = useState<FilterState>(() => ({
+    tab: getInitialTabFromUrl(searchParams.get("type")),
+    categoryIds: [],
+    offerCategoryIds: [],
+    requestCategoryIds: [],
+    sortBy: "createdAt",
+  }));
 
   const isTaskTab = filterState.tab === "TASK";
 
@@ -51,8 +60,32 @@ export default function SearchPage() {
   const current = isTaskTab ? tasks : knowledges;
 
   useEffect(() => {
+    const tabFromUrl = getInitialTabFromUrl(searchParams.get("type"));
+
+    setFilterState((prev) => {
+      if (prev.tab === tabFromUrl) return prev;
+
+      return {
+        ...prev,
+        tab: tabFromUrl,
+        categoryIds: [],
+        offerCategoryIds: [],
+        requestCategoryIds: [],
+      };
+    });
+  }, [searchParams]);
+
+  useEffect(() => {
     setPage(1);
   }, [search, filterState]);
+
+  const updateUrlType = (tab: TabType) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    nextParams.set("type", tab === "TASK" ? "task" : "knowledge");
+
+    setSearchParams(nextParams);
+  };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -61,6 +94,10 @@ export default function SearchPage() {
 
   const handleFilterChange = (newState: FilterState) => {
     setFilterState(newState);
+
+    if (newState.tab !== filterState.tab) {
+      updateUrlType(newState.tab);
+    }
   };
 
   const handleSave = (id: string) => {
