@@ -82,10 +82,18 @@ export class TasksService {
     page?: number;
     limit?: number;
     status?: TaskStatusDto;
+    search?: string;
     authorId?: number;
     categories?: number[];
   }) {
-    const { page = 1, limit = 10, status, authorId, categories } = query;
+    const {
+      page = 1,
+      limit = 10,
+      status,
+      search,
+      authorId,
+      categories,
+    } = query;
 
     const safePage = Math.max(1, Number(page) || 1);
     const safeLimit = Math.min(Math.max(1, Number(limit) || 10), 100);
@@ -94,6 +102,25 @@ export class TasksService {
     const where: any = {
       deletedAt: null,
     };
+
+    const normalizedSearch = search?.trim();
+
+    if (normalizedSearch) {
+      where.OR = [
+        {
+          title: {
+            contains: normalizedSearch,
+            mode: 'insensitive',
+          },
+        },
+        {
+          description: {
+            contains: normalizedSearch,
+            mode: 'insensitive',
+          },
+        },
+      ];
+    }
 
     if (status) {
       where.status = status;

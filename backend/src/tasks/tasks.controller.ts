@@ -31,11 +31,13 @@ export class TasksController {
     @Query() query: TaskQueryDto,
     @Query('categoryId') categoryId?: string | string[],
     @Query('authorId') authorId?: string,
+    @Query('search') search?: string,
   ) {
     return this.tasksService.findAll({
       page: query.page,
       limit: query.limit,
       status: query.status,
+      search,
       authorId: authorId ? Number(authorId) : undefined,
       categories: Array.isArray(categoryId)
         ? categoryId.map(Number)

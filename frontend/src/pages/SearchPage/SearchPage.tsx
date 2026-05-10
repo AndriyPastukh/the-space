@@ -23,10 +23,13 @@ const getInitialTabFromUrl = (type: string | null): TabType => {
 export default function SearchPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("search") ?? "");
   const [filterOpen, setFilterOpen] = useState(false);
   const [savedIds, setSavedIds] = useState<string[]>([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() => {
+    const pageFromUrl = Number(searchParams.get("page"));
+    return Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+  });
 
   const [filterState, setFilterState] = useState<FilterState>(() => ({
     tab: getInitialTabFromUrl(searchParams.get("type")),
@@ -59,8 +62,47 @@ export default function SearchPage() {
 
   const current = isTaskTab ? tasks : knowledges;
 
+  const updateSearchParams = (nextValues: {
+    tab?: TabType;
+    search?: string;
+    page?: number;
+  }) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (nextValues.tab) {
+      nextParams.set("type", nextValues.tab === "TASK" ? "task" : "knowledge");
+    }
+
+    if (nextValues.search !== undefined) {
+      const normalizedSearch = nextValues.search.trim();
+
+      if (normalizedSearch) {
+        nextParams.set("search", normalizedSearch);
+      } else {
+        nextParams.delete("search");
+      }
+    }
+
+    if (nextValues.page !== undefined) {
+      if (nextValues.page > 1) {
+        nextParams.set("page", String(nextValues.page));
+      } else {
+        nextParams.delete("page");
+      }
+    }
+
+    setSearchParams(nextParams);
+  };
+
   useEffect(() => {
     const tabFromUrl = getInitialTabFromUrl(searchParams.get("type"));
+    const searchFromUrl = searchParams.get("search") ?? "";
+    const pageFromUrl = Number(searchParams.get("page"));
+    const safePage =
+      Number.isInteger(pageFromUrl) && pageFromUrl > 0 ? pageFromUrl : 1;
+
+    setSearch(searchFromUrl);
+    setPage(safePage);
 
     setFilterState((prev) => {
       if (prev.tab === tabFromUrl) return prev;
@@ -75,29 +117,34 @@ export default function SearchPage() {
     });
   }, [searchParams]);
 
-  useEffect(() => {
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
     setPage(1);
-  }, [search, filterState]);
 
-  const updateUrlType = (tab: TabType) => {
-    const nextParams = new URLSearchParams(searchParams);
-
-    nextParams.set("type", tab === "TASK" ? "task" : "knowledge");
-
-    setSearchParams(nextParams);
+    updateSearchParams({
+      search: value,
+      page: 1,
+    });
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
+
+    updateSearchParams({
+      page: newPage,
+    });
+
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleFilterChange = (newState: FilterState) => {
     setFilterState(newState);
+    setPage(1);
 
-    if (newState.tab !== filterState.tab) {
-      updateUrlType(newState.tab);
-    }
+    updateSearchParams({
+      tab: newState.tab,
+      page: 1,
+    });
   };
 
   const handleSave = (id: string) => {
@@ -115,7 +162,7 @@ export default function SearchPage() {
       <div className="search-page-container">
         <SearchBar
           value={search}
-          onChange={setSearch}
+          onChange={handleSearchChange}
           onFilterToggle={() => setFilterOpen((prev) => !prev)}
           filterOpen={filterOpen}
           sortBy={filterState.sortBy}
