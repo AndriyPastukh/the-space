@@ -51,3 +51,7 @@ export const getKnowledges = ({
 
   return api.get(`/api/knowledge?${params.toString()}`, { signal });
 };
+
+export const getKnowledgeById = (id: string, signal?: AbortSignal) => {
+  return api.get(`/api/knowledge/${id}`, { signal });
+};
