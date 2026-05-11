@@ -14,7 +14,8 @@ model User {
   refreshTokens RefreshToken[]
   userDetails   UserDetails?
   knowledges    Knowledge[]
-  tasks         Task[]
+  createdTasks  Task[]         @relation("CreatedTasks")
+  assignedTasks Task[]         @relation("AssignedTasks")
   communities   Community[]
   teams         Team[]
 }
@@ -58,6 +59,7 @@ model UserDetails {
   teams          UserTeam[]
   communityJoinRequests CommunityJoinRequest[]
   teamJoinRequests      TeamJoinRequest[]
+  taskProposals         TaskProposal[]
   portfolioItems PortfolioItem[]
 
   @@index([nickname])
@@ -267,8 +269,12 @@ model Task {
   files       String[]   @default([])
 
   authorId    Int
-  author      User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author      User       @relation("CreatedTasks", fields: [authorId], references: [id], onDelete: Cascade)
 
+  assigneeId  Int?
+  assignee    User?      @relation("AssignedTasks", fields: [assigneeId], references: [id])
+
+  proposals   TaskProposal[]
   categories Category[]
 
   deletedAt   DateTime?
@@ -276,9 +282,25 @@ model Task {
   updatedAt   DateTime   @updatedAt
 
   @@index([authorId])
+  @@index([assigneeId])
   @@index([status])
   @@index([deletedAt])
   @@index([createdAt])
+}
+
+model TaskProposal {
+  id            String   @id @default(uuid())
+  taskId        String
+  task          Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userDetailsId Int
+  userDetails   UserDetails @relation(fields: [userDetailsId], references: [id], onDelete: Cascade)
+  message       String?  @db.Text
+  status        JoinRequestStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([taskId, userDetailsId])
+  @@index([status])
 }
 
 model Knowledge {

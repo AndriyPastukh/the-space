@@ -11,6 +11,7 @@ import {
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
+import { JoinRequestStatus } from '@prisma/client';
 import { CommunitiesService } from './communities.service';
 import { CreateCommunityDto } from './dto/create-community.dto';
 import { UpdateCommunityDto } from './dto/update-community.dto';
@@ -71,6 +72,23 @@ export class CommunitiesController {
   @UseGuards(JwtAuthGuard)
   joinRequest(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.communitiesService.joinRequest(req.user.id, id);
+  }
+
+  @Get(':id/join-requests')
+  @UseGuards(JwtAuthGuard)
+  getJoinRequests(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.communitiesService.getJoinRequests(req.user.id, id);
+  }
+
+  @Patch(':id/join-requests/:requestId')
+  @UseGuards(JwtAuthGuard)
+  updateJoinRequestStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('requestId') requestId: string,
+    @Req() req: any,
+    @Body('status') status: JoinRequestStatus,
+  ) {
+    return this.communitiesService.updateJoinRequestStatus(req.user.id, id, requestId, status);
   }
 
   @Post('avatar/presign')

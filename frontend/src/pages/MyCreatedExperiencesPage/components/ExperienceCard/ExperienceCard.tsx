@@ -1,3 +1,5 @@
+import { respondToProposal, deleteTask } from '../../../../features/tasks/taskApi';
+import { deleteKnowledge } from '../../../../features/knowledges/knowledgeApi';
 import ApplicationRow from '../ApplicationRow/ApplicationRow';
 import './ExperienceCard.css';
 
@@ -6,6 +8,7 @@ type ExperienceStatus = 'OPEN' | 'IN_PROGRESS' | 'REVIEW' | 'COMPLETED';
 interface Application {
     id: string;
     applicant: {
+        id: number;
         firstName: string;
         lastName: string;
         avatarUrl: string;
@@ -50,6 +53,7 @@ function timeAgo(iso: string): string {
 const MAX_TAGS = 3;
 
 function TagList({ tags }: { tags: string[] }) {
+    if (!tags) return null;
     const visible = tags.slice(0, MAX_TAGS);
     const hidden = tags.length - MAX_TAGS;
     return (
@@ -61,15 +65,49 @@ function TagList({ tags }: { tags: string[] }) {
 }
 
 export default function ExperienceCard(props: ExperienceCardProps) {
-    const handleAccept = (appId: string) => console.log('accept', appId);
-    const handleReject = (appId: string) => console.log('reject', appId);
+    const handleAccept = async (appId: string) => {
+        if (!window.confirm('Прийняти цю заявку? Інші заявки будуть автоматично відхилені.')) return;
+        try {
+            await respondToProposal(props.id, appId, 'APPROVED');
+            window.location.reload();
+        } catch (err) {
+            console.error('Failed to accept:', err);
+            alert('Помилка при прийнятті заявки');
+        }
+    };
+
+    const handleReject = async (appId: string) => {
+        if (!window.confirm('Відхилити цю заявку?')) return;
+        try {
+            await respondToProposal(props.id, appId, 'REJECTED');
+            window.location.reload();
+        } catch (err) {
+            console.error('Failed to reject:', err);
+            alert('Помилка при відхиленні заявки');
+        }
+    };
+
     const handleCancel = (appId: string) => console.log('cancel', appId);
     const handleRework = (appId: string) => console.log('rework', appId);
     const handleAcceptWork = (appId: string) => console.log('acceptWork', appId);
     const handleChat = (appId: string) => console.log('chat', appId);
     const handleLeaveReview = (appId: string) => console.log('leaveReview', appId);
     const handleEdit = () => console.log('edit', props.id);
-    const handleDelete = () => console.log('delete', props.id);
+    
+    const handleDelete = async () => {
+        if (!window.confirm('Ви впевнені, що хочете видалити цей запис?')) return;
+        try {
+            if (props.type === 'TASK') {
+                await deleteTask(props.id);
+            } else {
+                await deleteKnowledge(props.id);
+            }
+            window.location.reload();
+        } catch (err) {
+            console.error('Failed to delete:', err);
+            alert('Помилка при видаленні');
+        }
+    };
 
     return (
         <div className="experience-card card">

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import PersonCard from './components/PersonCard/PersonCard';
 import SpaceCard from './components/SpaceCard/SpaceCard';
 import FilterPanel from './components/FilterPanel/FilterPanel';
@@ -6,17 +6,8 @@ import Pagination from './components/Pagination/Pagination';
 import type { FilterState } from './components/FilterPanel/FilterPanel';
 import { communitiesApi } from '../../features/communities/communitiesApi';
 import { teamsApi } from '../../features/teams/teamsApi';
+import { usersApi } from '../../features/users/usersApi';
 import './SearchSpacePage.css';
-
-const MOCK_PEOPLE = [
-    {
-        id: '1', firstName: 'Іван', lastName: 'Петренко', nickname: 'ivan_p',
-        avatarUrl: '', rating: 4.9,
-        bio: 'Full-stack розробник, люблю React і Node.js. Шукаю цікаві проєкти.',
-        directions: ['web', 'backend', 'mobile'],
-        interests: ['gamedev', 'ui/ux design', 'Data Science'],
-    },
-];
 
 const ITEMS_PER_PAGE = 6;
 
@@ -42,13 +33,12 @@ export default function SearchSpacePage() {
     const [sortOpen, setSortOpen] = useState(false);
     const [page, setPage] = useState(1);
 
-    const [spaces, setSpaces] = useState<any[]>([]);
+    const [items, setItems] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [totalSpaces, setTotalSpaces] = useState(0);
+    const [totalItems, setTotalItems] = useState(0);
 
     const handleFilterChange = (newState: FilterState) => {
         setFilterState(newState);
-        setPage(Page);
         setPage(1);
     };
 
@@ -59,71 +49,56 @@ export default function SearchSpacePage() {
     };
 
     useEffect(() => {
-        if (filterState.tab === 'SPACES') {
-            const fetchSpaces = async () => {
-                setLoading(true);
-                try {
-                    const params = {
-                        page,
-                        limit: ITEMS_PER_PAGE,
-                        search,
-                    };
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const params = {
+                    page,
+                    limit: ITEMS_PER_PAGE,
+                    search,
+                };
 
-                    let items: any[] = [];
+                if (filterState.tab === 'SPACES') {
+                    let results: any[] = [];
                     let total = 0;
 
                     if (filterState.spaceType === 'all' || filterState.spaceType === 'community') {
                         const comms = await communitiesApi.findAll(params);
-                        items = [...items, ...comms.items.map(i => ({ ...i, type: 'COMMUNITY' }))];
+                        results = [...results, ...comms.items.map(i => ({ ...i, type: 'COMMUNITY' }))];
                         total += comms.meta.total;
                     }
 
                     if (filterState.spaceType === 'all' || filterState.spaceType === 'team') {
                         const teams = await teamsApi.findAll(params);
-                        items = [...items, ...teams.items.map(i => ({ ...i, type: 'TEAM' }))];
+                        results = [...results, ...teams.items.map(i => ({ ...i, type: 'TEAM' }))];
                         total += teams.meta.total;
                     }
 
-                    items.sort((a, b) => {
+                    results.sort((a, b) => {
                         if (sort === 'members_desc') return (b.memberCount || 0) - (a.memberCount || 0);
                         if (sort === 'members_asc') return (a.memberCount || 0) - (b.memberCount || 0);
                         return (b.rating || 0) - (a.rating || 0);
                     });
 
-                    setSpaces(items.slice(0, ITEMS_PER_PAGE));
-                    setTotalSpaces(total);
-                } catch (err) {
-                    console.error('Failed to fetch spaces:', err);
-                } finally {
-                    setLoading(false);
+                    setItems(results.slice(0, ITEMS_PER_PAGE));
+                    setTotalItems(total);
+                } else {
+                    // Fetch PEOPLE
+                    const res = await usersApi.search(params);
+                    setItems(res.data);
+                    setTotalItems(res.meta.total);
                 }
-            };
-            fetchSpaces();
-        }
+            } catch (err) {
+                console.error('Failed to fetch data:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [search, filterState, sort, page]);
 
-    const filteredPeople = useMemo(() => {
-        if (filterState.tab !== 'PEOPLE') return [];
-        const q = search.toLowerCase();
-        return MOCK_PEOPLE.filter(p => {
-            const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-            if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q)) return false;
-            if (filterState.directions.length > 0) {
-                const match = filterState.directions.some(d => p.directions.includes(d));
-                if (!match) return false;
-            }
-            return true;
-        }).sort((a, b) => {
-            if (sort === 'rating_asc') return a.rating - b.rating;
-            return b.rating - a.rating;
-        });
-    }, [search, filterState, sort]);
-
-    const totalPages = filterState.tab === 'PEOPLE' 
-        ? Math.max(1, Math.ceil(filteredPeople.length / ITEMS_PER_PAGE))
-        : Math.max(1, Math.ceil(totalSpaces / ITEMS_PER_PAGE));
-
-    const paginatedPeople = filteredPeople.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PAGE));
 
     return (
         <div className="search-space-page">
@@ -186,18 +161,18 @@ export default function SearchSpacePage() {
                     <div className="search-results">
                         {loading ? (
                             <div className="search-loading">Завантаження...</div>
-                        ) : (filterState.tab === 'PEOPLE' ? paginatedPeople : spaces).length === 0 ? (
+                        ) : items.length === 0 ? (
                             <div className="search-empty">
                                 <span style={{ fontSize: 40, opacity: 0.4 }}>🔍</span>
                                 <p>Нічого не знайдено</p>
                                 <span>Спробуй змінити запит або фільтри</span>
                             </div>
                         ) : filterState.tab === 'PEOPLE' ? (
-                            paginatedPeople.map(p => (
+                            items.map(p => (
                                 <PersonCard key={p.id} {...p} />
                             ))
                         ) : (
-                            spaces.map(s => (
+                            items.map(s => (
                                 <SpaceCard 
                                     key={`${s.type}-${s.id}`} 
                                     {...s} 

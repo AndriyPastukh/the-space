@@ -92,6 +92,7 @@ export const AuthProvider = ({ children }: any) => {
     }
   };
 
+
   const register = async (data: RegisterDto) => {
     try {
       setState((prev) => ({ ...prev, isAuthLoading: true, authError: null }));

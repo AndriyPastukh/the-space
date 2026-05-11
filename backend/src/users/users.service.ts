@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TaskStatus, JoinRequestStatus } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { User } from '@prisma/client';
 import { PublicProfileDto } from './dto/public-profile.dto';
@@ -300,9 +301,9 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        tasks: {
+        assignedTasks: {
           where: {
-            status: 'COMPLETED',
+            status: TaskStatus.COMPLETED,
             deletedAt: null,
           },
           select: {
@@ -333,8 +334,8 @@ export class UsersService {
 
     const averageRating = statsView?.averageRating || 0;
 
-    const completedTaskPoints = user.tasks.reduce(
-      (sum, task) => sum + task.points,
+    const completedTaskPoints = (user as any).assignedTasks.reduce(
+      (sum: number, task: any) => sum + task.points,
       0,
     );
 

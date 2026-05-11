@@ -2,71 +2,13 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ExperienceCard from './components/ExperienceCard/ExperienceCard';
 import type { ExperienceStatus } from './components/ExperienceCard/ExperienceCard';
+import { useAuth } from '../../hooks/useAuth';
+import { useTasks } from '../../hooks/useTasks';
+import { useKnowledges } from '../../hooks/useKnowledges';
 import './MyCreatedExperiencesPage.css';
 
-type TypeTab = 'TASK' | 'KNOWLEDGE';
-
-const mockCreatedTasks = [
-    {
-        type: 'TASK' as const,
-        id: 'task-1',
-        title: 'Створити дизайн для сайту авто',
-        description: 'Текст для перевірки великого контейнера. Текст для перевірки великого контейнера...',
-        tags: ['design', 'figma', 'html', 'css'],
-        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        status: 'OPEN' as ExperienceStatus,
-        applications: [
-            {
-                id: 'app-1',
-                applicant: { firstName: 'Іван', lastName: 'М.', avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=1', rating: 4.8 },
-                status: 'PENDING' as const,
-                appliedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-            },
-            {
-                id: 'app-2',
-                applicant: { firstName: 'Артем', lastName: 'К.', avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=2', rating: 5.0 },
-                status: 'PENDING' as const,
-                appliedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-            },
-        ],
-    },
-    {
-        type: 'TASK' as const,
-        id: 'task-2',
-        title: 'Створити навігаційну панель',
-        description: 'Короткий опис завдання...',
-        tags: ['react', 'frontend'],
-        createdAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-        status: 'REVIEW' as ExperienceStatus,
-        applications: [
-            {
-                id: 'app-3',
-                applicant: { firstName: 'Олег', lastName: 'П.', avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=3', rating: 4.5 },
-                status: 'SUBMITTED_FOR_REVIEW' as const,
-                appliedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
-            },
-        ],
-    },
-];
-
-const mockCreatedKnowledges = [
-    {
-        type: 'KNOWLEDGE' as const,
-        id: 'know-1',
-        offer: { tags: ['python', 'api'], description: 'основи api в python а також CRUD операції' },
-        request: { tags: ['design', 'figma'], description: 'дизайну в Figma, підбір кольорів і компоненти' },
-        createdAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-        status: 'IN_PROGRESS' as ExperienceStatus,
-        applications: [
-            {
-                id: 'app-4',
-                applicant: { firstName: 'Марія', lastName: 'В.', avatarUrl: 'https://api.dicebear.com/7.x/avataaars/svg?seed=4', rating: 4.9 },
-                status: 'ACCEPTED' as const,
-                appliedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
-            },
-        ],
-    },
-];
+type TypeTab = 'CREATED' | 'ASSIGNED';
+type ContentTab = 'TASK' | 'KNOWLEDGE';
 
 const STATUS_TABS: { value: ExperienceStatus; label: string }[] = [
     { value: 'OPEN', label: 'Відкриті' },
@@ -77,17 +19,40 @@ const STATUS_TABS: { value: ExperienceStatus; label: string }[] = [
 
 export default function MyCreatedExperiencesPage() {
     const navigate = useNavigate();
-    const [typeTab, setTypeTab] = useState<TypeTab>('TASK');
+    const { user } = useAuth();
+    const [typeTab, setTypeTab] = useState<TypeTab>('CREATED');
+    const [contentTab, setContentTab] = useState<ContentTab>('TASK');
     const [statusTab, setStatusTab] = useState<ExperienceStatus>('OPEN');
 
-    const allItems = typeTab === 'TASK' ? mockCreatedTasks : mockCreatedKnowledges;
+    const tasks = useTasks({
+        page: 1,
+        limit: 100,
+        search: '',
+        categoryIds: [],
+        authorId: typeTab === 'CREATED' ? user?.id : undefined,
+        assigneeId: typeTab === 'ASSIGNED' ? user?.id : undefined,
+        enabled: !!user && contentTab === 'TASK',
+    });
+
+    const knowledges = useKnowledges({
+        page: 1,
+        limit: 100,
+        search: '',
+        offerCategoryIds: [],
+        requestCategoryIds: [],
+        authorId: typeTab === 'CREATED' ? user?.id : undefined,
+        enabled: !!user && contentTab === 'KNOWLEDGE',
+    });
+
+    const items = contentTab === 'TASK' ? tasks.data : knowledges.data;
+    const isLoading = contentTab === 'TASK' ? tasks.isLoading : knowledges.isLoading;
 
     const countByStatus = (status: ExperienceStatus) =>
-        allItems.filter(i => i.status === status).length;
+        items.filter(i => i.status === status).length;
 
     const filtered = useMemo(() =>
-        allItems.filter(i => i.status === statusTab),
-        [typeTab, statusTab]
+        items.filter(i => i.status === statusTab),
+        [items, statusTab]
     );
 
     return (
@@ -105,17 +70,33 @@ export default function MyCreatedExperiencesPage() {
                     </button>
                 </div>
 
-                {/* Type tabs */}
+                {/* Role Tabs */}
+                <div className="type-tabs" style={{ marginBottom: '10px' }}>
+                    <button
+                        className={`type-tab ${typeTab === 'CREATED' ? 'type-tab--active' : ''}`}
+                        onClick={() => setTypeTab('CREATED')}
+                    >
+                        Я замовник
+                    </button>
+                    <button
+                        className={`type-tab ${typeTab === 'ASSIGNED' ? 'type-tab--active' : ''}`}
+                        onClick={() => setTypeTab('ASSIGNED')}
+                    >
+                        Я виконавець
+                    </button>
+                </div>
+
+                {/* Content type tabs */}
                 <div className="type-tabs">
                     <button
-                        className={`type-tab ${typeTab === 'TASK' ? 'type-tab--active' : ''}`}
-                        onClick={() => { setTypeTab('TASK'); setStatusTab('OPEN'); }}
+                        className={`type-tab ${contentTab === 'TASK' ? 'type-tab--active' : ''}`}
+                        onClick={() => { setContentTab('TASK'); setStatusTab('OPEN'); }}
                     >
                         Завдання
                     </button>
                     <button
-                        className={`type-tab ${typeTab === 'KNOWLEDGE' ? 'type-tab--active' : ''}`}
-                        onClick={() => { setTypeTab('KNOWLEDGE'); setStatusTab('OPEN'); }}
+                        className={`type-tab ${contentTab === 'KNOWLEDGE' ? 'type-tab--active' : ''}`}
+                        onClick={() => { setContentTab('KNOWLEDGE'); setStatusTab('OPEN'); }}
                     >
                         Знання
                     </button>
@@ -136,16 +117,22 @@ export default function MyCreatedExperiencesPage() {
                 </div>
 
                 {/* Content */}
-                {filtered.length === 0 ? (
+                {isLoading ? (
+                    <div className="my-experiences-empty">
+                        <p>Завантаження...</p>
+                    </div>
+                ) : filtered.length === 0 ? (
                     <div className="my-experiences-empty">
                         <span className="my-experiences-empty__icon">📋</span>
-                        <p>У вас ще немає створених досвідів...</p>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => navigate('/create-experience')}
-                        >
-                            Створити перший досвід
-                        </button>
+                        <p>У вас ще немає досвідів у цій категорії...</p>
+                        {typeTab === 'CREATED' && (
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => navigate('/create-experience')}
+                            >
+                                Створити перший досвід
+                            </button>
+                        )}
                     </div>
                 ) : (
                     <div className="my-experiences-list">

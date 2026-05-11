@@ -1,0 +1,49 @@
+import api from "../../api";
+
+export interface UserProfile {
+  id: number;
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickname: string;
+  avatarUrl: string;
+  bio: string;
+  reputation: number;
+  skillTags: string[];
+  interestTags: string[];
+  currentLevel: number;
+  xpPoints: number;
+}
+
+export interface UsersResponse {
+  data: UserProfile[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export const usersApi = {
+  search: async (params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }) => {
+    const { data } = await api.get<UsersResponse>("/api/users/search", {
+      params,
+    });
+    return data;
+  },
+
+  findOne: async (id: number) => {
+    const { data } = await api.get<UserProfile>(`/api/users/${id}`);
+    return data;
+  },
+
+  getMe: async () => {
+    const { data } = await api.get<UserProfile>("/api/users/me");
+    return data;
+  },
+};

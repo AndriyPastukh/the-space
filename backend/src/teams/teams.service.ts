@@ -403,6 +403,97 @@ export class TeamsService {
     };
   }
 
+  async getJoinRequests(userId: number, id: number) {
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+    });
+
+    if (!userDetails) {
+      throw new NotFoundException('User details not found');
+    }
+
+    const membership = await this.prisma.userTeam.findUnique({
+      where: {
+        userDetailsId_teamId: {
+          userDetailsId: userDetails.id,
+          teamId: id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== SpaceMemberRole.OWNER && membership.role !== SpaceMemberRole.MODERATOR)) {
+      throw new ForbiddenException('Permission denied');
+    }
+
+    return this.prisma.teamJoinRequest.findMany({
+      where: { teamId: id, status: JoinRequestStatus.PENDING },
+      include: {
+        userDetails: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateJoinRequestStatus(userId: number, id: number, requestId: string, status: JoinRequestStatus) {
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+    });
+
+    if (!userDetails) {
+      throw new NotFoundException('User details not found');
+    }
+
+    const membership = await this.prisma.userTeam.findUnique({
+      where: {
+        userDetailsId_teamId: {
+          userDetailsId: userDetails.id,
+          teamId: id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== SpaceMemberRole.OWNER && membership.role !== SpaceMemberRole.MODERATOR)) {
+      throw new ForbiddenException('Permission denied');
+    }
+
+    const request = await this.prisma.teamJoinRequest.findUnique({
+      where: { id: +requestId },
+    });
+
+    if (!request || request.teamId !== id) {
+      throw new NotFoundException('Join request not found');
+    }
+
+    if (status === JoinRequestStatus.APPROVED) {
+      await this.prisma.$transaction([
+        this.prisma.teamJoinRequest.update({
+          where: { id: +requestId },
+          data: { status: JoinRequestStatus.APPROVED },
+        }),
+        this.prisma.userTeam.create({
+          data: {
+            teamId: id,
+            userDetailsId: request.userDetailsId,
+            role: SpaceMemberRole.MEMBER,
+          },
+        }),
+      ]);
+    } else {
+      await this.prisma.teamJoinRequest.update({
+        where: { id: +requestId },
+        data: { status: JoinRequestStatus.REJECTED },
+      });
+    }
+
+    return { message: `Join request ${status.toLowerCase()} successfully` };
+  }
+
   async getPresignedUrl(userId: number, fileName: string, contentType: string) {
     const key = `teams/avatars/${userId}/${Date.now()}-${fileName}`;
     const uploadUrl = await this.s3Service.generatePresignedUrl(key, contentType);

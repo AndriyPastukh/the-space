@@ -39,12 +39,17 @@ export class KnowledgeService {
     search?: string;
     offerCat?: number[];
     requestCat?: number[];
+    authorId?: number;
   }) {
-    const { page = 1, limit = 10, search, offerCat, requestCat } = query;
+    const { page = 1, limit = 10, search, offerCat, requestCat, authorId } = query;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
     const where: any = { deletedAt: null };
+
+    if (authorId) {
+      where.authorId = authorId;
+    }
 
     const normalizedSearch = search?.trim();
 

@@ -17,6 +17,7 @@ export type GetKnowledgesParams = {
   sortBy?: string;
   offerCategoryIds?: number[];
   requestCategoryIds?: number[];
+  authorId?: number;
   signal?: AbortSignal;
 };
 
@@ -31,6 +32,7 @@ export const getKnowledges = ({
   sortBy,
   offerCategoryIds = [],
   requestCategoryIds = [],
+  authorId,
   signal,
 }: GetKnowledgesParams) => {
   const params = new URLSearchParams();
@@ -40,6 +42,7 @@ export const getKnowledges = ({
 
   if (search) params.append("search", search);
   if (sortBy) params.append("sortBy", sortBy);
+  if (authorId) params.append("authorId", authorId.toString());
 
   offerCategoryIds.forEach(id => {
     params.append("offerCategoryId", id.toString());
@@ -54,4 +57,8 @@ export const getKnowledges = ({
 
 export const getKnowledgeById = (id: string, signal?: AbortSignal) => {
   return api.get(`/api/knowledge/${id}`, { signal });
+};
+
+export const deleteKnowledge = (id: string) => {
+  return api.delete(`/api/knowledge/${id}`);
 };

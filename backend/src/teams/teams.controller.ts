@@ -11,6 +11,7 @@ import {
   Req,
   ParseIntPipe,
 } from '@nestjs/common';
+import { JoinRequestStatus } from '@prisma/client';
 import { TeamsService } from './teams.service';
 import { CreateTeamDto } from './dto/create-team.dto';
 import { UpdateTeamDto } from './dto/update-team.dto';
@@ -71,6 +72,23 @@ export class TeamsController {
   @UseGuards(JwtAuthGuard)
   joinRequest(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
     return this.teamsService.joinRequest(req.user.id, id);
+  }
+
+  @Get(':id/join-requests')
+  @UseGuards(JwtAuthGuard)
+  getJoinRequests(@Param('id', ParseIntPipe) id: number, @Req() req: any) {
+    return this.teamsService.getJoinRequests(req.user.id, id);
+  }
+
+  @Patch(':id/join-requests/:requestId')
+  @UseGuards(JwtAuthGuard)
+  updateJoinRequestStatus(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('requestId') requestId: string,
+    @Req() req: any,
+    @Body('status') status: JoinRequestStatus,
+  ) {
+    return this.teamsService.updateJoinRequestStatus(req.user.id, id, requestId, status);
   }
 
   @Post('avatar/presign')

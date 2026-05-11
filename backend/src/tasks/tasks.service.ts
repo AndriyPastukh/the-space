@@ -55,6 +55,22 @@ export class TasksService {
       author: {
         select: this.authorSelect,
       },
+      assignee: {
+        select: this.authorSelect,
+      },
+      proposals: {
+        include: {
+          userDetails: {
+            select: {
+              firstName: true,
+              lastName: true,
+              nickname: true,
+              avatarUrl: true,
+              reputation: true,
+            },
+          },
+        },
+      },
     };
   }
 
@@ -84,6 +100,7 @@ export class TasksService {
     status?: TaskStatusDto;
     search?: string;
     authorId?: number;
+    assigneeId?: number;
     categories?: number[];
   }) {
     const {
@@ -92,6 +109,7 @@ export class TasksService {
       status,
       search,
       authorId,
+      assigneeId,
       categories,
     } = query;
 
@@ -128,6 +146,10 @@ export class TasksService {
 
     if (authorId && Number.isInteger(authorId)) {
       where.authorId = authorId;
+    }
+
+    if (assigneeId && Number.isInteger(assigneeId)) {
+      where.assigneeId = assigneeId;
     }
 
     if (categories && categories.length > 0) {
@@ -209,6 +231,92 @@ export class TasksService {
       },
       include: this.buildInclude(),
     });
+  }
+
+  async applyToTask(id: string, userId: number, message?: string) {
+    const task = await this.findOne(id);
+
+    if (task.authorId === userId) {
+      throw new ForbiddenException('You cannot apply to your own task');
+    }
+
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+    });
+
+    if (!userDetails) {
+      throw new NotFoundException('User details not found');
+    }
+
+    const existingProposal = await this.prisma.taskProposal.findUnique({
+      where: {
+        taskId_userDetailsId: {
+          taskId: id,
+          userDetailsId: userDetails.id,
+        },
+      },
+    });
+
+    if (existingProposal) {
+      throw new ForbiddenException('You have already applied to this task');
+    }
+
+    return this.prisma.taskProposal.create({
+      data: {
+        taskId: id,
+        userDetailsId: userDetails.id,
+        message,
+      },
+    });
+  }
+
+  async respondToProposal(id: string, userId: number, proposalId: string, status: 'APPROVED' | 'REJECTED') {
+    const task = await this.findOne(id);
+
+    if (task.authorId !== userId) {
+      throw new ForbiddenException('You can only manage proposals for your own tasks');
+    }
+
+    const proposal = await this.prisma.taskProposal.findUnique({
+      where: { id: proposalId },
+      include: { userDetails: true },
+    });
+
+    if (!proposal || proposal.taskId !== id) {
+      throw new NotFoundException('Proposal not found');
+    }
+
+    if (status === 'APPROVED') {
+      await this.prisma.$transaction([
+        this.prisma.taskProposal.update({
+          where: { id: proposalId },
+          data: { status: 'APPROVED' },
+        }),
+        this.prisma.task.update({
+          where: { id },
+          data: {
+            assigneeId: proposal.userDetails.userId,
+            status: 'IN_PROGRESS',
+          },
+        }),
+        // Reject all other proposals
+        this.prisma.taskProposal.updateMany({
+          where: {
+            taskId: id,
+            id: { not: proposalId },
+            status: 'PENDING',
+          },
+          data: { status: 'REJECTED' },
+        }),
+      ]);
+    } else {
+      await this.prisma.taskProposal.update({
+        where: { id: proposalId },
+        data: { status: 'REJECTED' },
+      });
+    }
+
+    return { message: `Proposal ${status.toLowerCase()} successfully` };
   }
 
   async remove(id: string, userId: number) {

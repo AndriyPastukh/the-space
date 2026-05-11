@@ -16,4 +16,12 @@ export class CategoriesService {
       },
     });
   }
+
+  async create(name: string) {
+    return this.prisma.category.upsert({
+      where: { name },
+      update: {},
+      create: { name },
+    });
+  }
 }

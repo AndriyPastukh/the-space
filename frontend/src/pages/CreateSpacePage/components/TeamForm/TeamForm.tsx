@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
 import { teamsApi } from '../../../../features/teams/teamsApi';
+import { getCategories, type Category } from '../../../../features/categories/categoryApi';
 import './TeamForm.css';
 
-const DIRECTIONS = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 const MAX_WORDS = 300;
 
 const countWords = (text: string) =>
@@ -12,7 +12,7 @@ const countWords = (text: string) =>
 
 export interface TeamFormState {
     name: string;
-    directions: string[];
+    directions: (string | number)[];
     description: string;
     avatar: File | null;
 }
@@ -27,6 +27,19 @@ type FormErrors = Partial<Record<keyof TeamFormState, string>>;
 export default function TeamForm({ formState, onChange }: TeamFormProps) {
     const [errors, setErrors] = useState<FormErrors>({});
     const [avatarError, setAvatarError] = useState('');
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        const loadCats = async () => {
+            try {
+                const { data } = await getCategories();
+                setAvailableCategories(data);
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+            }
+        };
+        loadCats();
+    }, []);
 
     const update = <K extends keyof TeamFormState>(field: K, value: TeamFormState[K]) => {
         onChange({ ...formState, [field]: value });
@@ -78,7 +91,7 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
             const team = await teamsApi.create({
                 name: formState.name,
                 description: formState.description,
-                directions: formState.directions.map(d => DIRECTIONS.indexOf(d) + 1),
+                directions: formState.directions,
                 avatarUrl
             });
 
@@ -117,7 +130,7 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
                     Напрям <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={DIRECTIONS}
+                    options={availableCategories}
                     selected={formState.directions}
                     onChange={val => update('directions', val)}
                     error={errors.directions}

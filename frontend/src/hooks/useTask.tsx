@@ -8,17 +8,30 @@ const mapTaskDetails = (item: any) => {
     name:
       item.author.userDetails?.nickname || item.author.email || "Користувач",
     avatarUrl: item.author.userDetails?.avatarUrl || "",
-    rating: 0,
+    rating: item.author.userDetails?.reputation || 0,
     reviewsCount: 0,
   };
+
+  const applications = (item.proposals || []).map((p: any) => ({
+    id: p.id,
+    applicant: {
+      firstName: p.userDetails.firstName,
+      lastName: p.userDetails.lastName,
+      avatarUrl: p.userDetails.avatarUrl,
+      rating: p.userDetails.reputation || 0,
+    },
+    status: p.status,
+    appliedAt: p.createdAt,
+  }));
 
   return {
     ...item,
     type: "TASK",
     author: authorInfo,
+    applications,
     statistics: {
       viewsCount: 0,
-      proposalsCount: 0,
+      proposalsCount: applications.length,
     },
     viewer: {
       isSaved: false,

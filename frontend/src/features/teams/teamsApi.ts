@@ -60,6 +60,16 @@ export const teamsApi = {
     return data;
   },
 
+  getJoinRequests: async (id: number) => {
+    const { data } = await api.get(`/api/teams/${id}/join-requests`);
+    return data;
+  },
+
+  updateJoinRequestStatus: async (id: number, requestId: string, status: 'ACCEPTED' | 'REJECTED') => {
+    const { data } = await api.patch(`/api/teams/${id}/join-requests/${requestId}`, { status });
+    return data;
+  },
+
   getPresignedUrl: async (fileName: string, contentType: string) => {
     const { data } = await api.post("/api/teams/avatar/presign", {
       fileName,

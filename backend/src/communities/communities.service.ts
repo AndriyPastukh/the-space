@@ -403,6 +403,97 @@ export class CommunitiesService {
     };
   }
 
+  async getJoinRequests(userId: number, id: number) {
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+    });
+
+    if (!userDetails) {
+      throw new NotFoundException('User details not found');
+    }
+
+    const membership = await this.prisma.userCommunity.findUnique({
+      where: {
+        userDetailsId_communityId: {
+          userDetailsId: userDetails.id,
+          communityId: id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== SpaceMemberRole.OWNER && membership.role !== SpaceMemberRole.MODERATOR)) {
+      throw new ForbiddenException('Permission denied');
+    }
+
+    return this.prisma.communityJoinRequest.findMany({
+      where: { communityId: id, status: JoinRequestStatus.PENDING },
+      include: {
+        userDetails: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            avatarUrl: true,
+          },
+        },
+      },
+    });
+  }
+
+  async updateJoinRequestStatus(userId: number, id: number, requestId: string, status: JoinRequestStatus) {
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+    });
+
+    if (!userDetails) {
+      throw new NotFoundException('User details not found');
+    }
+
+    const membership = await this.prisma.userCommunity.findUnique({
+      where: {
+        userDetailsId_communityId: {
+          userDetailsId: userDetails.id,
+          communityId: id,
+        },
+      },
+    });
+
+    if (!membership || (membership.role !== SpaceMemberRole.OWNER && membership.role !== SpaceMemberRole.MODERATOR)) {
+      throw new ForbiddenException('Permission denied');
+    }
+
+    const request = await this.prisma.communityJoinRequest.findUnique({
+      where: { id: +requestId },
+    });
+
+    if (!request || request.communityId !== id) {
+      throw new NotFoundException('Join request not found');
+    }
+
+    if (status === JoinRequestStatus.APPROVED) {
+      await this.prisma.$transaction([
+        this.prisma.communityJoinRequest.update({
+          where: { id: +requestId },
+          data: { status: JoinRequestStatus.APPROVED },
+        }),
+        this.prisma.userCommunity.create({
+          data: {
+            communityId: id,
+            userDetailsId: request.userDetailsId,
+            role: SpaceMemberRole.MEMBER,
+          },
+        }),
+      ]);
+    } else {
+      await this.prisma.communityJoinRequest.update({
+        where: { id: +requestId },
+        data: { status: JoinRequestStatus.REJECTED },
+      });
+    }
+
+    return { message: `Join request ${status.toLowerCase()} successfully` };
+  }
+
   async getPresignedUrl(userId: number, fileName: string, contentType: string) {
     const key = `communities/avatars/${userId}/${Date.now()}-${fileName}`;
     const uploadUrl = await this.s3Service.generatePresignedUrl(key, contentType);

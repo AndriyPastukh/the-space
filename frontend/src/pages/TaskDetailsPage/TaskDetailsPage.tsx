@@ -1,51 +1,24 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useTask } from "../../hooks/useTask";
+import { useAuth } from "../../hooks/useAuth";
+import { applyToTask } from "../../features/tasks/taskApi";
 import "../../assets/styles/DetailsPage.css";
 
 const mockedComments = [
-  {
-    id: "review-1",
-    message:
-      "Чудовий замовник! Дуже детально і чітко розписав що саме хотів отримати!",
-    createdAt: "2026-04-26T09:30:00Z",
-    rating: 5,
-    author: {
-      id: "user-1",
-      name: "Ігор П. М.",
-      avatarUrl: "https://cdn.link/avatar1.jpg",
-    },
-    task: {
-      id: "10",
-      title: "Створення UI-кіта для фінтех-проєкту",
-    },
-  },
-  {
-    id: "review-2",
-    message: "Оплата вчасно, ТЗ зрозуміле. Рекомендую.",
-    createdAt: "2026-04-20T14:20:00Z",
-    rating: 4,
-    author: {
-      id: "user-2",
-      name: "Олена К.",
-      avatarUrl: "https://cdn.link/avatar2.jpg",
-    },
-    task: {
-      id: "8",
-      title: "Редизайн головної сторінки",
-    },
-  },
+  // ... existing comments or empty
 ];
 
 const formatDate = (dateString: string) => {
+  if (!dateString) return "-";
   const d = new Date(dateString);
-
   return `${String(d.getDate()).padStart(2, "0")}.${String(
     d.getMonth() + 1,
   ).padStart(2, "0")}.${d.getFullYear()}`;
 };
 
 const getRelativeTime = (dateString: string) => {
+  if (!dateString) return "";
   const diffInMs = new Date().getTime() - new Date(dateString).getTime();
   const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
 
@@ -56,13 +29,15 @@ const getRelativeTime = (dateString: string) => {
 };
 
 const truncateText = (text: string, limit: number) => {
+  if (!text) return "";
   const words = text.split(" ");
-
   return words.length > limit ? `${words.slice(0, limit).join(" ")}...` : text;
 };
 
 const TaskDetailsPage: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const {
     task: taskDetails,
@@ -74,23 +49,45 @@ const TaskDetailsPage: React.FC = () => {
   });
 
   const [isApplied, setIsApplied] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
 
   useEffect(() => {
     if (taskDetails?.viewer) {
       setIsSaved(taskDetails.viewer.isSaved);
+      if (taskDetails.viewer.myProposalId) {
+        setIsApplied(true);
+      }
     }
-  }, [taskDetails]);
+    
+    // Check if user already applied
+    if (user && taskDetails?.applications) {
+        const alreadyApplied = taskDetails.applications.some((app: any) => app.applicant.id === user.id);
+        if (alreadyApplied) setIsApplied(true);
+    }
+  }, [taskDetails, user]);
 
-  const handleApply = () => {
-    if (!isApplied) {
+  const handleApply = async () => {
+    if (!user) {
+        navigate('/login');
+        return;
+    }
+    if (!id || isApplied) return;
+    
+    setIsSaving(true);
+    try {
+      await applyToTask(id);
       setIsApplied(true);
+    } catch (err) {
+      console.error("Failed to apply:", err);
+      alert("Не вдалося відгукнутися на завдання");
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleSaveToggle = () => {
     setIsSaved((prev) => !prev);
-    // later: API call to save/unsave task
   };
 
   const handleShare = async () => {
@@ -132,6 +129,7 @@ const TaskDetailsPage: React.FC = () => {
     );
   }
 
+  const isOwner = user?.id === taskDetails.authorId;
   const isFinished =
     taskDetails.status === "CLOSED" || taskDetails.status === "FINISHED";
 
@@ -181,53 +179,43 @@ const TaskDetailsPage: React.FC = () => {
               <section className="td-section">
                 <h3 className="td-section-title">Опис</h3>
                 <p className="td-text">
-                  {truncateText(taskDetails.description ?? "", 300)}
+                  {taskDetails.description}
                 </p>
               </section>
 
-              <section className="td-section">
-                <h3 className="td-section-title">Посилання</h3>
+              {taskDetails.urls?.length > 0 && (
+                <section className="td-section">
+                    <h3 className="td-section-title">Посилання</h3>
+                    <ul className="td-list">
+                        {taskDetails.urls.map((url: string, idx: number) => (
+                        <li key={`${url}-${idx}`}>
+                            <a href={url} target="_blank" rel="noopener noreferrer">
+                            {url}
+                            </a>
+                        </li>
+                        ))}
+                    </ul>
+                </section>
+              )}
 
-                {taskDetails.urls?.length > 0 ? (
-                  <ul className="td-list">
-                    {taskDetails.urls.map((url: string, idx: number) => (
-                      <li key={`${url}-${idx}`}>
-                        <a href={url} target="_blank" rel="noopener noreferrer">
-                          {url}
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm-muted">Немає</p>
-                )}
-              </section>
-
-              <section className="td-section">
-                <h3 className="td-section-title">Вкладені файли</h3>
-
-                {taskDetails.files?.length > 0 ? (
-                  <ul className="td-list">
-                    {taskDetails.files.map((file: any, idx: number) => (
-                      <li key={file.id ?? idx}>
-                        {file.url ? (
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {file.name ?? file.url}
-                          </a>
-                        ) : (
-                          <span>{file.name ?? String(file)}</span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-sm-muted">Немає</p>
-                )}
-              </section>
+              {taskDetails.files?.length > 0 && (
+                <section className="td-section">
+                    <h3 className="td-section-title">Вкладені файли</h3>
+                    <ul className="td-list">
+                        {taskDetails.files.map((file: any, idx: number) => (
+                        <li key={file.id ?? idx}>
+                            {file.url ? (
+                            <a href={file.url} target="_blank" rel="noopener noreferrer">
+                                {file.name ?? file.url}
+                            </a>
+                            ) : (
+                            <span>{file.name ?? String(file)}</span>
+                            )}
+                        </li>
+                        ))}
+                    </ul>
+                </section>
+              )}
 
               <section className="td-section">
                 <h3 className="td-section-title">Напрями</h3>
@@ -250,72 +238,31 @@ const TaskDetailsPage: React.FC = () => {
           </div>
 
           <h3 className="section-heading">Відгуки про замовника</h3>
-
           <div className="reviews-list mb-24">
-            {mockedComments.map((review) => (
-              <div key={review.id} className="card mb-16">
-                <div className="review-header">
-                  <img
-                    src={review.author.avatarUrl}
-                    alt={review.author.name}
-                    className="avatar"
-                  />
-
-                  <div className="review-user-info">
-                    <div className="fw-600 fs-14 text-white">
-                      {review.author.name}
-                    </div>
-
-                    <div className="text-sm-muted mt-4">
-                      Завдання: {review.task.title}
-                    </div>
-                  </div>
-
-                  <div className="review-meta ml-auto text-right">
-                    <div className="text-purple fw-600">
-                      {"★".repeat(review.rating)}
-                    </div>
-
-                    <div className="text-sm-muted mt-4">
-                      {formatDate(review.createdAt)}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card-divider mt-16 mb-16" />
-
-                <p className="td-text fs-14">{review.message}</p>
-              </div>
-            ))}
-          </div>
-
-          <div className="card mb-24">
-            <h3 className="td-section-title">Написати відгук</h3>
-
-            <textarea
-              placeholder="Ваш відгук..."
-              className="form-input review-textarea mt-12"
-            />
-
-            <button type="button" className="btn btn-primary mt-12">
-              Надіслати
-            </button>
+              <p className="text-sm-muted">Відгуків поки немає</p>
           </div>
         </div>
 
         <aside className="td-sidebar-wrap">
           <div className="card td-sidebar">
             <div className="sidebar-actions">
-              <button
-                type="button"
-                className={`btn btn-block ${
-                  isApplied || isFinished ? "btn-secondary" : "btn-primary"
-                }`}
-                onClick={handleApply}
-                disabled={isApplied || isFinished}
-              >
-                {isApplied ? "Ви вже відгукнулись" : "Відгукнутись"}
-              </button>
+              {isOwner ? (
+                <>
+                  <button className="btn btn-outline btn-block mb-12">Редагувати</button>
+                  <button className="btn btn-outline btn-block mb-12" style={{ color: 'var(--error-color)', borderColor: 'var(--error-color)' }}>Видалити</button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className={`btn btn-block ${
+                    isApplied || isFinished ? "btn-secondary" : "btn-primary"
+                  }`}
+                  onClick={handleApply}
+                  disabled={isApplied || isFinished || isSaving}
+                >
+                  {isApplied ? "Ви вже відгукнулись" : isSaving ? "Завантаження..." : "Відгукнутись"}
+                </button>
+              )}
 
               <button
                 type="button"
@@ -330,11 +277,13 @@ const TaskDetailsPage: React.FC = () => {
 
             <div className="td-owner">
               <div className="owner-card">
-                <img
-                  src={taskDetails.author.avatarUrl}
-                  alt={taskDetails.author.name}
-                  className="avatar avatar-lg"
-                />
+                <div className="avatar avatar-lg">
+                    {taskDetails.author.avatarUrl ? (
+                        <img src={taskDetails.author.avatarUrl} alt="" />
+                    ) : (
+                        <div className="avatar-placeholder">{taskDetails.author.name.charAt(0)}</div>
+                    )}
+                </div>
 
                 <div className="owner-details">
                   <span className="owner-role text-sm-muted">Замовник</span>
@@ -373,8 +322,7 @@ const TaskDetailsPage: React.FC = () => {
 
                 <div className="stat-box">
                   <p className="stat-val">
-                    {taskDetails.statistics.proposalsCount +
-                      (isApplied ? 1 : 0)}
+                    {taskDetails.statistics.proposalsCount}
                   </p>
                   <p className="text-sm-muted">Відгуків</p>
                 </div>
