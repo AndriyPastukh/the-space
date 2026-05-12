@@ -34,36 +34,20 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const { passwordHash, userDetails, ...result } = user;
 
-    // Transform for frontend compatibility (merging KAN-86 flattening with rich data)
-    const transformedProfile = {
-      ...userDetails,
-      skillTags: userDetails.skills.map((s: any) => s.name),
-      interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => ({
-        id: c.id,
-        name: c.name,
-      })),
-      socialLinks: userDetails.socialLinks.map((sl: any) => ({
-        platform: sl.platformName,
-        url: sl.url,
-      })),
-      location: {
-        country: userDetails.country,
-        city: userDetails.city,
-      },
-      stats: {
-        level: userDetails.currentLevel,
-        reputation: userDetails.reputation,
-        xpPoints: userDetails.xpPoints,
-      },
+    const richProfile = await this.usersService.getById(userId);
+    if (!richProfile) {
+      throw new NotFoundException('Profile details not found');
+    }
+
+    return {
+      id: user.id,
+      email: user.email,
+      ...richProfile,
+      // Ensure these fields exist for legacy/compatibility if needed
+      skillTags: richProfile.tags?.skills || [],
+      interestTags: richProfile.tags?.interests || [],
     };
-    delete transformedProfile.skills;
-    delete transformedProfile.interests;
-    delete transformedProfile.id;
-
-    return { ...result, ...transformedProfile };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -97,35 +81,16 @@ export class UsersController {
       userId,
       updateProfileDto,
     );
-    const { passwordHash, userDetails, ...result } = updatedUser;
-
-    const transformedProfile = {
-      ...userDetails,
-      skillTags: userDetails.skills.map((s: any) => s.name),
-      interestTags: userDetails.interests.map((i: any) => i.name),
-      categories: userDetails.categories.map((c: any) => ({
-        id: c.id,
-        name: c.name,
-      })),
-      socialLinks: userDetails.socialLinks.map((sl: any) => ({
-        platform: sl.platformName,
-        url: sl.url,
-      })),
-      location: {
-        country: userDetails.country,
-        city: userDetails.city,
-      },
-      stats: {
-        level: userDetails.currentLevel,
-        reputation: userDetails.reputation,
-        xpPoints: userDetails.xpPoints,
-      },
+    
+    const richProfile = await this.usersService.getById(userId);
+    
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      ...richProfile,
+      skillTags: richProfile.tags?.skills || [],
+      interestTags: richProfile.tags?.interests || []
     };
-    delete transformedProfile.skills;
-    delete transformedProfile.interests;
-    delete transformedProfile.id;
-
-    return { ...result, ...transformedProfile };
   }
 
   @UseGuards(JwtAuthGuard)

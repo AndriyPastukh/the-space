@@ -13,6 +13,22 @@ export interface UserProfile {
   interestTags: string[];
   currentLevel: number;
   xpPoints: number;
+  stats?: {
+    rating: number;
+    completedTaskPoints: number;
+    level: number;
+    xpProgress: number;
+    reputation: number;
+  };
+  socialLinks?: Array<{
+    platform: string;
+    url: string;
+  }>;
+  communities?: Array<{
+    name: string;
+    slug: string;
+    avatarUrl: string;
+  }>;
 }
 
 export interface UsersResponse {

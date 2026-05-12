@@ -62,13 +62,13 @@ export default function SearchSpacePage() {
                     let results: any[] = [];
                     let total = 0;
 
-                    if (filterState.spaceType === 'all' || filterState.spaceType === 'community') {
+                    if (filterState.spaceType === 'all' || filterState.spaceType === 'COMMUNITY') {
                         const comms = await communitiesApi.findAll(params);
                         results = [...results, ...comms.items.map(i => ({ ...i, type: 'COMMUNITY' }))];
                         total += comms.meta.total;
                     }
 
-                    if (filterState.spaceType === 'all' || filterState.spaceType === 'team') {
+                    if (filterState.spaceType === 'all' || filterState.spaceType === 'TEAM') {
                         const teams = await teamsApi.findAll(params);
                         results = [...results, ...teams.items.map(i => ({ ...i, type: 'TEAM' }))];
                         total += teams.meta.total;
@@ -173,9 +173,9 @@ export default function SearchSpacePage() {
                             ))
                         ) : (
                             items.map(s => (
-                                <SpaceCard 
-                                    key={`${s.type}-${s.id}`} 
-                                    {...s} 
+                                <SpaceCard
+                                    key={`${s.type}-${s.id}`}
+                                    {...s}
                                     categories={s.directions?.map((d: any) => d.name) || []}
                                     membersCount={s.memberCount}
                                     rating={s.rating || 0}
