@@ -18,6 +18,7 @@ import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
 import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreatedExperiencesPage";
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
 import MyChatsPage from "./pages/MyChatsPage/MyChatsPage";
+import MyExperienceHistoryPage from "./pages/MyExperienceHistoryPage/MyExperienceHistoryPage.tsx";
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
           <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
           <Route path="/search-space" element={<SearchSpacePage />} />
           <Route path="/chats" element={<MyChatsPage />} />
+          <Route path="/experience-history" element={<MyExperienceHistoryPage />} />
           <Route path="/*" element={<NotFoundPage />} />
         </Routes>
         <Footer />
