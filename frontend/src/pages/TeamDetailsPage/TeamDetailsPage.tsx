@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import "./TeamDetailsPage.css";
+import "../../assets/styles/DetailsPage.css";
 
 interface TeamMember {
   id: number;
@@ -38,14 +38,14 @@ const TeamDetailsPage: React.FC = () => {
       <div className="td-layout">
 
         <div className="td-main">
-          <div className="card main-card">
+          <div className="card mb-24">
             <div className="td-header">
-              <div className="team-header-flex">
-                <div className="team-avatar-square">G</div>
+              <div className="entity-header-flex">
+                <div className="entity-avatar">G</div>
                 <div>
                   <h2 className="td-title">{team.name}</h2>
-                  <div className="team-stats-row">
-                    <span className="text-sm-muted">{team.memberCount} учасників</span>
+                  <div className="text-sm-muted mt-8">
+                    {team.memberCount} учасників
                   </div>
                 </div>
               </div>
@@ -68,22 +68,23 @@ const TeamDetailsPage: React.FC = () => {
 
               <section className="td-section mt-24">
                 <h3 className="td-section-title">Посилання</h3>
-                <div className="social-links-list">
+                <ul className="td-list">
                   {team.links.map(link => (
-                    <a key={link.label} href={link.url} target="_blank" rel="noreferrer" className="text-purple">
-                      {link.label} ↗
-                    </a>
+                    <li key={link.label}>
+                      <a href={link.url} target="_blank" rel="noreferrer">
+                        {link.label} ↗
+                      </a>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </section>
               <p className="text-sm-muted mt-auto pt-24 fs-12">Дата створення: {team.createdAt}</p>
             </div>
           </div>
         </div>
 
-        {/* ПРАВА ПАНЕЛЬ */}
         <aside className="td-sidebar-wrap">
-          <div className="card sidebar-card">
+          <div className="card td-sidebar">
             <div className="sidebar-actions">
               {joinStatus === 'guest' && (
                 <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>Доєднатися</button>
@@ -104,7 +105,7 @@ const TeamDetailsPage: React.FC = () => {
                   {members.filter(m => m.role === role).map(m => (
                     <div key={m.id} className="member-row">
                       <img src={m.avatar} className="avatar avatar-sm" alt={m.name} />
-                      <span className="text-white fs-14">{m.name}</span>
+                      <span className="text-white fs-14 fw-600">{m.name}</span>
                     </div>
                   ))}
                 </div>
