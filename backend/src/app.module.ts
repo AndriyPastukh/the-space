@@ -9,6 +9,9 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ChatsModule } from './chats/chats.module';
+import { TagsModule } from './tags/tags.module';
+import { CommunitiesModule } from './communities/communities.module';
+import { TeamsModule } from './teams/teams.module';
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { ChatsModule } from './chats/chats.module';
     TasksModule,
     CategoriesModule,
     ChatsModule,
+    TagsModule,
+    CommunitiesModule,
+    TeamsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

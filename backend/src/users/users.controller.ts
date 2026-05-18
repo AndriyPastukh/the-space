@@ -34,7 +34,17 @@ export class UsersController {
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return await this.usersService.getById(userId);
+    const richProfile = await this.usersService.getById(userId);
+    if (!richProfile) {
+      throw new NotFoundException('Profile details not found');
+    }
+    return {
+      id: user.id,
+      email: user.email,
+      ...richProfile,
+      skillTags: richProfile.tags?.skills || [],
+      interestTags: richProfile.tags?.interests || [],
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -68,7 +78,17 @@ export class UsersController {
       userId,
       updateProfileDto,
     );
-    return await this.usersService.getById(userId);
+    const richProfile = await this.usersService.getById(userId);
+    if (!richProfile) {
+      throw new NotFoundException('Profile details not found');
+    }
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      ...richProfile,
+      skillTags: richProfile.tags?.skills || [],
+      interestTags: richProfile.tags?.interests || [],
+    };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -102,6 +122,11 @@ export class UsersController {
       page,
       limit,
     });
+  }
+
+  @Get()
+  async getAllUsers() {
+    return this.usersService.getAllUsers();
   }
 
   @Get(':id')

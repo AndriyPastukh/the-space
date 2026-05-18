@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
+import { communitiesApi } from '../../../../features/communities/communitiesApi';
+import { getCategories, type Category } from '../../../../features/categories/categoryApi';
 import './CommunityForm.css';
 
-const DIRECTIONS = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 const MAX_WORDS = 300;
 
 const countWords = (text: string) =>
@@ -11,7 +13,7 @@ const countWords = (text: string) =>
 
 export interface CommunityFormState {
     name: string;
-    directions: string[];
+    directions: (string | number)[];
     description: string;
     avatar: File | null;
 }
@@ -24,8 +26,23 @@ interface CommunityFormProps {
 type FormErrors = Partial<Record<keyof CommunityFormState, string>>;
 
 export default function CommunityForm({ formState, onChange }: CommunityFormProps) {
+    const navigate = useNavigate();
     const [errors, setErrors] = useState<FormErrors>({});
     const [avatarError, setAvatarError] = useState('');
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        const loadCats = async () => {
+            try {
+                const { data } = await getCategories();
+                setAvailableCategories(data);
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+            }
+        };
+        loadCats();
+    }, []);
 
     const update = <K extends keyof CommunityFormState>(field: K, value: CommunityFormState[K]) => {
         onChange({ ...formState, [field]: value });
@@ -54,16 +71,43 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
-        console.log('[createCommunity] form data:', {
-            name: formState.name,
-            directions: formState.directions,
-            description: formState.description,
-            avatar: formState.avatar,
-        });
-        // createCommunity(formState);
+        if (isSubmitting || !validate()) return;
+        
+        setIsSubmitting(true);
+        setAvatarError('');
+        try {
+            let avatarUrl = '';
+            if (formState.avatar) {
+                const { uploadUrl, publicUrl } = await communitiesApi.getPresignedUrl(
+                    formState.avatar.name,
+                    formState.avatar.type
+                );
+                
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: formState.avatar,
+                    headers: { 'Content-Type': formState.avatar.type }
+                });
+                avatarUrl = publicUrl;
+            }
+
+            const community = await communitiesApi.create({
+                name: formState.name,
+                description: formState.description,
+                directions: formState.directions.map(Number), // Map to numbers to be safe
+                avatarUrl: avatarUrl || undefined
+            });
+
+            navigate(`/communities/${community.slug}`);
+        } catch (err: any) {
+            console.error('Failed to create community:', err);
+            const errMsg = err?.response?.data?.message || 'Сталася помилка при створенні спільноти';
+            setAvatarError(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const descWords = countWords(formState.description);
@@ -84,6 +128,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     onChange={e => update('name', e.target.value)}
                     placeholder="Наприклад, Абстрактні люди..."
                     autoComplete="off"
+                    disabled={isSubmitting}
                 />
                 {errors.name && <span className="field-error">{errors.name}</span>}
             </div>
@@ -94,7 +139,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     Напрям <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={DIRECTIONS}
+                    options={availableCategories}
                     selected={formState.directions}
                     onChange={val => update('directions', val)}
                     error={errors.directions}
@@ -115,6 +160,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     onChange={e => update('description', e.target.value)}
                     placeholder="Розкажіть про вашу спільноту..."
                     rows={5}
+                    disabled={isSubmitting}
                 />
                 {(errors.description || isOverLimit) && (
                     <span className="field-error">
@@ -135,8 +181,12 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
 
             {/* Submit */}
             <div className="form-actions community-form__actions">
-                <button type="submit" className="btn btn-primary btn-lg btn-block">
-                    Створити
+                <button 
+                    type="submit" 
+                    className="btn btn-primary btn-lg btn-block"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Створення...' : 'Створити'}
                 </button>
             </div>
         </form>

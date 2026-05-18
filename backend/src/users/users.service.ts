@@ -1,5 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { TaskStatus, JoinRequestStatus } from '@prisma/client';
 import { Prisma } from '@prisma/client';
 import { User } from '@prisma/client';
 import { PublicProfileDto } from './dto/public-profile.dto';
@@ -300,9 +301,9 @@ export class UsersService {
     const user = await this.prisma.user.findUnique({
       where: { id },
       include: {
-        tasks: {
+        assignedTasks: {
           where: {
-            status: 'COMPLETED',
+            status: TaskStatus.COMPLETED,
             deletedAt: null,
           },
           select: {
@@ -333,8 +334,8 @@ export class UsersService {
 
     const averageRating = statsView?.averageRating || 0;
 
-    const completedTaskPoints = user.tasks.reduce(
-      (sum, task) => sum + task.points,
+    const completedTaskPoints = (user as any).assignedTasks.reduce(
+      (sum: number, task: any) => sum + task.points,
       0,
     );
 
@@ -393,6 +394,69 @@ export class UsersService {
   async deleteMe(userId: number): Promise<void> {
     await this.prisma.user.delete({
       where: { id: userId },
+    });
+  }
+
+  async getAllUsers() {
+    const users = await this.prisma.userDetails.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: [{ reputation: 'desc' }, { id: 'desc' }],
+      include: {
+        skills: true,
+        interests: true,
+        categories: true,
+      },
+    });
+
+    const userDetailsIds = users.map((user) => user.id);
+
+    const stats = await this.prisma.userStats.findMany({
+      where: {
+        userDetailsId: {
+          in: userDetailsIds,
+        },
+      },
+    });
+
+    const statsByUserDetailsId = new Map(
+      stats.map((stat) => [stat.userDetailsId, stat]),
+    );
+
+    return users.map((details) => {
+      const userStats = statsByUserDetailsId.get(details.id);
+
+      return {
+        id: String(details.userId),
+        userDetailsId: details.id,
+
+        firstName: details.firstName,
+        middleName: details.middleName,
+        lastName: details.lastName,
+        nickname: details.nickname,
+
+        avatarUrl: details.avatarUrl,
+        coverImageUrl: details.coverImageUrl,
+        bio: details.bio,
+        status: details.status,
+
+        location: {
+          country: details.country,
+          city: details.city,
+        },
+
+        rating: Number((userStats?.averageRating ?? 0).toFixed(1)),
+        reviewCount: userStats?.reviewCount ?? 0,
+
+        level: details.currentLevel,
+        xpPoints: details.xpPoints,
+        reputation: details.reputation,
+
+        directions: details.categories.map((category) => category.name),
+        interests: details.interests.map((interest) => interest.name),
+        skills: details.skills.map((skill) => skill.name),
+      };
     });
   }
 

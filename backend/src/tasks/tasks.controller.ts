@@ -31,6 +31,7 @@ export class TasksController {
     @Query() query: TaskQueryDto,
     @Query('categoryId') categoryId?: string | string[],
     @Query('authorId') authorId?: string,
+    @Query('assigneeId') assigneeId?: string,
     @Query('search') search?: string,
   ) {
     return this.tasksService.findAll({
@@ -39,6 +40,7 @@ export class TasksController {
       status: query.status,
       search,
       authorId: authorId ? Number(authorId) : undefined,
+      assigneeId: assigneeId ? Number(assigneeId) : undefined,
       categories: Array.isArray(categoryId)
         ? categoryId.map(Number)
         : categoryId
@@ -60,6 +62,23 @@ export class TasksController {
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
     return this.tasksService.update(id, req.user.id, updateTaskDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/apply')
+  apply(@Param('id') id: string, @Req() req: any, @Body('message') message?: string) {
+    return this.tasksService.applyToTask(id, req.user.id, message);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/proposals/:proposalId')
+  respondToProposal(
+    @Param('id') id: string,
+    @Param('proposalId') proposalId: string,
+    @Req() req: any,
+    @Body('status') status: 'APPROVED' | 'REJECTED',
+  ) {
+    return this.tasksService.respondToProposal(id, req.user.id, proposalId, status);
   }
 
   @UseGuards(JwtAuthGuard)

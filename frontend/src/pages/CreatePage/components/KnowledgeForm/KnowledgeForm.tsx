@@ -2,7 +2,7 @@ import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
-import type { Category } from '../../../../features/categories/categoryApi';
+import { createCategory, type Category } from '../../../../features/categories/categoryApi';
 import { createKnowledge } from '../../../../features/knowledges/knowledgeApi';
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
@@ -26,12 +26,17 @@ interface KnowledgeFormProps {
     categories: Category[];
 }
 
-export default function KnowledgeForm({ formState, onChange, onClear,categories,setMessage,onSuccess }: KnowledgeFormProps) {
+export default function KnowledgeForm({ formState, onChange, onClear, categories, setMessage, onSuccess }: KnowledgeFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof KnowledgeFormState, string>>>({});
 
     const update = (field: keyof KnowledgeFormState, value: any) => {
         onChange({ ...formState, [field]: value });
         setErrors(prev => ({ ...prev, [field]: '' }));
+    };
+
+    const handleCreateCategory = async (name: string) => {
+        const { data: newCat } = await createCategory(name);
+        return newCat;
     };
 
     const validate = () => {
@@ -64,26 +69,22 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        console.log(formState);
-
         if (!validate()) return;
         try {
             const result = await createKnowledge(formState);
-            setMessage({ text: 'Knowledge успішно створено!', type: 'success' });  
+            setMessage({ text: 'Knowledge успішно створено!', type: 'success' });
             setTimeout(() => {
                 onSuccess(result.data.id);
             }, 1000);
         } catch (error: any) {
-        const backendError = error.response?.data?.message;
-            
-        setMessage({
-            text: Array.isArray(backendError)
-                ? backendError.join('\n')
-                : backendError || 'Помилка створення Knowledge',
-            type: 'error',
-        });
-}
+            const backendError = error.response?.data?.message;
+            setMessage({
+                text: Array.isArray(backendError)
+                    ? backendError.join('\n')
+                    : backendError || 'Помилка створення Knowledge',
+                type: 'error',
+            });
+        }
     };
 
     const offerDescWords = countWords(formState.offerDescription);
@@ -91,7 +92,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
 
     return (
         <form className="form-box form-stack" onSubmit={handleSubmit}>
-            {/* Offer Categories */}
             <div className="form-group">
                 <label className="form-label">
                     Категорія — що пропонуєш <span className="required">*</span>
@@ -100,11 +100,11 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                     options={categories}
                     selected={formState.offerCategories}
                     onChange={val => update('offerCategories', val)}
+                    onCreateOption={handleCreateCategory}
                     error={errors.offerCategories}
                 />
             </div>
 
-            {/* Offer Description */}
             <div className="form-group">
                 <label className="form-label">
                     Опис — що пропонуєш <span className="required">*</span>
@@ -120,7 +120,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                 {errors.offerDescription && <span className="field-error">{errors.offerDescription}</span>}
             </div>
 
-            {/* Want Categories */}
             <div className="form-group">
                 <label className="form-label">
                     Категорія — що хочеш отримати <span className="required">*</span>
@@ -129,11 +128,11 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                     options={categories}
                     selected={formState.requestCategories}
                     onChange={val => update('requestCategories', val)}
+                    onCreateOption={handleCreateCategory}
                     error={errors.requestCategories}
                 />
             </div>
 
-            {/* Want Description */}
             <div className="form-group">
                 <label className="form-label">
                     Опис — що хочеш отримати <span className="required">*</span>
@@ -149,7 +148,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                 {errors.requestDescription && <span className="field-error">{errors.requestDescription}</span>}
             </div>
 
-            {/* Deadline */}
             <div className="form-group">
                 <label className="form-label">
                     Дедлайн <span className="required">*</span>
@@ -163,7 +161,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                 {errors.deadline && <span className="field-error">{errors.deadline}</span>}
             </div>
 
-            {/* URLs */}
             <div className="form-group">
                 <label className="form-label">Додаткові посилання</label>
                 <UrlListInput
@@ -172,7 +169,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                 />
             </div>
 
-            {/* Files */}
             <div className="form-group">
                 <label className="form-label">Додаткові файли</label>
                 <FileUpload
@@ -181,7 +177,6 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
                 />
             </div>
 
-            {/* Actions */}
             <div className="form-actions">
                 <button type="button" className="btn-clear" onClick={onClear}>
                     Очистити форму

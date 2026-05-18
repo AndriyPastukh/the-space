@@ -6,5 +6,9 @@ export type Category = {
 };
 
 export const getCategories = () => {
-  return api.get<Category[]>("/categories");
+  return api.get<Category[]>("/api/categories");
+};
+
+export const createCategory = (name: string) => {
+  return api.post<Category>("/api/categories", { name });
 };
