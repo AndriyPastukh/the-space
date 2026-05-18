@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import "../../assets/styles/DetailsPage.css";
 import { teamsApi } from "../../features/teams/teamsApi";
 import type { Team } from "../../features/teams/teamsApi";
-import "./TeamDetailsPage.css";
 
 const TeamDetailsPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();

@@ -3,7 +3,6 @@ import { useParams } from "react-router-dom";
 import "../../assets/styles/DetailsPage.css";
 import { communitiesApi } from "../../features/communities/communitiesApi";
 import type { Community } from "../../features/communities/communitiesApi";
-import "./CommunityDetailsPage.css";
 
 const CommunityDetailsPage: React.FC = () => {
   const { id: slug } = useParams<{ id: string }>();
