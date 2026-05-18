@@ -78,6 +78,14 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
         directions: oldDirections,
     } = props;
 
+    const displayStats = {
+        totalDone: stats?.totalDone ?? stats?.completedTaskPoints ?? 0,
+        tasksDone: stats?.tasksDone ?? 0,
+        knowledgeDone: stats?.knowledgeDone ?? 0,
+        tasksRating: stats?.tasksRating ?? 0,
+        knowledgeRating: stats?.knowledgeRating ?? 0,
+    };
+
     const navigate = useNavigate();
 
     // Map new vs old fields
@@ -185,17 +193,17 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
             {/* Stats */}
             {(stats || oldRating) && (
                 <div className="sidebar-block">
-                    <p className="sidebar-block-title">Виконав всього: <strong>{stats.totalDone}</strong></p>
+                    <p className="sidebar-block-title">Виконав всього: <strong>{displayStats.totalDone}</strong></p>
                     <div className="stats-grid">
                         <div className="stat-cell">
-                            <span className="stat-val">{stats.tasksDone}</span>
+                            <span className="stat-val">{displayStats.tasksDone}</span>
                             <span className="stat-lbl">Завдань</span>
-                            <span className="stat-rat">0 ★{stats.tasksRating}</span>
+                            <span className="stat-rat">0 ★{displayStats.tasksRating}</span>
                         </div>
                         <div className="stat-cell">
-                            <span className="stat-val">{stats.knowledgeDone}</span>
+                            <span className="stat-val">{displayStats.knowledgeDone}</span>
                             <span className="stat-lbl">Знань</span>
-                            <span className="stat-rat">0 ★{stats.knowledgeRating}</span>
+                            <span className="stat-rat">0 ★{displayStats.knowledgeRating}</span>
                         </div>
                     </div>
                 </div>
