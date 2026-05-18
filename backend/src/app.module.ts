@@ -8,6 +8,7 @@ import { S3Module } from './s3/s3.module';
 import { KnowledgeModule } from './knowledge/knowledge.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CategoriesModule } from './categories/categories.module';
+import { ChatsModule } from './chats/chats.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { CategoriesModule } from './categories/categories.module';
     KnowledgeModule,
     TasksModule,
     CategoriesModule,
+    ChatsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

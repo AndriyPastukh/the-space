@@ -18,6 +18,7 @@ import CreateSpacePage from "./pages/CreateSpacePage/CreateSpacePage";
 import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreatedExperiencesPage";
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
 import MyChatsPage from "./pages/MyChatsPage/MyChatsPage";
+import PublicProfilePage from "./pages/PublicProfilePage/PublicProfilePage";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/communities/:id" element={<CommunityDetailsPage />} />
           <Route path="/search-experience" element={<SearchPage />} />
           <Route path="/profile" element={<MyProfilePage />} />
+          <Route path="/users/:id" element={<PublicProfilePage />} />
           <Route path="/create-space" element={<CreateSpacePage />} />
           <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
           <Route path="/search-space" element={<SearchSpacePage />} />
