@@ -5,7 +5,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { Link } from "react-router-dom";
 
 export const Header = () => {
-    
+
     const { isAuth, user, logout } = useAuth();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -89,6 +89,9 @@ export const Header = () => {
                                 <Link to="/profile" className="dropdown-item">
                                     Мій кабінет
                                 </Link>
+                                <Link to="/chats" className="dropdown-item">
+                                    Чат
+                                </Link>
                                 <div className="dropdown-divider"></div>
                                 <button
                                     onClick={() => logout()}
@@ -142,6 +145,7 @@ export const Header = () => {
                             <Link to="/profile" className="mobile-nav-link">
                                 Мій кабінет
                             </Link>
+
                             <button
                                 onClick={() => logout()}
                                 className="mobile-nav-link danger"
