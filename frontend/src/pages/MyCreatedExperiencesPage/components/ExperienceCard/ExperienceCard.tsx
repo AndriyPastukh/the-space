@@ -1,5 +1,6 @@
 import { respondToProposal, deleteTask } from '../../../../features/tasks/taskApi';
 import { deleteKnowledge } from '../../../../features/knowledges/knowledgeApi';
+import { Link } from 'react-router-dom';
 import ApplicationRow from '../ApplicationRow/ApplicationRow';
 import './ExperienceCard.css';
 
@@ -36,8 +37,6 @@ interface KnowledgeCardData {
     offer: { tags: string[]; description: string };
     request: { tags: string[]; description: string };
     createdAt: string;
-    status: ExperienceStatus;
-    applications: Application[];
 }
 
 type ExperienceCardProps = TaskCardData | KnowledgeCardData;
@@ -128,7 +127,11 @@ export default function ExperienceCard(props: ExperienceCardProps) {
             {/* Task body */}
             {props.type === 'TASK' && (
                 <div className="experience-card__body">
-                    <h3 className="experience-card__title">{props.title}</h3>
+                    <h3 className="experience-card__title">
+                        <Link to={`/tasks/${props.id}`} className="experience-card__link">
+                            {props.title}
+                        </Link>
+                    </h3>
                     <p className="experience-card__desc">{props.description}</p>
                     <TagList tags={props.tags} />
                 </div>
@@ -137,6 +140,11 @@ export default function ExperienceCard(props: ExperienceCardProps) {
             {/* Knowledge body */}
             {props.type === 'KNOWLEDGE' && (
                 <div className="experience-card__body">
+                    <h3 className="experience-card__title" style={{ marginBottom: '10px' }}>
+                        <Link to={`/knowledges/${props.id}`} className="experience-card__link">
+                            Обмін знаннями #{props.id.slice(0, 8)}
+                        </Link>
+                    </h3>
                     <div className="knowledge-blocks">
                         <div className="knowledge-block knowledge-block--offer">
                             <span className="knowledge-block__label">Знає:</span>
@@ -153,7 +161,7 @@ export default function ExperienceCard(props: ExperienceCardProps) {
             )}
 
             {/* Applications */}
-            {props.applications.length > 0 && (
+            {props.type === 'TASK' && props.applications.length > 0 && (
                 <div className="experience-card__applications">
                     <span className="experience-card__apps-label">
                         Заявки ({props.applications.length})
