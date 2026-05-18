@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useParams } from "react-router-dom";
-import "./CommunityDetailsPage.css";
+import "../../assets/styles/DetailsPage.css";
 
 interface CommunityMember {
   id: number;
@@ -44,54 +44,56 @@ const CommunityDetailsPage: React.FC = () => {
       <div className="td-layout">
 
         <div className="td-main">
-          <div className="card main-card">
+          <div className="card mb-24">
             <div className="td-header">
-              <div className="community-header-flex">
-                <div className="community-avatar-circle">AI</div>
+              <div className="entity-header-flex">
+                <div className="entity-avatar circle">AI</div>
                 <div>
-                  <h2 className="td-title-large">{community.name}</h2>
-                  <div className="team-stats-row">
-                    <span className="text-sm-muted">{community.memberCount} учасників</span>
+                  <h2 className="td-title">{community.name}</h2>
+                  <div className="text-sm-muted mt-8">
+                    {community.memberCount} учасників
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="card-divider-heavy mt-24 mb-32"></div>
+            <div className="card-divider mt-16 mb-24"></div>
 
             <div className="td-content">
               <section className="td-section">
-                <h3 className="td-section-title-large">Про спільноту</h3>
-                <p className="td-text-large">{community.description}</p>
+                <h3 className="td-section-title">Про спільноту</h3>
+                <p className="td-text">{community.description}</p>
               </section>
 
-              <section className="td-section community-rules-box">
-                <h3 className="td-section-title-large">Правила спільноти</h3>
-                <ul className="rules-list">
+              <section className="info-box">
+                <h3 className="td-section-title">Правила спільноти</h3>
+                <ul className="td-list">
                   {community.rules.map((rule, index) => (
-                    <li key={index}>• {rule}</li>
+                    <li key={index} className="text-sm-muted">• {rule}</li>
                   ))}
                 </ul>
               </section>
 
               <section className="td-section">
-                <h3 className="td-section-title-large">Теми</h3>
-                <div className="tags-large">
+                <h3 className="td-section-title">Теми</h3>
+                <div className="tags">
                   {community.topics.map(topic => (
-                    <span key={topic} className="tag-large topic-tag">{topic}</span>
+                    <span key={topic} className="tag">{topic}</span>
                   ))}
                 </div>
               </section>
 
               <section className="td-section mt-24">
-                <h3 className="td-section-title-large">Корисні посилання</h3>
-                <div className="social-links-list-large">
+                <h3 className="td-section-title">Корисні посилання</h3>
+                <ul className="td-list">
                   {community.links.map(link => (
-                    <a key={link.label} href={link.url} target="_blank" rel="noreferrer" className="text-purple">
-                      {link.label} ↗
-                    </a>
+                    <li key={link.label}>
+                      <a href={link.url} target="_blank" rel="noreferrer">
+                        {link.label} ↗
+                      </a>
+                    </li>
                   ))}
-                </div>
+                </ul>
               </section>
               <p className="text-sm-muted mt-auto pt-24 fs-12">Дата створення: {community.createdAt}</p>
             </div>
@@ -99,11 +101,14 @@ const CommunityDetailsPage: React.FC = () => {
         </div>
 
         <aside className="td-sidebar-wrap">
-          <div className="card sidebar-card">
+          <div className="card td-sidebar">
             <div className="sidebar-actions">
-              <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>
-                {joinStatus === 'pending' ? 'Запит надіслано' : 'Доєднатися'}
-              </button>
+              {joinStatus === 'guest' && (
+                <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>Доєднатися</button>
+              )}
+              {joinStatus === 'pending' && (
+                <button className="btn btn-secondary btn-block" disabled>Запит надіслано</button>
+              )}
               <button className="btn btn-outline btn-block mt-12">Поділитись ↗</button>
             </div>
 
@@ -113,13 +118,13 @@ const CommunityDetailsPage: React.FC = () => {
               <h3 className="td-sidebar-heading mb-12">Учасники</h3>
               {['Moderator', 'Contributor', 'Member'].map(role => (
                 <div key={role} className="roster-group mb-12">
-                  <p className="role-label-sidebar">
+                  <p className="role-label">
                     {role === 'Moderator' ? 'Модератори' : role === 'Contributor' ? 'Контриб\'ютори' : 'Учасники'}
                   </p>
                   {members.filter(m => m.role === role).map(m => (
-                    <div key={m.id} className="member-row-sidebar">
-                      <img src={m.avatar} className="avatar-sidebar" alt="" />
-                      <span className="text-white fs-14">{m.name}</span>
+                    <div key={m.id} className="member-row">
+                      <img src={m.avatar} className="avatar avatar-sm" alt="" />
+                      <span className="text-white fs-14 fw-600">{m.name}</span>
                     </div>
                   ))}
                 </div>
@@ -129,14 +134,15 @@ const CommunityDetailsPage: React.FC = () => {
             <div className="card-divider mt-auto my-24"></div>
 
             <div className="td-stats">
-              <div className="stats-grid-sidebar">
-                <div className="stat-item">
-                  <span className="stat-number">{community.statistics.views}</span>
-                  <span className="stat-label">Переглядів</span>
+              <h3 className="td-sidebar-heading mb-12">Статистика</h3>
+              <div className="stats-grid">
+                <div className="stat-box">
+                  <p className="stat-val">{community.statistics.views}</p>
+                  <p className="text-sm-muted">Переглядів</p>
                 </div>
-                <div className="stat-item">
-                  <span className="stat-number">{community.statistics.posts}</span>
-                  <span className="stat-label">Публікацій</span>
+                <div className="stat-box">
+                  <p className="stat-val">{community.statistics.posts}</p>
+                  <p className="text-sm-muted">Публікацій</p>
                 </div>
               </div>
             </div>

@@ -152,7 +152,7 @@ const TaskDetailsPage: React.FC = () => {
                   {truncateText(taskDetails.title ?? "", 100)}
                 </h2>
 
-                <div className="text-sm-muted">
+                <div className="text-sm-muted mt-8">
                   {getRelativeTime(taskDetails.createdAt)}
                 </div>
               </div>
