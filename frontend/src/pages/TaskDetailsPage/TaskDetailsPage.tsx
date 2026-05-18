@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api";
-import { applyToTask, respondToProposal } from "../../features/tasks/taskApi";
+import { applyToTask, respondToProposal, completeTask, submitTaskReview } from "../../features/tasks/taskApi";
 import { toggleSavedTask } from "../../features/tasks/savedTaskStorage";
 import { useAuth } from "../../hooks/useAuth";
 import { useTask } from "../../hooks/useTask";
@@ -59,6 +59,18 @@ interface TaskDetailsView {
     viewer?: {
         isSaved: boolean;
     };
+    reviews?: Array<{
+        id: number;
+        rating: number;
+        comment: string | null;
+        createdAt: string;
+        author: {
+            firstName: string;
+            lastName: string;
+            nickname: string;
+            avatarUrl: string;
+        };
+    }>;
 }
 
 const formatDate = (dateString: string) => {
@@ -118,6 +130,12 @@ const TaskDetailsPage: React.FC = () => {
     const [isApplied, setIsApplied] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+
+    const [isCompleting, setIsCompleting] = useState(false);
+    const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState("");
+    const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
     useEffect(() => {
         if (!taskDetails) {
@@ -212,6 +230,41 @@ const TaskDetailsPage: React.FC = () => {
         }
 
         setIsSaved(toggleSavedTask(id));
+    };
+
+    const handleCompleteTask = async () => {
+        if (!id) return;
+        if (!window.confirm("Ви впевнені, що хочете завершити це завдання? Після цього воно перейде в архів, а виконавцю буде створено запис у портфоліо.")) {
+            return;
+        }
+
+        setIsCompleting(true);
+        try {
+            await completeTask(id);
+            reload();
+        } catch (error) {
+            console.error("Failed to complete task:", error);
+            alert(getErrorMessage(error, "Не вдалося завершити завдання"));
+        } finally {
+            setIsCompleting(false);
+        }
+    };
+
+    const handleSubmitReview = async () => {
+        if (!id) return;
+        setIsSubmittingReview(true);
+        try {
+            await submitTaskReview(id, reviewRating, reviewComment);
+            setIsReviewModalOpen(false);
+            setReviewComment("");
+            setReviewRating(5);
+            reload();
+        } catch (error) {
+            console.error("Failed to submit review:", error);
+            alert(getErrorMessage(error, "Не вдалося надіслати відгук"));
+        } finally {
+            setIsSubmittingReview(false);
+        }
     };
 
     const handleShare = async () => {
@@ -427,6 +480,45 @@ const TaskDetailsPage: React.FC = () => {
                         </div>
                     )}
 
+                    {taskDetails.status === "COMPLETED" && (
+                        <div className="card mb-24">
+                            <h3 className="td-section-title mb-16">Відгук виконавцю за роботу</h3>
+                            {taskDetails.reviews && taskDetails.reviews.length > 0 ? (
+                                <div className="review-display-card" style={{ background: 'var(--surface2)', padding: '20px', borderRadius: 'var(--radius)', border: '1px solid var(--border)' }}>
+                                    <div className="review-display-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                            <span style={{ color: '#f59e0b', fontSize: '20px', letterSpacing: '2px' }}>
+                                                {'★'.repeat(taskDetails.reviews[0].rating)}{'☆'.repeat(5 - taskDetails.reviews[0].rating)}
+                                            </span>
+                                            <span className="text-white" style={{ fontWeight: 700, fontSize: '15px' }}>{taskDetails.reviews[0].rating} / 5</span>
+                                        </div>
+                                        <span className="text-sm-muted" style={{ fontSize: '13px' }}>{formatDate(taskDetails.reviews[0].createdAt)}</span>
+                                    </div>
+                                    {taskDetails.reviews[0].comment && (
+                                        <p className="td-text mt-12" style={{ fontStyle: 'italic', background: 'var(--surface)', padding: '16px', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--purple)', color: 'var(--text-muted)' }}>
+                                            "{taskDetails.reviews[0].comment}"
+                                        </p>
+                                    )}
+                                </div>
+                            ) : (
+                                isOwner ? (
+                                    <div className="text-center py-16" style={{ background: 'var(--surface2)', padding: '24px', borderRadius: 'var(--radius)', border: '1px dashed var(--border)' }}>
+                                        <p className="text-sm-muted mb-12">Ви ще не залишили відгук виконавцю за це завдання.</p>
+                                        <button
+                                            className="btn btn-primary"
+                                            onClick={() => setIsReviewModalOpen(true)}
+                                            type="button"
+                                        >
+                                            Залишити відгук
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <p className="text-sm-muted">Відгуку про роботу ще не залишено замовником.</p>
+                                )
+                            )}
+                        </div>
+                    )}
+
                     <h3 className="section-heading">Відгуки про замовника</h3>
                     <div className="reviews-list mb-24">
                         <p className="text-sm-muted">Відгуків поки немає</p>
@@ -438,16 +530,46 @@ const TaskDetailsPage: React.FC = () => {
                         <div className="sidebar-actions">
                             {isOwner ? (
                                 <>
-                                    <button className="btn btn-outline btn-block mb-12" type="button">
-                                        Редагувати
-                                    </button>
+                                    {taskDetails.status === "IN_PROGRESS" && (
+                                        <button
+                                            className="btn btn-primary btn-block mb-12"
+                                            onClick={handleCompleteTask}
+                                            disabled={isCompleting}
+                                            type="button"
+                                        >
+                                            {isCompleting ? "Завершення..." : "Завершити завдання"}
+                                        </button>
+                                    )}
+
+                                    {taskDetails.status === "COMPLETED" && (!taskDetails.reviews || taskDetails.reviews.length === 0) && (
+                                        <button
+                                            className="btn btn-primary btn-block mb-12"
+                                            onClick={() => setIsReviewModalOpen(true)}
+                                            type="button"
+                                        >
+                                            Залишити відгук
+                                        </button>
+                                    )}
+
+                                    {taskDetails.status === "OPEN" && (
+                                        <button
+                                            className="btn btn-outline btn-block mb-12"
+                                            onClick={() => navigate(`/tasks/${taskDetails.id}/edit`)}
+                                            type="button"
+                                        >
+                                            ✏️ Редагувати
+                                        </button>
+                                    )}
+
                                     <button
                                         className="btn btn-outline btn-block mb-12"
                                         style={{
                                             color: "var(--error-color)",
                                             borderColor: "var(--error-color)",
+                                            opacity: 0.7
                                         }}
                                         type="button"
+                                        onClick={() => alert("Функція видалення на етапі розробки")}
                                     >
                                         Видалити
                                     </button>
@@ -569,6 +691,99 @@ const TaskDetailsPage: React.FC = () => {
                     </div>
                 </aside>
             </div>
+
+            {/* Review Star Rating Modal */}
+            {isReviewModalOpen && (
+                <div className="review-modal-overlay" style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'rgba(0, 0, 0, 0.75)',
+                    backdropFilter: 'blur(8px)',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    zIndex: 1000
+                }}>
+                    <div className="review-modal-content card" style={{
+                        width: '450px',
+                        maxWidth: '90%',
+                        padding: '32px',
+                        borderRadius: 'var(--radius)',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
+                        boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                        position: 'relative'
+                    }}>
+                        <h3 className="td-title mb-16 text-white">Залишити відгук виконавцю</h3>
+                        <p className="text-sm-muted mb-24">
+                            Поділіться враженнями від співпраці з виконавцем <strong>{taskDetails.assignee?.name}</strong>. Ваш відгук буде відображатися в його профілі.
+                        </p>
+
+                        <div className="rating-selector mb-24" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                            <span className="section-label">Оцінка роботи:</span>
+                            <div style={{ display: 'flex', gap: '8px', fontSize: '32px' }}>
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <span
+                                        key={star}
+                                        onClick={() => setReviewRating(star)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            color: star <= reviewRating ? '#f59e0b' : '#4b5563',
+                                            transition: 'color 0.15s ease'
+                                        }}
+                                    >
+                                        ★
+                                    </span>
+                                ))}
+                            </div>
+                            <span className="fw-600 text-white mt-4">{reviewRating} з 5 зірок</span>
+                        </div>
+
+                        <div className="comment-field mb-24">
+                            <label className="section-label mb-8" htmlFor="review-comment">Ваш коментар (необов'язково):</label>
+                            <textarea
+                                id="review-comment"
+                                className="form-input"
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="Опишіть, як пройшла співпраця, чи задоволені ви якістю..."
+                                style={{
+                                    width: '100%',
+                                    minHeight: '120px',
+                                    padding: '12px',
+                                    borderRadius: 'var(--radius-sm)',
+                                    background: 'var(--surface2)',
+                                    border: '1px solid var(--border)',
+                                    color: 'var(--text)',
+                                    resize: 'vertical'
+                                }}
+                            />
+                        </div>
+
+                        <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                            <button
+                                className="btn btn-outline"
+                                onClick={() => setIsReviewModalOpen(false)}
+                                type="button"
+                                disabled={isSubmittingReview}
+                            >
+                                Скасувати
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={handleSubmitReview}
+                                type="button"
+                                disabled={isSubmittingReview}
+                            >
+                                {isSubmittingReview ? 'Надсилання...' : 'Надіслати відгук'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

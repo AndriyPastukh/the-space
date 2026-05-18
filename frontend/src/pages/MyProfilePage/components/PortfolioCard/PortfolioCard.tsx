@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './PortfolioCard.css';
 
 interface PortfolioCardProps {
@@ -9,6 +10,8 @@ interface PortfolioCardProps {
 export default function PortfolioCard({
     title, description, link
 }: PortfolioCardProps) {
+    const isInternalLink = link?.startsWith('/');
+
     return (
         <div className="portfolio-card">
             <div className="pcard-action-row">
@@ -18,14 +21,18 @@ export default function PortfolioCard({
             {description && <p className="pcard-review" style={{ marginTop: '12px' }}>{description}</p>}
             
             {link && (
-                <a href={link} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: '12px', color: 'var(--purple)' }}>
-                    {link}
-                </a>
+                isInternalLink ? (
+                    <Link to={link} style={{ display: 'inline-block', marginTop: '12px', color: 'var(--purple)', textDecoration: 'none' }}>
+                        Переглянути завдання ↗
+                    </Link>
+                ) : (
+                    <a href={link} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: '12px', color: 'var(--purple)' }}>
+                        {link}
+                    </a>
+                )
             )}
         </div>
     );
 }
-
-
 
 export type { PortfolioCardProps };

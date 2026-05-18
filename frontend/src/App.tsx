@@ -21,6 +21,7 @@ import MyChatsPage from "./pages/MyChatsPage/MyChatsPage";
 import PublicProfilePage from "./pages/PublicProfilePage/PublicProfilePage";
 import EditTaskPage from "./pages/EditPage/EditTaskPage.tsx";
 import EditKnowledgePage from "./pages/EditPage/EditKnowledgePage.tsx";
+import EditProfilePage from "./pages/EditPage/EditProfilePage.tsx";
 
 function App() {
     return (
@@ -41,6 +42,7 @@ function App() {
                     <Route path="/communities/:id" element={<CommunityDetailsPage />} />
                     <Route path="/search-experience" element={<SearchPage />} />
                     <Route path="/profile" element={<MyProfilePage />} />
+                    <Route path="/settings/profile" element={<EditProfilePage />} />
                     <Route path="/users/:id" element={<PublicProfilePage />} />
                     <Route path="/create-space" element={<CreateSpacePage />} />
                     <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />

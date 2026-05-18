@@ -112,7 +112,13 @@ model Review {
   userDetails   UserDetails @relation("UserReviews", fields: [userDetailsId], references: [id])
   authorId      Int
   author        UserDetails @relation("GivenReviews", fields: [authorId], references: [id])
+  
+  taskId        String?
+  task          Task?       @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  
   createdAt     DateTime    @default(now())
+
+  @@unique([taskId, authorId, userDetailsId])
 }
 
 model Badge {
@@ -278,6 +284,7 @@ model Task {
 
   proposals   TaskProposal[]
   categories Category[]
+  reviews    Review[]
 
   deletedAt   DateTime?
   createdAt   DateTime   @default(now())

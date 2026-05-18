@@ -61,6 +61,18 @@ export class TasksService {
       assignee: {
         select: this.authorSelect,
       },
+      reviews: {
+        include: {
+          author: {
+            select: {
+              firstName: true,
+              lastName: true,
+              nickname: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      },
       proposals: {
         include: {
           userDetails: {
@@ -425,5 +437,139 @@ export class TasksService {
         deletedAt: new Date(),
       },
     });
+  }
+
+  async completeTask(id: string, userId: number) {
+    const task = await this.findOne(id);
+
+    if (task.authorId !== userId) {
+      throw new ForbiddenException('You can only complete your own tasks');
+    }
+
+    if (!task.assigneeId) {
+      throw new BadRequestException('Task does not have an assigned executor');
+    }
+
+    if (task.status !== TaskStatus.IN_PROGRESS) {
+      if (task.status === TaskStatus.COMPLETED) {
+        throw new BadRequestException('Task is already completed');
+      }
+      throw new BadRequestException('Task is not in progress');
+    }
+
+    return this.prisma.$transaction(async (tx) => {
+      // 1. Update task to COMPLETED
+      const updatedTask = await tx.task.update({
+        where: { id },
+        data: { status: TaskStatus.COMPLETED },
+      });
+
+      // 2. Fetch assignee userDetails
+      const executorDetails = await tx.userDetails.findUnique({
+        where: { userId: task.assigneeId! },
+      });
+
+      if (executorDetails) {
+        const link = `/tasks/${task.id}`;
+        // 3. Avoid duplicate PortfolioItem for the same completed task
+        const existing = await tx.portfolioItem.findFirst({
+          where: {
+            userDetailsId: executorDetails.id,
+            link,
+          },
+        });
+
+        if (!existing) {
+          await tx.portfolioItem.create({
+            data: {
+              title: task.title,
+              description: task.description || 'Завдання успішно виконано!',
+              link,
+              userDetailsId: executorDetails.id,
+            },
+          });
+        }
+      }
+
+      return updatedTask;
+    });
+  }
+
+  async createReview(
+    id: string,
+    userId: number,
+    dto: { rating: number; comment?: string },
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id },
+      include: {
+        author: { include: { userDetails: true } },
+        assignee: { include: { userDetails: true } },
+      },
+    });
+
+    if (!task || task.deletedAt) {
+      throw new NotFoundException('Task not found');
+    }
+
+    if (task.authorId !== userId) {
+      throw new ForbiddenException('Only the customer can leave reviews for this task');
+    }
+
+    if (task.status !== TaskStatus.COMPLETED) {
+      throw new BadRequestException('Reviews are only allowed after the task is completed');
+    }
+
+    if (!task.assigneeId) {
+      throw new BadRequestException('No assignee is registered for this task');
+    }
+
+    const rating = Number(dto.rating);
+    if (isNaN(rating) || rating < 1 || rating > 5) {
+      throw new BadRequestException('Rating must be between 1 and 5');
+    }
+
+    const reviewerDetails = task.author.userDetails;
+    const revieweeDetails = task.assignee!.userDetails;
+
+    if (!reviewerDetails || !revieweeDetails) {
+      throw new NotFoundException('Reviewer or reviewee profile details not found');
+    }
+
+    if (reviewerDetails.id === revieweeDetails.id) {
+      throw new BadRequestException('You cannot review yourself');
+    }
+
+    // Check duplicate review
+    const existingReview = await this.prisma.review.findFirst({
+      where: {
+        taskId: id,
+        authorId: reviewerDetails.id,
+        userDetailsId: revieweeDetails.id,
+      },
+    });
+
+    if (existingReview) {
+      throw new BadRequestException('You have already left a review for this task');
+    }
+
+    const review = await this.prisma.review.create({
+      data: {
+        rating,
+        comment: dto.comment?.trim() || null,
+        taskId: id,
+        authorId: reviewerDetails.id,
+        userDetailsId: revieweeDetails.id,
+      },
+    });
+
+    // Refresh user stats materialized view so average rating is updated instantly
+    try {
+      await this.prisma.$executeRawUnsafe('REFRESH MATERIALIZED VIEW "UserStats"');
+    } catch (err) {
+      console.error('Failed to refresh materialized view UserStats:', err);
+    }
+
+    return review;
   }
 }

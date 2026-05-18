@@ -318,6 +318,7 @@ export class UsersService {
             categories: true,
             badges: { include: { badge: true } },
             communities: { include: { community: true } },
+            teams: { include: { team: true } },
             portfolioItems: true,
           },
         },
@@ -382,6 +383,11 @@ export class UsersService {
         name: uc.community.name,
         slug: uc.community.slug,
         avatarUrl: uc.community.avatarUrl,
+      })),
+      teams: details.teams.map((ut) => ({
+        name: ut.team.name,
+        slug: ut.team.slug,
+        avatarUrl: ut.team.avatarUrl,
       })),
       portfolio: details.portfolioItems.map((pi) => ({
         title: pi.title,

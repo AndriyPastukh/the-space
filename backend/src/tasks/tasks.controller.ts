@@ -100,6 +100,22 @@ export class TasksController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @Patch(':id/complete')
+  complete(@Param('id') id: string, @Req() req: any) {
+    return this.tasksService.completeTask(id, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/review')
+  review(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { rating: number; comment?: string },
+  ) {
+    return this.tasksService.createReview(id, req.user.id, body);
+  }
+
+  @UseGuards(JwtAuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string, @Req() req: any) {
     return this.tasksService.remove(id, req.user.id);

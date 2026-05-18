@@ -74,3 +74,11 @@ export const deleteTask = (id: string) => {
 export const updateTask = (id: string, payload: Partial<CreateTaskPayload> & { status?: string }) => {
   return api.patch(`/api/tasks/${id}`, payload);
 };
+
+export const completeTask = (id: string) => {
+  return api.patch(`/api/tasks/${id}/complete`);
+};
+
+export const submitTaskReview = (id: string, rating: number, comment?: string) => {
+  return api.post(`/api/tasks/${id}/review`, { rating, comment });
+};
