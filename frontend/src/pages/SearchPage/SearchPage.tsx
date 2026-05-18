@@ -336,7 +336,7 @@ export default function SearchPage() {
             ) : current.data.length === 0 ? (
               <div className="search-empty">
                 <span className="search-empty-icon">🔍</span>
-                <p>Нічого не знайдено</p>
+                <p>Нічого не знайдено у {filterState.tab}</p>
                 <span>Спробуй змінити запит або фільтри</span>
               </div>
             ) : (

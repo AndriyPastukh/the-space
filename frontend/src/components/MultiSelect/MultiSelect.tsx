@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import "./MultiSelect.css";
 
 type MultiSelectValue = string | number;
@@ -86,9 +86,11 @@ export default function MultiSelect<TValue extends MultiSelectValue>({
     }
   };
 
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   return (
     <div className={`multiselect-container ${isFocused ? 'is-focused' : ''} ${error ? 'has-error' : ''}`}>
-      <div className="multiselect-field" onClick={() => document.getElementById('ms-input')?.focus()}>
+      <div className="multiselect-field" onClick={() => inputRef.current?.focus()}>
         {selectedOptions.map(opt => (
           <span key={String(opt.id)} className="chip chip--active">
             {opt.name}
@@ -97,7 +99,7 @@ export default function MultiSelect<TValue extends MultiSelectValue>({
         ))}
         
         <input
-          id="ms-input"
+          ref={inputRef}
           type="text"
           className="multiselect-input-v2"
           value={inputValue}
