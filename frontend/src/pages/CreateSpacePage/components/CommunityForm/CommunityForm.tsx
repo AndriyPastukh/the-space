@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
 import { communitiesApi } from '../../../../features/communities/communitiesApi';
@@ -25,9 +26,11 @@ interface CommunityFormProps {
 type FormErrors = Partial<Record<keyof CommunityFormState, string>>;
 
 export default function CommunityForm({ formState, onChange }: CommunityFormProps) {
+    const navigate = useNavigate();
     const [errors, setErrors] = useState<FormErrors>({});
     const [avatarError, setAvatarError] = useState('');
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const loadCats = async () => {
@@ -70,8 +73,10 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+        if (isSubmitting || !validate()) return;
         
+        setIsSubmitting(true);
+        setAvatarError('');
         try {
             let avatarUrl = '';
             if (formState.avatar) {
@@ -91,14 +96,17 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
             const community = await communitiesApi.create({
                 name: formState.name,
                 description: formState.description,
-                directions: formState.directions, // Now contains IDs from MultiSelect
+                directions: formState.directions, // Contains IDs from MultiSelect
                 avatarUrl
             });
 
-            window.location.href = `/communities/${community.slug}`;
-        } catch (err) {
+            navigate(`/communities/${community.slug}`);
+        } catch (err: any) {
             console.error('Failed to create community:', err);
-            setAvatarError('Сталася помилка при створенні спільноти');
+            const errMsg = err?.response?.data?.message || 'Сталася помилка при створенні спільноти';
+            setAvatarError(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -120,6 +128,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     onChange={e => update('name', e.target.value)}
                     placeholder="Наприклад, Абстрактні люди..."
                     autoComplete="off"
+                    disabled={isSubmitting}
                 />
                 {errors.name && <span className="field-error">{errors.name}</span>}
             </div>
@@ -151,6 +160,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     onChange={e => update('description', e.target.value)}
                     placeholder="Розкажіть про вашу спільноту..."
                     rows={5}
+                    disabled={isSubmitting}
                 />
                 {(errors.description || isOverLimit) && (
                     <span className="field-error">
@@ -171,8 +181,12 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
 
             {/* Submit */}
             <div className="form-actions community-form__actions">
-                <button type="submit" className="btn btn-primary btn-lg btn-block">
-                    Створити
+                <button 
+                    type="submit" 
+                    className="btn btn-primary btn-lg btn-block"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Створення...' : 'Створити'}
                 </button>
             </div>
         </form>

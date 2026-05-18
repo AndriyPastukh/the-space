@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
 import { teamsApi } from '../../../../features/teams/teamsApi';
@@ -25,9 +26,11 @@ interface TeamFormProps {
 type FormErrors = Partial<Record<keyof TeamFormState, string>>;
 
 export default function TeamForm({ formState, onChange }: TeamFormProps) {
+    const navigate = useNavigate();
     const [errors, setErrors] = useState<FormErrors>({});
     const [avatarError, setAvatarError] = useState('');
     const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const loadCats = async () => {
@@ -70,8 +73,10 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!validate()) return;
+        if (isSubmitting || !validate()) return;
         
+        setIsSubmitting(true);
+        setAvatarError('');
         try {
             let avatarUrl = '';
             if (formState.avatar) {
@@ -91,14 +96,17 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
             const team = await teamsApi.create({
                 name: formState.name,
                 description: formState.description,
-                directions: formState.directions,
+                directions: formState.directions, // Contains IDs from MultiSelect
                 avatarUrl
             });
 
-            window.location.href = `/teams/${team.slug}`;
-        } catch (err) {
+            navigate(`/teams/${team.slug}`);
+        } catch (err: any) {
             console.error('Failed to create team:', err);
-            setAvatarError('Сталася помилка при створенні команди');
+            const errMsg = err?.response?.data?.message || 'Сталася помилка при створенні команди';
+            setAvatarError(Array.isArray(errMsg) ? errMsg.join(', ') : errMsg);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -120,6 +128,7 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
                     onChange={e => update('name', e.target.value)}
                     placeholder="Наприклад, Абстрактні люди..."
                     autoComplete="off"
+                    disabled={isSubmitting}
                 />
                 {errors.name && <span className="field-error">{errors.name}</span>}
             </div>
@@ -151,6 +160,7 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
                     onChange={e => update('description', e.target.value)}
                     placeholder="Розкажіть про вашу команду..."
                     rows={5}
+                    disabled={isSubmitting}
                 />
                 {(errors.description || isOverLimit) && (
                     <span className="field-error">
@@ -171,8 +181,12 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
 
             {/* Submit */}
             <div className="form-actions team-form__actions">
-                <button type="submit" className="btn btn-primary btn-lg btn-block">
-                    Створити
+                <button 
+                    type="submit" 
+                    className="btn btn-primary btn-lg btn-block"
+                    disabled={isSubmitting}
+                >
+                    {isSubmitting ? 'Створення...' : 'Створити'}
                 </button>
             </div>
         </form>
