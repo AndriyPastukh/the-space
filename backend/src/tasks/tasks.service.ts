@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { JoinRequestStatus, TaskStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto, TaskStatusDto } from './dto/create-task.dto';
+import { TaskProposalDecisionDto } from './dto/respond-to-proposal.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
@@ -240,6 +243,12 @@ export class TasksService {
       throw new ForbiddenException('You cannot apply to your own task');
     }
 
+    if (task.status !== TaskStatus.OPEN || task.assigneeId) {
+      throw new BadRequestException(
+        'This task is no longer accepting applications',
+      );
+    }
+
     const userDetails = await this.prisma.userDetails.findUnique({
       where: { userId },
     });
@@ -270,11 +279,20 @@ export class TasksService {
     });
   }
 
-  async respondToProposal(id: string, userId: number, proposalId: string, status: 'APPROVED' | 'REJECTED') {
+  async respondToProposal(
+    id: string,
+    userId: number,
+    proposalId: string,
+    status: TaskProposalDecisionDto,
+  ) {
     const task = await this.findOne(id);
 
     if (task.authorId !== userId) {
       throw new ForbiddenException('You can only manage proposals for your own tasks');
+    }
+
+    if (task.deletedAt) {
+      throw new NotFoundException('Task not found');
     }
 
     const proposal = await this.prisma.taskProposal.findUnique({
@@ -286,37 +304,110 @@ export class TasksService {
       throw new NotFoundException('Proposal not found');
     }
 
-    if (status === 'APPROVED') {
-      await this.prisma.$transaction([
-        this.prisma.taskProposal.update({
+    if (proposal.userDetails.userId === task.authorId) {
+      throw new ForbiddenException('You cannot assign yourself to your own task');
+    }
+
+    if (status === TaskProposalDecisionDto.APPROVED) {
+      if (task.status !== TaskStatus.OPEN) {
+        throw new BadRequestException(
+          'Only open tasks can be assigned to an executor',
+        );
+      }
+
+      if (task.assigneeId) {
+        throw new BadRequestException('This task already has an assigned executor');
+      }
+
+      if (proposal.status !== JoinRequestStatus.PENDING) {
+        throw new BadRequestException('Only pending proposals can be approved');
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        await tx.taskProposal.update({
           where: { id: proposalId },
-          data: { status: 'APPROVED' },
-        }),
-        this.prisma.task.update({
+          data: { status: JoinRequestStatus.APPROVED },
+        });
+
+        await tx.task.update({
           where: { id },
           data: {
             assigneeId: proposal.userDetails.userId,
-            status: 'IN_PROGRESS',
+            status: TaskStatus.IN_PROGRESS,
           },
-        }),
-        // Reject all other proposals
-        this.prisma.taskProposal.updateMany({
+        });
+
+        await tx.taskProposal.updateMany({
           where: {
             taskId: id,
             id: { not: proposalId },
-            status: 'PENDING',
+            status: JoinRequestStatus.PENDING,
           },
-          data: { status: 'REJECTED' },
-        }),
-      ]);
+          data: { status: JoinRequestStatus.REJECTED },
+        });
+      });
     } else {
+      if (task.status !== TaskStatus.OPEN || task.assigneeId) {
+        throw new BadRequestException(
+          'You can only reject proposals while the task is still open',
+        );
+      }
+
+      if (proposal.status !== JoinRequestStatus.PENDING) {
+        throw new BadRequestException('Only pending proposals can be rejected');
+      }
+
       await this.prisma.taskProposal.update({
         where: { id: proposalId },
-        data: { status: 'REJECTED' },
+        data: { status: JoinRequestStatus.REJECTED },
       });
     }
 
-    return { message: `Proposal ${status.toLowerCase()} successfully` };
+    return this.findOne(id);
+  }
+
+  async findMyResponded(userId: number, query: { page?: number; limit?: number }) {
+    const { page = 1, limit = 10 } = query;
+    const safePage = Math.max(1, Number(page) || 1);
+    const safeLimit = Math.min(Math.max(1, Number(limit) || 10), 100);
+    const skip = (safePage - 1) * safeLimit;
+
+    const where: any = {
+      deletedAt: null,
+      assigneeId: null,
+      status: TaskStatus.OPEN,
+      proposals: {
+        some: {
+          userDetails: {
+            userId: userId,
+          },
+          status: JoinRequestStatus.PENDING,
+        },
+      },
+    };
+
+    const [items, total] = await Promise.all([
+      this.prisma.task.findMany({
+        where,
+        skip,
+        take: safeLimit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: this.buildInclude(),
+      }),
+      this.prisma.task.count({
+        where,
+      }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.ceil(total / safeLimit),
+    };
   }
 
   async remove(id: string, userId: number) {

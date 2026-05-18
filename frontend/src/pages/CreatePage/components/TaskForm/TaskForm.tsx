@@ -23,9 +23,22 @@ interface TaskFormProps {
     setMessage: (msg: { text: string; type: 'success' | 'error' } | null) => void;
     onSuccess: (id: string) => void;
     categories: Category[];
+    mode?: 'create' | 'edit';
+    submitButtonText?: string;
+    onSubmit?: (state: TaskFormState) => Promise<void>;
 }
 
-export default function TaskForm({ formState, onChange, onClear, categories,setMessage,onSuccess }: TaskFormProps) {
+export default function TaskForm({
+    formState,
+    onChange,
+    onClear,
+    categories,
+    setMessage,
+    onSuccess,
+    mode = 'create',
+    submitButtonText,
+    onSubmit,
+}: TaskFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof TaskFormState, string>>>({});
 
     const update = (field: keyof TaskFormState, value: any) => {
@@ -70,6 +83,22 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+
+        if (mode === 'edit' && onSubmit) {
+            try {
+                await onSubmit(formState);
+            } catch (error: any) {
+                const backendError = error.response?.data?.message || error.response?.data;
+                setMessage({
+                    text: Array.isArray(backendError)
+                        ? backendError.join('\n')
+                        : backendError || 'Помилка оновлення Task',
+                    type: 'error',
+                });
+            }
+            return;
+        }
+
         try {
             const result = await createTask(formState);
             setMessage({ text: 'Task успішно створено!', type: 'success' });
@@ -165,11 +194,13 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
             </div>
 
             <div className="form-actions">
-                <button type="button" className="btn-clear" onClick={onClear}>
-                    Очистити форму
-                </button>
+                {mode === 'create' && (
+                    <button type="button" className="btn-clear" onClick={onClear}>
+                        Очистити форму
+                    </button>
+                )}
                 <button type="submit" className="btn btn-primary">
-                    Створити таск
+                    {submitButtonText || 'Створити таск'}
                 </button>
             </div>
         </form>
