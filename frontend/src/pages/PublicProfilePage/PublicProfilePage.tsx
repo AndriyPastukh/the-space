@@ -1,0 +1,29 @@
+import { useParams } from 'react-router-dom';
+import ProfileSidebar from '../MyProfilePage/components/ProfileSidebar/ProfileSidebar';
+import PortfolioSection from '../MyProfilePage/components/PortfolioSection/PortfolioSection';
+import '../MyProfilePage/MyProfilePage.css';
+import { useProfile } from '../../hooks/useProfile';
+
+export default function PublicProfilePage() {
+    const { id } = useParams();
+    const { profile, isLoading, error } = useProfile(id);
+
+    if (isLoading) {
+        return <div className="my-profile-page"><p>Завантаження...</p></div>;
+    }
+
+    if (error || !profile) {
+        return <div className="my-profile-page"><p>{error || "Профіль не знайдено"}</p></div>;
+    }
+
+    return (
+        <div className="my-profile-page">
+            <div className="my-profile-container">
+                <div className="my-profile-layout">
+                    <ProfileSidebar {...profile} isPublic={true} />
+                    <PortfolioSection items={profile.portfolio} />
+                </div>
+            </div>
+        </div>
+    );
+}

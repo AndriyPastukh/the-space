@@ -62,7 +62,7 @@ const getAvatar = (url: string, name: string) =>
 
 const UserIcon = () => (
     <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+        <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
     </svg>
 );
 
@@ -166,6 +166,22 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
                 </div>
             )}
 
+            {bio && (
+                <div className="sidebar-block">
+                    <span className="section-label">Про себе:</span>
+                    <p className="sidebar-bio" style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.5 }}>{bio}</p>
+                </div>
+            )}
+
+            {(location?.city || location?.country) && (
+                <div className="sidebar-block">
+                    <span className="section-label">Локація:</span>
+                    <p className="sidebar-location" style={{ fontSize: '14px', color: 'var(--text)' }}>
+                        {location.city}{location.city && location.country ? ', ' : ''}{location.country}
+                    </p>
+                </div>
+            )}
+
             {/* Stats */}
             {(stats || oldRating) && (
                 <div className="sidebar-block">
@@ -206,6 +222,7 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
                 </div>
             )}
 
+            {/* Directions & Tags */}
             {/* Directions & Tags */}
             <div className="sidebar-block">
                 <span className="section-label">Напрями:</span>
@@ -248,6 +265,7 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
                         </div>
                         <div>
                             <p className="community-name">{c.name}</p>
+                            <p className="community-name">{c.name}</p>
                         </div>
                     </div>
                 )) || (
@@ -255,6 +273,7 @@ export default function ProfileSidebar(props: ProfileSidebarProps) {
                 )}
             </div>
 
+            {/* Badges */}
             {/* Badges */}
             <div className="sidebar-block">
                 <span className="section-label">Досягнення:</span>
