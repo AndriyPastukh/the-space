@@ -1,5 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
@@ -18,7 +22,10 @@ export class S3Service {
     this.bucketName = process.env.AWS_BUCKET_NAME!;
   }
 
-  async generatePresignedUrl(key: string, contentType: string): Promise<string> {
+  async generatePresignedUrl(
+    key: string,
+    contentType: string,
+  ): Promise<string> {
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
       Key: key,

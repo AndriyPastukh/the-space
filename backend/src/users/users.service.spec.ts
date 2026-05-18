@@ -68,14 +68,25 @@ describe('UsersService', () => {
       const updateData = { firstName: 'Jane' };
       const mockUpdatedUser = {
         id: 1,
-        userDetails: { id: 10, firstName: 'Jane', xpPoints: 100, currentLevel: 1, skills: [], interests: [], socialLinks: [], categories: [] },
+        userDetails: {
+          id: 10,
+          firstName: 'Jane',
+          xpPoints: 100,
+          currentLevel: 1,
+          skills: [],
+          interests: [],
+          socialLinks: [],
+          categories: [],
+        },
       };
 
       mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
-      mockPrismaService.userDetails.findUnique.mockResolvedValue(mockUpdatedUser.userDetails);
+      mockPrismaService.userDetails.findUnique.mockResolvedValue(
+        mockUpdatedUser.userDetails,
+      );
 
       const result = await service.updateMe(userId, updateData);
-      
+
       expect(result).toEqual(mockUpdatedUser);
       expect(prisma.user.update).toHaveBeenCalled();
     });

@@ -1,32 +1,36 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "./MyChatsPage.css";
+import { useChats } from "../../hooks/useChats";
 
 type ChatMainTab = "personal" | "executors" | "customers";
 type ChatSubfilter = "knowledge" | "tasks";
 type MobileDrawer = "linked" | "chats" | null;
 
-interface Message {
-  id: string;
-  senderId: string;
-  text: string;
-  time: string;
-  isMine: boolean;
-}
-
-interface ChatItem {
-  id: string;
-  name: string;
-  lastMessage: string;
-  lastMessageTime: string;
-  mainTab: ChatMainTab;
-  type: "tasks" | "knowledge";
-  avatar: string;
-}
-
 const MyChatsPage: React.FC = () => {
+  const {
+    chats,
+    messages,
+    selectedChatId,
+    setSelectedChatId,
+    isChatsLoading,
+    isMessagesLoading,
+    chatsError,
+    messagesError,
+    sendMessage,
+  } = useChats();
+
+  const location = useLocation();
+
+  useEffect(() => {
+    const stateChatId = location.state?.selectedChatId;
+    if (stateChatId) {
+      setSelectedChatId(Number(stateChatId));
+    }
+  }, [location, setSelectedChatId]);
+
   const [activeTab, setActiveTab] = useState<ChatMainTab>("personal");
   const [subfilter, setSubfilter] = useState<ChatSubfilter | null>(null);
-  const [selectedChatId, setSelectedChatId] = useState<string>("1");
   const [isLinkedHidden, setIsLinkedHidden] = useState(false);
   const [isListHidden, setIsListHidden] = useState(false);
   const [messageInput, setMessageInput] = useState("");
@@ -34,59 +38,62 @@ const MyChatsPage: React.FC = () => {
 
   const messagesAreaRef = useRef<HTMLDivElement | null>(null);
 
-  const chats: ChatItem[] = [
-    {
-      id: "1",
-      name: "Roman K. D.",
-      lastMessage: "Let’s go grab a beer..",
-      lastMessageTime: "14:20",
-      mainTab: "personal",
-      type: "knowledge",
-      avatar: "RK",
-    },
-    {
-      id: "2",
-      name: "Ivan R. V.",
-      lastMessage: "Design is ready",
-      lastMessageTime: "12:05",
-      mainTab: "executors",
-      type: "tasks",
-      avatar: "IR",
-    },
-    {
-      id: "3",
-      name: "Anna M.",
-      lastMessage: "When will you be free?",
-      lastMessageTime: "Вчора",
-      mainTab: "personal",
-      type: "tasks",
-      avatar: "AM",
-    },
-  ];
+  // Map API chats to UI components format
+  const mappedChats = useMemo(() => {
+    return chats.map((c) => {
+      const name = c.otherParticipant
+        ? `${c.otherParticipant.firstName} ${c.otherParticipant.lastName}`
+        : "Користувач";
+      const initials = c.otherParticipant
+        ? `${c.otherParticipant.firstName[0] || ""}${
+            c.otherParticipant.lastName[0] || ""
+          }`.toUpperCase()
+        : "U";
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "m1",
-      senderId: "other",
-      text: "Привіт! Як справи з проектом?",
-      time: "14:15",
-      isMine: false,
-    },
-    {
-      id: "m2",
-      senderId: "other",
-      text: "Ти встигаєш доробити навігацію?",
-      time: "14:16",
-      isMine: false,
-    },
-    {
-      id: "m3",
-      senderId: "me",
-      text: "Привіт! Так, вже майже закінчив. Додаю останні штрихи до мобільної версії.",
-      time: "14:20",
-      isMine: true,
-    },
-  ]);
+      // Format last message timestamp
+      let lastMessageTime = "";
+      if (c.lastMessage) {
+        const date = new Date(c.lastMessage.createdAt);
+        if (!isNaN(date.getTime())) {
+          lastMessageTime = `${date.getHours().toString().padStart(2, "0")}:${date
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}`;
+        }
+      }
+
+      return {
+        id: String(c.id),
+        name,
+        lastMessage: c.lastMessage?.content || "Немає повідомлень",
+        lastMessageTime,
+        mainTab: "personal" as const, // all direct user chats are personal
+        type: "tasks" as const, // placeholder
+        avatar: initials,
+        unreadCount: c.unreadCount,
+      };
+    });
+  }, [chats]);
+
+  // Map API messages to UI format
+  const mappedMessages = useMemo(() => {
+    return messages.map((m) => {
+      const date = new Date(m.createdAt);
+      const time = isNaN(date.getTime())
+        ? ""
+        : `${date.getHours().toString().padStart(2, "0")}:${date
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}`;
+      return {
+        id: String(m.id),
+        senderId: String(m.senderId),
+        text: m.content,
+        time,
+        isMine: m.isMine,
+      };
+    });
+  }, [messages]);
 
   useEffect(() => {
     const el = messagesAreaRef.current;
@@ -115,41 +122,25 @@ const MyChatsPage: React.FC = () => {
   }, [mobileDrawer]);
 
   const filteredChats = useMemo(() => {
-    return chats.filter((chat) => {
+    return mappedChats.filter((chat) => {
       const matchTab = chat.mainTab === activeTab;
       const matchSubfilter = !subfilter || chat.type === subfilter;
-
       return matchTab && matchSubfilter;
     });
-  }, [activeTab, subfilter]);
+  }, [mappedChats, activeTab, subfilter]);
 
-  const activeChat = chats.find((chat) => chat.id === selectedChatId);
+  const activeChat = mappedChats.find((chat) => chat.id === String(selectedChatId));
 
   const handleSelectChat = (chatId: string) => {
-    setSelectedChatId(chatId);
+    setSelectedChatId(Number(chatId));
     setMobileDrawer(null);
   };
 
   const handleSendMessage = () => {
     const trimmedMessage = messageInput.trim();
-
     if (!trimmedMessage) return;
 
-    const now = new Date();
-    const timeString = `${now.getHours()}:${now
-      .getMinutes()
-      .toString()
-      .padStart(2, "0")}`;
-
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: "me",
-      text: trimmedMessage,
-      time: timeString,
-      isMine: true,
-    };
-
-    setMessages((prev) => [...prev, newMessage]);
+    sendMessage(trimmedMessage);
     setMessageInput("");
   };
 
@@ -179,7 +170,7 @@ const MyChatsPage: React.FC = () => {
           }`}
         >
           <div className="sidebar-header">
-            <span>Linked Chats</span>
+            <span>Зв'язані контексти</span>
 
             <div className="sidebar-actions">
               <button
@@ -202,21 +193,23 @@ const MyChatsPage: React.FC = () => {
             </div>
           </div>
 
-          <div className="linked-card">
-            <div className="user-info">
-              <div className="avatar-placeholder pink">IR</div>
-              <span className="username">Ivan R. V.</span>
-            </div>
-
-            <p className="description">
-              Навігаційна панель для сайту (Figma)...
+          <div
+            className="linked-card"
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              textAlign: "center",
+              padding: "40px 20px",
+              color: "var(--text-muted)",
+              height: "200px",
+            }}
+          >
+            <span style={{ fontSize: "32px", marginBottom: "12px" }}>🔗</span>
+            <p style={{ fontSize: "14px" }}>
+              Чат ведеться напряму. Немає прив'язаного завдання чи знання.
             </p>
-
-            <div className="tags">
-              <span className="tag">design</span>
-              <span className="tag">react</span>
-              <span className="tag-more">+2</span>
-            </div>
           </div>
         </aside>
       ) : (
@@ -237,7 +230,7 @@ const MyChatsPage: React.FC = () => {
           }`}
         >
           <div className="sidebar-header">
-            <h1 className="title">My Chats</h1>
+            <h1 className="title">Мої чати</h1>
 
             <div className="sidebar-actions">
               <button
@@ -263,9 +256,9 @@ const MyChatsPage: React.FC = () => {
           <div className="tabs-nav">
             <div className="main-tabs">
               {[
-                { label: "Personal", value: "personal" },
-                { label: "Executors", value: "executors" },
-                { label: "Customers", value: "customers" },
+                { label: "Особисті", value: "personal" },
+                { label: "Виконавці", value: "executors" },
+                { label: "Замовники", value: "customers" },
               ].map((tab) => (
                 <button
                   key={tab.value}
@@ -290,7 +283,7 @@ const MyChatsPage: React.FC = () => {
                   setSubfilter(subfilter === "knowledge" ? null : "knowledge")
                 }
               >
-                Knowledge
+                Знання
               </button>
 
               <button
@@ -302,32 +295,82 @@ const MyChatsPage: React.FC = () => {
                   setSubfilter(subfilter === "tasks" ? null : "tasks")
                 }
               >
-                Tasks
+                Завдання
               </button>
             </div>
           </div>
 
           <div className="chat-previews">
-            {filteredChats.map((chat) => (
+            {isChatsLoading ? (
+              <p style={{ textAlign: "center", padding: "20px" }}>
+                Завантаження...
+              </p>
+            ) : chatsError ? (
+              <p style={{ textAlign: "center", padding: "20px", color: "red" }}>
+                {chatsError}
+              </p>
+            ) : filteredChats.length === 0 ? (
               <div
-                key={chat.id}
-                className={`chat-preview-item ${
-                  selectedChatId === chat.id ? "selected" : ""
-                }`}
-                onClick={() => handleSelectChat(chat.id)}
+                style={{
+                  textAlign: "center",
+                  padding: "40px 20px",
+                  color: "var(--text-muted)",
+                }}
               >
-                <div className="avatar-placeholder">{chat.avatar}</div>
-
-                <div className="preview-content">
-                  <div className="preview-top">
-                    <span className="preview-name">{chat.name}</span>
-                    <span className="preview-time">{chat.lastMessageTime}</span>
-                  </div>
-
-                  <div className="preview-msg">{chat.lastMessage}</div>
-                </div>
+                <span style={{ fontSize: "24px" }}>💬</span>
+                <p style={{ fontSize: "14px", marginTop: "8px" }}>
+                  {activeTab === "personal"
+                    ? "У вас немає активних особистих чатів."
+                    : "Немає чатів у цій категорії."}
+                </p>
               </div>
-            ))}
+            ) : (
+              filteredChats.map((chat) => (
+                <div
+                  key={chat.id}
+                  className={`chat-preview-item ${
+                    String(selectedChatId) === chat.id ? "selected" : ""
+                  }`}
+                  onClick={() => handleSelectChat(chat.id)}
+                >
+                  <div className="avatar-placeholder">{chat.avatar}</div>
+
+                  <div className="preview-content">
+                    <div className="preview-top">
+                      <span className="preview-name">{chat.name}</span>
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}
+                      >
+                        <span className="preview-time">
+                          {chat.lastMessageTime}
+                        </span>
+                        {chat.unreadCount > 0 && (
+                          <span
+                            className="unread-badge"
+                            style={{
+                              background: "var(--purple)",
+                              color: "white",
+                              borderRadius: "10px",
+                              padding: "2px 6px",
+                              fontSize: "11px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            {chat.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="preview-msg">{chat.lastMessage}</div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </section>
       ) : (
@@ -342,98 +385,142 @@ const MyChatsPage: React.FC = () => {
       )}
 
       <main className="active-chat-panel">
-        <header className="chat-header">
-          <div className="mobile-chat-nav">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLinkedHidden(false);
-                setMobileDrawer("linked");
-              }}
-            >
-              Linked
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setIsListHidden(false);
-                setMobileDrawer("chats");
-              }}
-            >
-              Chats
-            </button>
+        {selectedChatId === null ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              flex: 1,
+              color: "var(--text-muted)",
+            }}
+          >
+            <span style={{ fontSize: "48px", marginBottom: "16px" }}>💬</span>
+            <h2>Оберіть чат, щоб почати спілкування</h2>
           </div>
+        ) : (
+          <>
+            <header className="chat-header">
+              <div className="mobile-chat-nav">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLinkedHidden(false);
+                    setMobileDrawer("linked");
+                  }}
+                >
+                  Linked
+                </button>
 
-          <div className="header-left">
-            {isListHidden && (
-              <button
-                type="button"
-                className="expand-btn"
-                onClick={() => setIsListHidden(false)}
-                aria-label="Expand chats list"
-              >
-                »
-              </button>
-            )}
-
-            <h2>{activeChat?.name || "Оберіть чат"}</h2>
-          </div>
-
-          <span className="date-stamp">23.03.2026</span>
-        </header>
-
-        <div className="messages-area" ref={messagesAreaRef}>
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`msg-row ${message.isMine ? "outgoing" : "incoming"}`}
-            >
-              {!message.isMine && (
-                <div className="avatar-xs">{activeChat?.avatar}</div>
-              )}
-
-              <div className="msg-bubble">
-                <div className="msg-text">{message.text}</div>
-                <div className="msg-time">{message.time}</div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsListHidden(false);
+                    setMobileDrawer("chats");
+                  }}
+                >
+                  Chats
+                </button>
               </div>
+
+              <div className="header-left">
+                {isListHidden && (
+                  <button
+                    type="button"
+                    className="expand-btn"
+                    onClick={() => setIsListHidden(false)}
+                    aria-label="Expand chats list"
+                  >
+                    »
+                  </button>
+                )}
+
+                <h2>{activeChat?.name || "Чат"}</h2>
+              </div>
+            </header>
+
+            <div className="messages-area" ref={messagesAreaRef}>
+              {isMessagesLoading ? (
+                <p style={{ textAlign: "center", padding: "20px" }}>
+                  Завантаження повідомлень...
+                </p>
+              ) : messagesError ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    padding: "20px",
+                    color: "red",
+                  }}
+                >
+                  {messagesError}
+                </p>
+              ) : mappedMessages.length === 0 ? (
+                <p
+                  style={{
+                    textAlign: "center",
+                    padding: "40px",
+                    color: "var(--text-muted)",
+                  }}
+                >
+                  Немає повідомлень. Напишіть щось першим!
+                </p>
+              ) : (
+                mappedMessages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`msg-row ${
+                      message.isMine ? "outgoing" : "incoming"
+                    }`}
+                  >
+                    {!message.isMine && (
+                      <div className="avatar-xs">{activeChat?.avatar}</div>
+                    )}
+
+                    <div className="msg-bubble">
+                      <div className="msg-text">{message.text}</div>
+                      <div className="msg-time">{message.time}</div>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
-          ))}
-        </div>
 
-        <footer className="chat-footer">
-          <div className="input-wrapper">
-            <button
-              type="button"
-              className="attach-button"
-              onClick={() => alert("Виберіть файл")}
-              aria-label="Attach file"
-            >
-              📎
-            </button>
+            <footer className="chat-footer">
+              <div className="input-wrapper">
+                <button
+                  type="button"
+                  className="attach-button"
+                  onClick={() => alert("Виберіть файл")}
+                  aria-label="Attach file"
+                >
+                  📎
+                </button>
 
-            <input
-              type="text"
-              placeholder="Напишіть повідомлення..."
-              value={messageInput}
-              onChange={(event) => setMessageInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  handleSendMessage();
-                }
-              }}
-            />
+                <input
+                  type="text"
+                  placeholder="Напишіть повідомлення..."
+                  value={messageInput}
+                  onChange={(event) => setMessageInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      handleSendMessage();
+                    }
+                  }}
+                />
 
-            <button
-              type="button"
-              className="send-button"
-              onClick={handleSendMessage}
-              aria-label="Send message"
-            >
-              ➤
-            </button>
-          </div>
-        </footer>
+                <button
+                  type="button"
+                  className="send-button"
+                  onClick={handleSendMessage}
+                  aria-label="Send message"
+                >
+                  ➤
+                </button>
+              </div>
+            </footer>
+          </>
+        )}
       </main>
     </div>
   );
