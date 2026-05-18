@@ -228,3 +228,35 @@
     color: var(--purple-lt);
     background: rgba(124, 58, 237, 0.1);
 }
+
+.search-space-filter-panel {
+    --filter-panel-bg: var(--surface);
+    --filter-panel-border: var(--border);
+    --filter-panel-radius: var(--radius);
+    --filter-panel-padding: 20px;
+    --filter-panel-gap: 16px;
+    --filter-panel-title-color: var(--text);
+    --filter-panel-title-font: var(--font-head);
+    --filter-panel-label-color: var(--text-muted);
+    --filter-panel-label-size: 11px;
+    --filter-panel-label-spacing: 0.1em;
+    --filter-chip-radius: var(--radius-pill);
+    --filter-chip-padding: 4px 12px;
+    --filter-chip-bg: var(--tag-bg);
+    --filter-chip-border: var(--tag-border);
+    --filter-chip-color: var(--purple-lt);
+    --filter-chip-hover-bg: rgba(124, 58, 237, 0.3);
+    --filter-chip-hover-color: #fff;
+    --filter-chip-active-bg: var(--purple);
+    --filter-chip-active-border: var(--purple);
+    --filter-chip-active-color: #fff;
+    --filter-action-color: var(--text-muted);
+    --filter-action-hover-color: #f87171;
+    --filter-message-color: var(--text-muted);
+    --filter-divider-color: var(--border-color, var(--border));
+}
+
+.search-space-filter-panel .filter-section {
+    gap: 8px;
+}
+

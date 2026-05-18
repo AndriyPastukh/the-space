@@ -91,3 +91,34 @@
         top: 0;
     }
 }
+
+.search-page-filter-panel {
+    --filter-panel-bg: var(--bg2);
+    --filter-panel-border: rgba(255, 255, 255, 0.08);
+    --filter-panel-radius: 20px;
+    --filter-panel-padding: 24px;
+    --filter-panel-gap: 20px;
+    --filter-panel-label-color: #6b6b6b;
+    --filter-panel-label-size: 12px;
+    --filter-panel-label-spacing: 0.5px;
+    --filter-chip-radius: 50px;
+    --filter-chip-padding: 5px 14px;
+    --filter-chip-bg: rgba(124, 58, 237, 0.08);
+    --filter-chip-border: rgba(124, 58, 237, 0.15);
+    --filter-chip-color: #a78bfa;
+    --filter-chip-hover-bg: rgba(124, 58, 237, 0.2);
+    --filter-chip-hover-color: #ffffff;
+    --filter-chip-active-bg: #7c3aed;
+    --filter-chip-active-border: #7c3aed;
+    --filter-chip-active-color: #ffffff;
+    --filter-action-color: #f87171;
+    --filter-action-border: rgba(248, 113, 113, 0.3);
+    --filter-action-hover-color: #fca5a5;
+    --filter-action-hover-bg: rgba(248, 113, 113, 0.1);
+    --filter-message-color: #b3b3b3;
+    --filter-error-color: #f87171;
+}
+
+.search-page-filter-panel .filter-chips {
+    gap: 7px;
+}

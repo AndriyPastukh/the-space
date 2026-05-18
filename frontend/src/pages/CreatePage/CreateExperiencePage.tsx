@@ -52,13 +52,13 @@ export default function CreateExperiencePage() {
                             className={`tab-btn ${activeTab === 'task' ? 'tab-btn--active' : ''}`}
                             onClick={() => {setSearchParams({ type: "task" }); setMessage(null);}}
                         >
-                            Task
+                            Завдання
                         </button>
                         <button
                             className={`tab-btn ${activeTab === 'knowledge' ? 'tab-btn--active' : ''}`}
                             onClick={() => {setSearchParams({ type: "knowledge" }); setMessage(null);}}
                         >
-                            Knowledge
+                            Знання
                         </button>
                     </div>
                 </div>
