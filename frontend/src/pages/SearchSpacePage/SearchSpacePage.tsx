@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PersonCard from './components/PersonCard/PersonCard';
 import type { PersonCardProps } from './components/PersonCard/PersonCard';
 import SpaceCard from './components/SpaceCard/SpaceCard';
@@ -53,7 +54,7 @@ interface SearchSpace {
     type: 'COMMUNITY' | 'TEAM';
     name: string;
     slug: string;
-    avatarUrl: string | null;
+    avatarUrl: string;
     rating: number;
     memberCount: number;
     directions: string[];
@@ -61,6 +62,10 @@ interface SearchSpace {
 }
 
 export default function SearchSpacePage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const typeParam = searchParams.get('type');
+    const activeTab = (typeParam === 'user' || typeParam === 'community' || typeParam === 'team') ? typeParam : 'user';
+
     const [people, setPeople] = useState<PersonCardProps[]>([]);
     const [spaces, setSpaces] = useState<SearchSpace[]>([]);
     const [categories, setCategories] = useState<string[]>([]);
@@ -72,6 +77,15 @@ export default function SearchSpacePage() {
     const [sort, setSort] = useState('rating_desc');
     const [sortOpen, setSortOpen] = useState(false);
     const [page, setPage] = useState(1);
+
+    // Sync search parameter tab with filterState tab
+    useEffect(() => {
+        setFilterState(prev => ({
+            ...prev,
+            tab: activeTab === 'user' ? 'PEOPLE' : 'SPACES'
+        }));
+        setPage(1);
+    }, [activeTab]);
 
     useEffect(() => {
         let isMounted = true;
@@ -103,8 +117,8 @@ export default function SearchSpacePage() {
                     type: 'COMMUNITY' as const,
                     name: c.name,
                     slug: c.slug,
-                    avatarUrl: c.avatarUrl,
-                    rating: 4.5, // Default rating if none provided
+                    avatarUrl: c.avatarUrl ?? '',
+                    rating: 4.5,
                     memberCount: c.memberCount || 0,
                     directions: c.directions?.map((d: any) => d.name) || [],
                     description: c.description || '',
@@ -115,7 +129,7 @@ export default function SearchSpacePage() {
                     type: 'TEAM' as const,
                     name: t.name,
                     slug: t.slug,
-                    avatarUrl: t.avatarUrl,
+                    avatarUrl: t.avatarUrl ?? '',
                     rating: 4.5,
                     memberCount: t.memberCount || 0,
                     directions: t.directions?.map((d: any) => d.name) || [],
@@ -155,7 +169,7 @@ export default function SearchSpacePage() {
     const filtered = useMemo(() => {
         const q = search.trim().toLowerCase();
 
-        if (filterState.tab === 'PEOPLE') {
+        if (activeTab === 'user') {
             return people.filter(p => {
                 const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
                 if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q) && !p.nickname.toLowerCase().includes(q)) return false;
@@ -169,13 +183,14 @@ export default function SearchSpacePage() {
                 return b.rating - a.rating;
             });
         } else {
+            const targetType = activeTab === 'community' ? 'COMMUNITY' : 'TEAM';
             return spaces.filter(s => {
+                if (s.type !== targetType) return false;
                 if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false;
                 if (filterState.directions.length > 0) {
                     const match = filterState.directions.some(d => s.directions.includes(d));
                     if (!match) return false;
                 }
-                if (filterState.spaceType !== 'all' && s.type !== filterState.spaceType) return false;
                 return true;
             }).sort((a, b) => {
                 if (sort === 'rating_asc') return a.rating - b.rating;
@@ -184,7 +199,7 @@ export default function SearchSpacePage() {
                 return b.rating - a.rating;
             });
         }
-    }, [people, spaces, search, filterState, sort]);
+    }, [people, spaces, search, filterState, sort, activeTab]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
     const paginated = useMemo(() => {
@@ -195,7 +210,29 @@ export default function SearchSpacePage() {
     return (
         <div className="search-space-page">
             <div className="search-space-container">
-                <h1 className="search-space-title">Пошук</h1>
+                <h1 className="search-space-title">Пошук просторів</h1>
+
+                {/* Query Parameter Driven Tabs */}
+                <div className="search-tabs">
+                    <button
+                        className={`search-tab ${activeTab === 'user' ? 'search-tab--active' : ''}`}
+                        onClick={() => setSearchParams({ type: 'user' })}
+                    >
+                        Учасники
+                    </button>
+                    <button
+                        className={`search-tab ${activeTab === 'community' ? 'search-tab--active' : ''}`}
+                        onClick={() => setSearchParams({ type: 'community' })}
+                    >
+                        Спільноти
+                    </button>
+                    <button
+                        className={`search-tab ${activeTab === 'team' ? 'search-tab--active' : ''}`}
+                        onClick={() => setSearchParams({ type: 'team' })}
+                    >
+                        Команди
+                    </button>
+                </div>
 
                 <div className="search-bar-row">
                     <button
@@ -262,7 +299,7 @@ export default function SearchSpacePage() {
                                 <p>Нічого не знайдено</p>
                                 <span>Спробуй змінити запит або фільтри</span>
                             </div>
-                        ) : filterState.tab === 'PEOPLE' ? (
+                        ) : activeTab === 'user' ? (
                             (paginated as PersonCardProps[]).map(p => (
                                 <PersonCard key={p.id} {...p} />
                             ))

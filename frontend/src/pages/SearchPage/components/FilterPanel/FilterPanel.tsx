@@ -46,15 +46,7 @@ export default function FilterPanel({ filterState, onChange }: FilterPanelProps)
     onChange({ ...filterState, requestCategoryIds: updated });
   };
 
-  const setTab = (tab: TabType) => {
-    onChange({
-      ...filterState,
-      tab,
-      categoryIds: [],
-      offerCategoryIds: [],
-      requestCategoryIds: [],
-    });
-  };
+
 
   const clearFilters = () => {
     onChange({
@@ -72,27 +64,7 @@ export default function FilterPanel({ filterState, onChange }: FilterPanelProps)
 
   return (
     <div className="filter-panel">
-      <div className="filter-tabs">
-        <button
-          type="button"
-          className={`filter-tab ${
-            filterState.tab === "TASK" ? "filter-tab--active" : ""
-          }`}
-          onClick={() => setTab("TASK")}
-        >
-          Task
-        </button>
 
-        <button
-          type="button"
-          className={`filter-tab ${
-            filterState.tab === "KNOWLEDGE" ? "filter-tab--active" : ""
-          }`}
-          onClick={() => setTab("KNOWLEDGE")}
-        >
-          Knowledge
-        </button>
-      </div>
 
       {isLoading ? (
         <div className="filter-section">

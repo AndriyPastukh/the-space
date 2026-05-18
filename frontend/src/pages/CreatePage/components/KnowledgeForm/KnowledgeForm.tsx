@@ -26,7 +26,7 @@ interface KnowledgeFormProps {
     categories: Category[];
 }
 
-export default function KnowledgeForm({ formState, onChange, onClear,categories,setMessage,onSuccess }: KnowledgeFormProps) {
+export default function KnowledgeForm({ formState, onChange, onClear, categories, setMessage, onSuccess }: KnowledgeFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof KnowledgeFormState, string>>>({});
 
     const update = (field: keyof KnowledgeFormState, value: any) => {
@@ -72,7 +72,7 @@ export default function KnowledgeForm({ formState, onChange, onClear,categories,
         if (!validate()) return;
         try {
             const result = await createKnowledge(formState);
-            setMessage({ text: 'Knowledge успішно створено!', type: 'success' });  
+            setMessage({ text: 'Knowledge успішно створено!', type: 'success' });
             setTimeout(() => {
                 onSuccess(result.data.id);
             }, 1000);

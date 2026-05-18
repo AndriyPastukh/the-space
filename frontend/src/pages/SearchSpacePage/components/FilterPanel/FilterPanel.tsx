@@ -33,9 +33,7 @@ export default function FilterPanel({
         onChange({ ...filterState, directions: updated });
     };
 
-    const setTab = (tab: FilterTab) => {
-        onChange({ ...filterState, tab, directions: [], myInterests: false, spaceType: 'all' });
-    };
+    // setTab removed; tab control moved to page level
 
     return (
         <div className="filter-panel">
@@ -44,23 +42,8 @@ export default function FilterPanel({
                 <button className="filter-panel__reset" onClick={onReset}>Скинути</button>
             </div>
 
-            {/* Tabs */}
-            <div className="filter-tabs">
-                <button
-                    className={`filter-tab ${filterState.tab === 'PEOPLE' ? 'filter-tab--active' : ''}`}
-                    onClick={() => setTab('PEOPLE')}
-                >
-                    Учасники
-                </button>
-                <button
-                    className={`filter-tab ${filterState.tab === 'SPACES' ? 'filter-tab--active' : ''}`}
-                    onClick={() => setTab('SPACES')}
-                >
-                    Простори
-                </button>
-            </div>
+            {/* Tabs moved to page-level */}
 
-            {/* People filters */}
             {filterState.tab === 'PEOPLE' && (
                 <>
                     <label className="filter-checkbox">
@@ -106,24 +89,9 @@ export default function FilterPanel({
                             ))}
                         </div>
                     </div>
-
-                    <div className="filter-section">
-                        <span className="filter-section__label">Тип простору</span>
-                        <div className="filter-chips">
-                            {(['all', 'COMMUNITY', 'TEAM'] as const).map(t => (
-                                <button
-                                    key={t}
-                                    className={`filter-chip ${filterState.spaceType === t ? 'filter-chip--active' : ''}`}
-                                    onClick={() => onChange({ ...filterState, spaceType: t })}
-                                >
-                                    {t === 'all' ? 'Всі' : t === 'COMMUNITY' ? 'Спільнота' : 'Команда'}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
                 </>
             )}
-            
+
             {tags.length > 0 && (
                 <div className="filter-section" style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
                     <span className="filter-section__label">Популярні теги</span>

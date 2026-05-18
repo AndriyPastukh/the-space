@@ -65,13 +65,16 @@ export const Header = () => {
                             Простір <ChevronIcon />
                         </span>
                         <div className="dropdown-menu">
-                            <Link to="/search-space" className="dropdown-item">
+                            <Link to="/create-space" className="dropdown-item">
+                                Створити простір
+                            </Link>
+                            <Link to="/search-space?type=user" className="dropdown-item">
                                 Люди
                             </Link>
-                            <Link to="/search-space" className="dropdown-item">
+                            <Link to="/search-space?type=community" className="dropdown-item">
                                 Спільноти
                             </Link>
-                            <Link to="/search-space" className="dropdown-item">
+                            <Link to="/search-space?type=team" className="dropdown-item">
                                 Команди
                             </Link>
                         </div>
@@ -86,8 +89,11 @@ export const Header = () => {
                                 <span>{user.email}</span>
                             </button>
                             <div className="dropdown-menu">
+                                <Link to="/my-experiences" className="dropdown-item">
+                                    Мій створений досвід
+                                </Link>
                                 <Link to="/profile" className="dropdown-item">
-                                    Мій кабінет
+                                    Мій профіль
                                 </Link>
                                 <Link to="/chats" className="dropdown-item">
                                     Чат
