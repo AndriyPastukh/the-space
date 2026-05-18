@@ -54,6 +54,7 @@ export const useKnowledges = ({
 }: UseKnowledgesParams) => {
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -64,6 +65,7 @@ export const useKnowledges = ({
 
     const fetchKnowledges = async () => {
       setIsLoading(true);
+      setError(null);
 
       abortControllerRef.current?.abort();
 
@@ -90,9 +92,10 @@ export const useKnowledges = ({
           result.totalPages ??
             Math.ceil((result.total ?? result.items.length) / limit),
         );
-      } catch (error: any) {
-        if (axios.isCancel(error)) return;
-        console.error("Помилка при завантаженні знань:", error);
+      } catch (err: any) {
+        if (axios.isCancel(err)) return;
+        console.error("Помилка при завантаженні знань:", err);
+        setError(err.response?.data?.message || "Помилка при завантаженні знань");
       } finally {
         setIsLoading(false);
       }
@@ -118,6 +121,7 @@ export const useKnowledges = ({
   return {
     data,
     isLoading,
+    error,
     totalPages,
     totalItems,
   };

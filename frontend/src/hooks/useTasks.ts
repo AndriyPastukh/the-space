@@ -59,6 +59,7 @@ export const useTasks = ({
 }: UseTasksParams) => {
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
 
@@ -69,6 +70,7 @@ export const useTasks = ({
 
     const fetchTasks = async () => {
       setIsLoading(true);
+      setError(null);
 
       abortControllerRef.current?.abort();
 
@@ -95,9 +97,10 @@ export const useTasks = ({
           result.totalPages ??
             Math.ceil((result.total ?? result.items.length) / limit),
         );
-      } catch (error: any) {
-        if (axios.isCancel(error)) return;
-        console.error("Помилка при завантаженні задач:", error);
+      } catch (err: any) {
+        if (axios.isCancel(err)) return;
+        console.error("Помилка при завантаженні задач:", err);
+        setError(err.response?.data?.message || "Помилка при завантаженні задач");
       } finally {
         setIsLoading(false);
       }
@@ -114,6 +117,7 @@ export const useTasks = ({
   return {
     data,
     isLoading,
+    error,
     totalPages,
     totalItems,
   };
