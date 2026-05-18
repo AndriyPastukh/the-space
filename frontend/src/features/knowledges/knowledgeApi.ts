@@ -62,3 +62,7 @@ export const getKnowledgeById = (id: string, signal?: AbortSignal) => {
 export const deleteKnowledge = (id: string) => {
   return api.delete(`/api/knowledge/${id}`);
 };
+
+export const updateKnowledge = (id: string, payload: Partial<CreateKnowledgePayload>) => {
+  return api.patch(`/api/knowledge/${id}`, payload);
+};

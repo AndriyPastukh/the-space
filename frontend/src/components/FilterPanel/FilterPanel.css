@@ -1,0 +1,201 @@
+.filter-panel {
+    --filter-panel-bg: var(--surface);
+    --filter-panel-border: var(--border);
+    --filter-panel-radius: var(--radius);
+    --filter-panel-padding: 20px;
+    --filter-panel-gap: 16px;
+    --filter-panel-title-color: var(--text);
+    --filter-panel-title-font: var(--font-head, inherit);
+    --filter-panel-title-size: 14px;
+    --filter-panel-label-color: var(--text-muted, #6b7280);
+    --filter-panel-label-size: 11px;
+    --filter-panel-label-spacing: 0.1em;
+    --filter-panel-label-font: var(--font-body, inherit);
+    --filter-chip-radius: var(--radius-pill, 999px);
+    --filter-chip-padding: 4px 12px;
+    --filter-chip-bg: var(--tag-bg, rgba(124, 58, 237, 0.08));
+    --filter-chip-border: var(--tag-border, rgba(124, 58, 237, 0.15));
+    --filter-chip-color: var(--purple-lt, #a78bfa);
+    --filter-chip-hover-bg: rgba(124, 58, 237, 0.3);
+    --filter-chip-hover-color: #fff;
+    --filter-chip-active-bg: var(--purple, #7c3aed);
+    --filter-chip-active-border: var(--purple, #7c3aed);
+    --filter-chip-active-color: #fff;
+    --filter-action-color: var(--text-muted, #6b7280);
+    --filter-action-hover-color: #f87171;
+    --filter-action-border: rgba(248, 113, 113, 0.3);
+    --filter-action-hover-bg: rgba(248, 113, 113, 0.1);
+    --filter-divider-color: var(--border-color, var(--border, rgba(255, 255, 255, 0.08)));
+    background: var(--filter-panel-bg);
+    border: 1px solid var(--filter-panel-border);
+    border-radius: var(--filter-panel-radius);
+    padding: var(--filter-panel-padding);
+    display: flex;
+    flex-direction: column;
+    gap: var(--filter-panel-gap);
+}
+
+.filter-panel__header,
+.filter-section__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.filter-panel__title {
+    font-family: var(--filter-panel-title-font);
+    font-size: var(--filter-panel-title-size);
+    font-weight: 700;
+    color: var(--filter-panel-title-color);
+}
+
+.filter-panel__action,
+.filter-panel__reset,
+.filter-section__action,
+.filter-clear {
+    font-family: var(--font-body, inherit);
+    font-size: 12px;
+    line-height: 1;
+    color: var(--filter-action-color);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition:
+        color 180ms ease,
+        opacity 180ms ease,
+        transform 180ms ease,
+        max-width 180ms ease,
+        margin 180ms ease,
+        padding 180ms ease,
+        border-color 180ms ease;
+}
+
+.filter-panel__action:hover,
+.filter-panel__reset:hover,
+.filter-section__action:hover,
+.filter-clear:hover {
+    color: var(--filter-action-hover-color);
+}
+
+.filter-clear {
+    border: 1px solid var(--filter-action-border);
+    border-radius: var(--filter-chip-radius);
+    padding: 8px 16px;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.filter-clear:hover {
+    background: var(--filter-action-hover-bg);
+}
+
+.filter-section__action {
+    max-width: 180px;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.filter-section__action--hidden {
+    max-width: 0;
+    opacity: 0;
+    transform: translateY(-4px);
+    pointer-events: none;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
+    border-color: transparent;
+}
+
+.filter-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.filter-section-label,
+.filter-section__label {
+    font-family: var(--filter-panel-label-font);
+    font-size: var(--filter-panel-label-size);
+    font-weight: 700;
+    color: var(--filter-panel-label-color);
+    text-transform: uppercase;
+    letter-spacing: var(--filter-panel-label-spacing);
+}
+
+.filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.filter-chip {
+    padding: var(--filter-chip-padding);
+    border-radius: var(--filter-chip-radius);
+    border: 1px solid var(--filter-chip-border);
+    background: var(--filter-chip-bg);
+    color: var(--filter-chip-color);
+    font-size: 12px;
+    font-weight: 500;
+    font-family: var(--font-body, inherit);
+    cursor: pointer;
+    transition:
+        background 180ms ease,
+        border-color 180ms ease,
+        color 180ms ease,
+        transform 180ms ease;
+}
+
+.filter-chip:hover {
+    background: var(--filter-chip-hover-bg);
+    color: var(--filter-chip-hover-color);
+}
+
+.filter-chip--active {
+    background: var(--filter-chip-active-bg);
+    border-color: var(--filter-chip-active-border);
+    color: var(--filter-chip-active-color);
+}
+
+.filter-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--filter-action-color);
+    cursor: pointer;
+}
+
+.filter-checkbox input[type="checkbox"] {
+    width: 15px;
+    height: 15px;
+    accent-color: var(--filter-chip-active-bg);
+    cursor: pointer;
+}
+
+.filter-message,
+.filter-section-loading,
+.filter-section-error {
+    font-size: 13px;
+}
+
+.filter-message--loading,
+.filter-section-loading {
+    color: var(--filter-message-color, var(--filter-action-color));
+}
+
+.filter-message--info {
+    color: var(--filter-message-color, var(--filter-action-color));
+}
+
+.filter-message--error,
+.filter-section-error {
+    color: var(--filter-error-color, #f87171);
+}
+
+.filter-section--separated {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid var(--filter-divider-color);
+}

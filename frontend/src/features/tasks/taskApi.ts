@@ -63,6 +63,22 @@ export const respondToProposal = (taskId: string, proposalId: string, status: 'A
   return api.patch(`/api/tasks/${taskId}/proposals/${proposalId}`, { status });
 };
 
+export const getMyRespondedTasks = (params: { page: number; limit: number }) => {
+  return api.get(`/api/tasks/my-responded?page=${params.page}&limit=${params.limit}`);
+};
+
 export const deleteTask = (id: string) => {
   return api.delete(`/api/tasks/${id}`);
+};
+
+export const updateTask = (id: string, payload: Partial<CreateTaskPayload> & { status?: string }) => {
+  return api.patch(`/api/tasks/${id}`, payload);
+};
+
+export const completeTask = (id: string) => {
+  return api.patch(`/api/tasks/${id}/complete`);
+};
+
+export const submitTaskReview = (id: string, rating: number, comment?: string) => {
+  return api.post(`/api/tasks/${id}/review`, { rating, comment });
 };

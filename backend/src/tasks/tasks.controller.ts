@@ -12,6 +12,10 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateTaskDto } from './dto/create-task.dto';
+import {
+  RespondToProposalDto,
+  TaskProposalDecisionDto,
+} from './dto/respond-to-proposal.dto';
 import { TaskQueryDto } from './dto/task-query.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
@@ -49,6 +53,15 @@ export class TasksController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get('my-responded')
+  findMyResponded(@Req() req: any, @Query() query: TaskQueryDto) {
+    return this.tasksService.findMyResponded(req.user.id, {
+      page: query.page,
+      limit: query.limit,
+    });
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tasksService.findOne(id);
@@ -76,9 +89,30 @@ export class TasksController {
     @Param('id') id: string,
     @Param('proposalId') proposalId: string,
     @Req() req: any,
-    @Body('status') status: 'APPROVED' | 'REJECTED',
+    @Body() body: RespondToProposalDto,
   ) {
-    return this.tasksService.respondToProposal(id, req.user.id, proposalId, status);
+    return this.tasksService.respondToProposal(
+      id,
+      req.user.id,
+      proposalId,
+      body.status as TaskProposalDecisionDto,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':id/complete')
+  complete(@Param('id') id: string, @Req() req: any) {
+    return this.tasksService.completeTask(id, req.user.id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':id/review')
+  review(
+    @Param('id') id: string,
+    @Req() req: any,
+    @Body() body: { rating: number; comment?: string },
+  ) {
+    return this.tasksService.createReview(id, req.user.id, body);
   }
 
   @UseGuards(JwtAuthGuard)

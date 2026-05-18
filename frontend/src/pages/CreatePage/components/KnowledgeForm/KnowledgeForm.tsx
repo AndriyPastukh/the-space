@@ -24,9 +24,22 @@ interface KnowledgeFormProps {
     setMessage: (msg: { text: string; type: 'success' | 'error' } | null) => void;
     onSuccess: (id: string) => void;
     categories: Category[];
+    mode?: 'create' | 'edit';
+    submitButtonText?: string;
+    onSubmit?: (state: KnowledgeFormState) => Promise<void>;
 }
 
-export default function KnowledgeForm({ formState, onChange, onClear, categories, setMessage, onSuccess }: KnowledgeFormProps) {
+export default function KnowledgeForm({
+    formState,
+    onChange,
+    onClear,
+    categories,
+    setMessage,
+    onSuccess,
+    mode = 'create',
+    submitButtonText,
+    onSubmit,
+}: KnowledgeFormProps) {
     const [errors, setErrors] = useState<Partial<Record<keyof KnowledgeFormState, string>>>({});
 
     const update = (field: keyof KnowledgeFormState, value: any) => {
@@ -70,6 +83,22 @@ export default function KnowledgeForm({ formState, onChange, onClear, categories
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
+
+        if (mode === 'edit' && onSubmit) {
+            try {
+                await onSubmit(formState);
+            } catch (error: any) {
+                const backendError = error.response?.data?.message || error.response?.data;
+                setMessage({
+                    text: Array.isArray(backendError)
+                        ? backendError.join('\n')
+                        : backendError || 'Помилка оновлення Knowledge',
+                    type: 'error',
+                });
+            }
+            return;
+        }
+
         try {
             const result = await createKnowledge(formState);
             setMessage({ text: 'Knowledge успішно створено!', type: 'success' });
@@ -178,11 +207,13 @@ export default function KnowledgeForm({ formState, onChange, onClear, categories
             </div>
 
             <div className="form-actions">
-                <button type="button" className="btn-clear" onClick={onClear}>
-                    Очистити форму
-                </button>
+                {mode === 'create' && (
+                    <button type="button" className="btn-clear" onClick={onClear}>
+                        Очистити форму
+                    </button>
+                )}
                 <button type="submit" className="btn btn-primary">
-                    Створити knowledge
+                    {submitButtonText || 'Створити knowledge'}
                 </button>
             </div>
         </form>

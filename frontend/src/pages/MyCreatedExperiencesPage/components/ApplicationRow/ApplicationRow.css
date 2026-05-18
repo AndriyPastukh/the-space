@@ -2,15 +2,16 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 0;
+    padding: 12px 0;
     border-top: 1px solid var(--border);
 }
 
 .app-row__left {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    align-items: flex-start;
+    gap: 10px;
     min-width: 0;
+    flex: 1;
 }
 
 .app-row__avatar {
@@ -20,19 +21,30 @@
     object-fit: cover;
     flex-shrink: 0;
     background: var(--surface2);
+    margin-top: 2px;
 }
 
 .app-row__info {
     display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+    flex: 1;
+}
+
+.app-row__identity {
+    display: flex;
     align-items: center;
     gap: 6px;
+    flex-wrap: wrap;
 }
 
 .app-row__name {
     font-size: 13px;
     font-weight: 600;
     color: var(--text);
-    white-space: nowrap;
+    word-break: break-word;
+    line-height: 1.3;
 }
 
 .app-row__rating {
@@ -41,12 +53,30 @@
     font-weight: 700;
 }
 
+.app-row__message {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin: 2px 0 0 0;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
 .app-row__actions {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
     margin-left: auto;
     flex-wrap: wrap;
+}
+
+.app-row__btn--chat {
+    color: var(--purple);
+    border-color: rgba(124, 58, 237, 0.3);
+}
+
+.app-row__btn--chat:hover {
+    background: rgba(124, 58, 237, 0.1);
+    border-color: var(--purple);
 }
 
 .app-row__btn--danger {
@@ -71,3 +101,30 @@
     white-space: nowrap;
     flex-shrink: 0;
 }
+
+/* Responsive adjustment for small screens */
+@media (max-width: 600px) {
+    .app-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 14px 0;
+    }
+
+    .app-row__left {
+        width: 100%;
+    }
+
+    .app-row__actions {
+        margin-left: 0;
+        width: 100%;
+        justify-content: flex-start;
+        padding-left: 46px; /* Align actions with the content under avatar */
+        box-sizing: border-box;
+    }
+
+    .app-row__time {
+        align-self: flex-end;
+        margin-top: -24px;
+    }
+}

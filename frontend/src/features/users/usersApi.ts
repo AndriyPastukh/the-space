@@ -62,4 +62,31 @@ export const usersApi = {
     const { data } = await api.get<UserProfile>("/api/users/me");
     return data;
   },
+
+  updateMyProfile: async (payload: {
+    firstName?: string;
+    middleName?: string;
+    lastName?: string;
+    nickname?: string;
+    avatarUrl?: string;
+    categories?: number[];
+    bio?: string;
+    phoneNumber?: string;
+    status?: string;
+    country?: string;
+    city?: string;
+    skillTags?: string[];
+    interestTags?: string[];
+  }) => {
+    const { data } = await api.patch<UserProfile>("/api/users/me", payload);
+    return data;
+  },
+
+  getAvatarPresignedUrl: async (contentType: string) => {
+    const { data } = await api.post<{ uploadUrl: string; fileName: string; publicUrl: string }>(
+      "/api/users/profile/avatar/presign",
+      { contentType }
+    );
+    return data;
+  },
 };

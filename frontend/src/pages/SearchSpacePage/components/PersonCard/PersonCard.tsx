@@ -19,6 +19,7 @@ const getAvatar = (url: string, name: string) =>
 const MAX_TAGS = 3;
 
 export default function PersonCard({
+    id,
     firstName, lastName, nickname, avatarUrl,
     rating, bio, directions, interests,
 }: PersonCardProps) {
@@ -37,7 +38,7 @@ export default function PersonCard({
     };
 
     return (
-        <div className="person-card card" onClick={() => navigate(`/profile/${nickname}`)}>
+        <div className="person-card card" onClick={() => navigate(`/users/${id}`)}>
             <div className="person-card__header">
                 <img src={getAvatar(avatarUrl, fullName)} alt={fullName} className="person-card__avatar" />
                 <div className="person-card__info">
@@ -62,7 +63,7 @@ export default function PersonCard({
             <div className="person-card__footer">
                 <button
                     className="btn btn-outline btn-sm"
-                    onClick={e => { e.stopPropagation(); navigate(`/profile/${nickname}`); }}
+                    onClick={e => { e.stopPropagation(); navigate(`/users/${id}`); }}
                 >
                     Контакт
                 </button>

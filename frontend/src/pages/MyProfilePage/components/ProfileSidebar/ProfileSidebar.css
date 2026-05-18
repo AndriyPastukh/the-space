@@ -177,3 +177,17 @@
     font-size: 11px;
     color: var(--text-muted);
 }
+
+.community-row.clickable {
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    margin: 4px -8px;
+    border-bottom: none;
+}
+
+.community-row.clickable:hover {
+    background: var(--surface2);
+    padding-left: 12px;
+}

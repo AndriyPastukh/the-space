@@ -4,7 +4,7 @@ import {
   type Category,
 } from "../features/categories/categoryApi";
 
-export const useCategories = () => {
+export const useCategories = (enabled = true) => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -26,8 +26,10 @@ export const useCategories = () => {
   };
 
   useEffect(() => {
+    if (!enabled) return;
+
     fetchCategories();
-  }, []);
+  }, [enabled]);
 
   return {
     categories,

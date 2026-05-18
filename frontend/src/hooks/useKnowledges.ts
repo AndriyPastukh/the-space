@@ -63,6 +63,8 @@ export const useKnowledges = ({
   useEffect(() => {
     if (!enabled) return;
 
+    setIsLoading(true);
+
     const fetchKnowledges = async () => {
       setIsLoading(true);
       setError(null);

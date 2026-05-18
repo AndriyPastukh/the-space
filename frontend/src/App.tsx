@@ -7,8 +7,8 @@ import NotFoundPage from "./pages/NotFoundPage/NotFoundPage";
 import CreateExperiencePage from "./pages/CreatePage/CreateExperiencePage.tsx";
 import TaskDetails from "./pages/TaskDetailsPage/TaskDetailsPage.tsx";
 import KnowledgeDetails from "./pages/KnowledgeDetailsPage/KnowledgeDetailsPage.tsx";
-import TeamDetailsPage from "./pages/TeamDetailsPage/TeamDetailsPage.tsx"; 
-import CommunityDetailsPage from "./pages/CommunityDetailsPage/CommunityDetailsPage.tsx"; 
+import TeamDetailsPage from "./pages/TeamDetailsPage/TeamDetailsPage.tsx";
+import CommunityDetailsPage from "./pages/CommunityDetailsPage/CommunityDetailsPage.tsx";
 import { Header } from "./components/Header/Header.tsx";
 import { Footer } from "./components/Footer/Footer.tsx";
 import TermsPage from "./pages/TermsPage/TermsPage.tsx";
@@ -19,35 +19,41 @@ import MyCreatedExperiencesPage from "./pages/MyCreatedExperiencesPage/MyCreated
 import SearchSpacePage from "./pages/SearchSpacePage/SearchSpacePage";
 import MyChatsPage from "./pages/MyChatsPage/MyChatsPage";
 import PublicProfilePage from "./pages/PublicProfilePage/PublicProfilePage";
+import EditTaskPage from "./pages/EditPage/EditTaskPage.tsx";
+import EditKnowledgePage from "./pages/EditPage/EditKnowledgePage.tsx";
+import EditProfilePage from "./pages/EditPage/EditProfilePage.tsx";
 
 function App() {
-  return (
-    <BrowserRouter>
-      <div className="App">
-        <Header />
-        <Routes>
-          <Route path="/" element={<MainPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/create-experience" element={<CreateExperiencePage />} />
-          <Route path="/tasks/:id" element={<TaskDetails />} />
-          <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
-          <Route path="/teams/:id" element={<TeamDetailsPage />} />
-          <Route path="/communities/:id" element={<CommunityDetailsPage />} />
-          <Route path="/search-experience" element={<SearchPage />} />
-          <Route path="/profile" element={<MyProfilePage />} />
-          <Route path="/users/:id" element={<PublicProfilePage />} />
-          <Route path="/create-space" element={<CreateSpacePage />} />
-          <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
-          <Route path="/search-space" element={<SearchSpacePage />} />
-          <Route path="/chats" element={<MyChatsPage />} />
-          <Route path="/*" element={<NotFoundPage />} />
-        </Routes>
-        <Footer />
-      </div>
-    </BrowserRouter>
-  );
+    return (
+        <BrowserRouter>
+            <div className="App">
+                <Header />
+                <Routes>
+                    <Route path="/" element={<MainPage />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+                    <Route path="/terms" element={<TermsPage />} />
+                    <Route path="/create-experience" element={<CreateExperiencePage />} />
+                    <Route path="/tasks/:id" element={<TaskDetails />} />
+                    <Route path="/tasks/:id/edit" element={<EditTaskPage />} />
+                    <Route path="/knowledges/:id" element={<KnowledgeDetails />} />
+                    <Route path="/knowledges/:id/edit" element={<EditKnowledgePage />} />
+                    <Route path="/teams/:id" element={<TeamDetailsPage />} />
+                    <Route path="/communities/:id" element={<CommunityDetailsPage />} />
+                    <Route path="/search-experience" element={<SearchPage />} />
+                    <Route path="/profile" element={<MyProfilePage />} />
+                    <Route path="/settings/profile" element={<EditProfilePage />} />
+                    <Route path="/users/:id" element={<PublicProfilePage />} />
+                    <Route path="/create-space" element={<CreateSpacePage />} />
+                    <Route path="/my-experiences" element={<MyCreatedExperiencesPage />} />
+                    <Route path="/search-space" element={<SearchSpacePage />} />
+                    <Route path="/chats" element={<MyChatsPage />} />
+                    <Route path="/*" element={<NotFoundPage />} />
+                </Routes>
+                <Footer />
+            </div>
+        </BrowserRouter>
+    );
 }
 
 export default App;
