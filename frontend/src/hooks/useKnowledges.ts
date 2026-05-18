@@ -9,6 +9,7 @@ type UseKnowledgesParams = {
   sortBy?: string;
   offerCategoryIds: number[];
   requestCategoryIds: number[];
+  authorId?: number;
   enabled?: boolean;
 };
 
@@ -27,10 +28,12 @@ const mapKnowledge = (item: any) => {
     type: "KNOWLEDGE",
     offer: {
       categories: item.offerCategories || [],
+      tags: (item.offerCategories || []).map((c: any) => c.name),
       description: item.offerDescription,
     },
     want: {
       categories: item.requestCategories || [],
+      tags: (item.requestCategories || []).map((c: any) => c.name),
       description: item.requestDescription,
     },
     author: authorInfo,
@@ -46,6 +49,7 @@ export const useKnowledges = ({
   sortBy,
   offerCategoryIds,
   requestCategoryIds,
+  authorId,
   enabled = true,
 }: UseKnowledgesParams) => {
   const [data, setData] = useState<any[]>([]);
@@ -74,6 +78,7 @@ export const useKnowledges = ({
           sortBy,
           offerCategoryIds,
           requestCategoryIds,
+          authorId,
           signal: controller.signal,
         });
 
@@ -107,6 +112,7 @@ export const useKnowledges = ({
     sortBy,
     offerCategoryIds,
     requestCategoryIds,
+    authorId,
   ]);
 
   return {

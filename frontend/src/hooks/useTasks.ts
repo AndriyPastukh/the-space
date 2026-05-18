@@ -8,6 +8,8 @@ type UseTasksParams = {
   search: string;
   sortBy?: string;
   categoryIds: number[];
+  authorId?: number;
+  assigneeId?: number;
   enabled?: boolean;
 };
 
@@ -21,11 +23,26 @@ const mapTask = (item: any) => {
     reviewsCount: 0,
   };
 
+  const applications = (item.proposals || []).map((p: any) => ({
+    id: p.id,
+    applicant: {
+      firstName: p.userDetails.firstName,
+      lastName: p.userDetails.lastName,
+      avatarUrl: p.userDetails.avatarUrl,
+      rating: p.userDetails.reputation || 0,
+    },
+    status: p.status,
+    appliedAt: p.createdAt,
+  }));
+
   return {
     ...item,
     type: "TASK",
     author: authorInfo,
-    statistics: { viewsCount: 0, proposalsCount: 0 },
+    categories: item.categories || [],
+    tags: item.categories?.map((c: any) => c.name) || [],
+    applications,
+    statistics: { viewsCount: 0, proposalsCount: applications.length },
     viewer: { isSaved: false, myProposalId: null },
   };
 };
@@ -36,6 +53,8 @@ export const useTasks = ({
   search,
   sortBy,
   categoryIds,
+  authorId,
+  assigneeId,
   enabled = true,
 }: UseTasksParams) => {
   const [data, setData] = useState<any[]>([]);
@@ -63,6 +82,8 @@ export const useTasks = ({
           search,
           sortBy,
           categoryIds,
+          authorId,
+          assigneeId,
           signal: controller.signal,
         });
 
@@ -88,7 +109,7 @@ export const useTasks = ({
       clearTimeout(timeoutId);
       abortControllerRef.current?.abort();
     };
-  }, [page, limit, search, sortBy, categoryIds, enabled]);
+  }, [page, limit, search, sortBy, categoryIds, authorId, assigneeId, enabled]);
 
   return {
     data,

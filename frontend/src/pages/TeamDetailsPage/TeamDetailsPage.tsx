@@ -1,47 +1,63 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import "../../assets/styles/DetailsPage.css";
-
-interface TeamMember {
-  id: number;
-  name: string;
-  avatar: string;
-  role: 'Admin' | 'Helper' | 'Member';
-}
+import { teamsApi } from "../../features/teams/teamsApi";
+import type { Team } from "../../features/teams/teamsApi";
+import "./TeamDetailsPage.css";
 
 const TeamDetailsPage: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
-  const [joinStatus, setJoinStatus] = useState<'guest' | 'pending' | 'member'>('guest');
+  const { id: slug } = useParams<{ id: string }>();
+  const [team, setTeam] = useState<Team | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [joinStatus, setJoinStatus] = useState<string>('GUEST');
 
-  const team = {
-    name: "Gamers",
-    memberCount: 20,
-    description: "Ми — команда ентузіастів, що розробляє кросплатформенні ігри на Unity. Шукаємо талановитих розробників та дизайнерів для нових проєктів. Наша мета — створювати унікальний ігровий досвід для мобільних платформ.",
-    directions: ["gamedev", "unity", "c#", "3d дизайн"],
-    createdAt: "12.05.2024",
-    statistics: { views: 142, requests: 12 },
-    links: [
-      { label: "GitHub", url: "https://github.com" },
-      { label: "Сайт", url: "https://google.com" }
-    ]
+  useEffect(() => {
+    if (slug) {
+      const fetchTeam = async () => {
+        setLoading(true);
+        try {
+          const data = await teamsApi.findOne(slug);
+          setTeam(data);
+          setJoinStatus(data.currentUserStatus);
+        } catch (err) {
+          console.error("Failed to fetch team:", err);
+          setError("Команду не знайдено");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchTeam();
+    }
+  }, [slug]);
+
+  const handleJoin = async () => {
+    if (!team) return;
+    try {
+      await teamsApi.joinRequest(team.id);
+      setJoinStatus('PENDING');
+    } catch (err) {
+      console.error("Failed to join team:", err);
+    }
   };
 
-  const members: TeamMember[] = [
-    { id: 1, name: "Ігор М.", avatar: "https://via.placeholder.com/40", role: 'Admin' },
-    { id: 2, name: "Олена К.", avatar: "https://via.placeholder.com/40", role: 'Helper' },
-    { id: 3, name: "Олександр Р.", avatar: "https://via.placeholder.com/40", role: 'Member' },
-    { id: 4, name: "Дмитро Л.", avatar: "https://via.placeholder.com/40", role: 'Member' },
-  ];
+  if (loading) return <div className="loading-screen">Завантаження...</div>;
+  if (error || !team) return <div className="error-screen">{error || "Помилка завантаження"}</div>;
 
   return (
     <div className="task-details-page">
       <div className="td-layout">
-
         <div className="td-main">
           <div className="card mb-24">
             <div className="td-header">
               <div className="entity-header-flex">
-                <div className="entity-avatar">G</div>
+                <div className="entity-avatar">
+                  {team.avatarUrl ? (
+                    <img src={team.avatarUrl} alt={team.name} />
+                  ) : (
+                    team.name.charAt(0).toUpperCase()
+                  )}
+                </div>
                 <div>
                   <h2 className="td-title">{team.name}</h2>
                   <div className="text-sm-muted mt-8">
@@ -59,26 +75,20 @@ const TeamDetailsPage: React.FC = () => {
                 <p className="td-text">{team.description}</p>
               </section>
 
-              <section className="td-section">
-                <h3 className="td-section-title">Напрямки</h3>
-                <div className="tags">
-                  {team.directions.map(tag => <span key={tag} className="tag">{tag}</span>)}
-                </div>
-              </section>
+              {team.directions && team.directions.length > 0 && (
+                <section className="td-section">
+                  <h3 className="td-section-title">Напрямки</h3>
+                  <div className="tags">
+                    {team.directions.map(dir => (
+                      <span key={dir.id} className="tag">#{dir.name}</span>
+                    ))}
+                  </div>
+                </section>
+              )}
 
-              <section className="td-section mt-24">
-                <h3 className="td-section-title">Посилання</h3>
-                <ul className="td-list">
-                  {team.links.map(link => (
-                    <li key={link.label}>
-                      <a href={link.url} target="_blank" rel="noreferrer">
-                        {link.label} ↗
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-              <p className="text-sm-muted mt-auto pt-24 fs-12">Дата створення: {team.createdAt}</p>
+              <p className="text-sm-muted mt-auto pt-24 fs-12">
+                Дата створення: {new Date(team.createdAt).toLocaleDateString()}
+              </p>
             </div>
           </div>
         </div>
@@ -86,11 +96,12 @@ const TeamDetailsPage: React.FC = () => {
         <aside className="td-sidebar-wrap">
           <div className="card td-sidebar">
             <div className="sidebar-actions">
-              {joinStatus === 'guest' && (
-                <button className="btn btn-primary btn-block" onClick={() => setJoinStatus('pending')}>Доєднатися</button>
-              )}
-              {joinStatus === 'pending' && (
-                <button className="btn btn-secondary btn-block" disabled>Запит надіслано</button>
+              {joinStatus === 'GUEST' ? (
+                <button className="btn btn-primary btn-block" onClick={handleJoin}>Доєднатися</button>
+              ) : (
+                <button className="btn btn-secondary btn-block" disabled>
+                  {joinStatus === 'PENDING' ? 'Запит надіслано' : 'Ви учасник'}
+                </button>
               )}
               <button className="btn btn-outline btn-block mt-12">Поділитись ↗</button>
             </div>
@@ -99,17 +110,23 @@ const TeamDetailsPage: React.FC = () => {
 
             <div className="td-roster">
               <h3 className="td-sidebar-heading mb-12">Склад команди</h3>
-              {['Admin', 'Helper', 'Member'].map(role => (
-                <div key={role} className="roster-group mb-12">
-                  <p className="role-label">{role === 'Admin' ? 'Адміни' : role === 'Helper' ? 'Помічники' : 'Учасники'}</p>
-                  {members.filter(m => m.role === role).map(m => (
+              {team.members && team.members.length > 0 ? (
+                <div className="roster-group mb-12">
+                  {team.members.map(m => (
                     <div key={m.id} className="member-row">
-                      <img src={m.avatar} className="avatar avatar-sm" alt={m.name} />
+                      {m.avatarUrl ? (
+                        <img src={m.avatarUrl} className="avatar avatar-sm" alt={m.name} />
+                      ) : (
+                        <div className="avatar avatar-sm placeholder-avatar">{m.name.charAt(0).toUpperCase()}</div>
+                      )}
                       <span className="text-white fs-14 fw-600">{m.name}</span>
+                      <span className="role-badge">{m.role}</span>
                     </div>
                   ))}
                 </div>
-              ))}
+              ) : (
+                <p className="text-sm-muted">Немає учасників</p>
+              )}
             </div>
 
             <div className="card-divider mt-auto my-24"></div>
@@ -118,11 +135,11 @@ const TeamDetailsPage: React.FC = () => {
               <h3 className="td-sidebar-heading mb-12">Статистика</h3>
               <div className="stats-grid">
                 <div className="stat-box">
-                  <p className="stat-val">{team.statistics.views}</p>
+                  <p className="stat-val">{team.statistics?.views || 0}</p>
                   <p className="text-sm-muted">Переглядів</p>
                 </div>
                 <div className="stat-box">
-                  <p className="stat-val">{team.statistics.requests}</p>
+                  <p className="stat-val">{team.statistics?.requests || 0}</p>
                   <p className="text-sm-muted">Заявок</p>
                 </div>
               </div>

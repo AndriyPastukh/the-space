@@ -2,7 +2,7 @@ import { useState } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import UrlListInput from '../shared/UrlListInput';
 import FileUpload from '../shared/FileUpload';
-import type { Category } from '../../../../features/categories/categoryApi';
+import { createCategory, type Category } from '../../../../features/categories/categoryApi';
 import { createTask } from '../../../../features/tasks/taskApi';
 
 const countWords = (text: string) => text.trim().split(/\s+/).filter(Boolean).length;
@@ -31,6 +31,11 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
     const update = (field: keyof TaskFormState, value: any) => {
         onChange({ ...formState, [field]: value });
         setErrors(prev => ({ ...prev, [field]: '' }));
+    };
+
+    const handleCreateCategory = async (name: string) => {
+        const { data: newCat } = await createCategory(name);
+        return newCat;
     };
 
     const validate = () => {
@@ -65,25 +70,21 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        console.log('Task form data:', formState);
         try {
             const result = await createTask(formState);
             setMessage({ text: 'Task успішно створено!', type: 'success' });
-            
             setTimeout(() => {
                 onSuccess(result.data.id);
             }, 1000);
-
         } catch (error: any) {
-    const backendError = error.response?.data?.message || error.response?.data;
-
-    setMessage({
-        text: Array.isArray(backendError)
-            ? backendError.join('\n')
-            : backendError || 'Помилка створення Knowledge',
-        type: 'error',
-    });
-}
+            const backendError = error.response?.data?.message || error.response?.data;
+            setMessage({
+                text: Array.isArray(backendError)
+                    ? backendError.join('\n')
+                    : backendError || 'Помилка створення Task',
+                type: 'error',
+            });
+        }
     };
 
     const titleWords = countWords(formState.title);
@@ -91,7 +92,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
 
     return (
         <form className="form-box form-stack" onSubmit={handleSubmit}>
-            {/* Title */}
             <div className="form-group">
                 <label className="form-label">
                     Заголовок <span className="required">*</span>
@@ -107,7 +107,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                 {errors.title && <span className="field-error">{errors.title}</span>}
             </div>
 
-            {/* Categories */}
             <div className="form-group">
                 <label className="form-label">
                     Категорія <span className="required">*</span>
@@ -116,11 +115,11 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                     options={categories}
                     selected={formState.categories}
                     onChange={val => update('categories', val)}
+                    onCreateOption={handleCreateCategory}
                     error={errors.categories}
                 />
             </div>
 
-            {/* Description */}
             <div className="form-group">
                 <label className="form-label">
                     Опис <span className="required">*</span>
@@ -136,7 +135,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                 {errors.description && <span className="field-error">{errors.description}</span>}
             </div>
 
-            {/* Deadline */}
             <div className="form-group">
                 <label className="form-label">
                     Дедлайн <span className="required">*</span>
@@ -150,7 +148,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                 {errors.deadline && <span className="field-error">{errors.deadline}</span>}
             </div>
 
-            {/* URLs */}
             <div className="form-group">
                 <label className="form-label">Додаткові посилання</label>
                 <UrlListInput
@@ -159,7 +156,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                 />
             </div>
 
-            {/* Files */}
             <div className="form-group">
                 <label className="form-label">Додаткові файли</label>
                 <FileUpload
@@ -168,7 +164,6 @@ export default function TaskForm({ formState, onChange, onClear, categories,setM
                 />
             </div>
 
-            {/* Actions */}
             <div className="form-actions">
                 <button type="button" className="btn-clear" onClick={onClear}>
                     Очистити форму

@@ -6,28 +6,9 @@ import FilterPanel from './components/FilterPanel/FilterPanel';
 import Pagination from './components/Pagination/Pagination';
 import type { FilterState } from './components/FilterPanel/FilterPanel';
 import api from '../../api';
+import { communitiesApi } from '../../features/communities/communitiesApi';
+import { teamsApi } from '../../features/teams/teamsApi';
 import './SearchSpacePage.css';
-
-const MOCK_SPACES = [
-    {
-        id: '4', type: 'COMMUNITY' as const, name: 'Дизайнери UA', slug: 'designers-ua',
-        avatarUrl: '', rating: 4.8, membersCount: 1240,
-        categories: ['ui/ux design', 'web', 'mobile', 'gamedev'],
-        description: 'Спільнота українських дизайнерів. Обмін досвідом, фідбек, колаборації.',
-    },
-    {
-        id: '5', type: 'TEAM' as const, name: 'React Builders', slug: 'react-builders',
-        avatarUrl: '', rating: 4.6, membersCount: 12,
-        categories: ['web', 'mobile'],
-        description: 'Команда розробників що будує SaaS продукти на React і Next.js.',
-    },
-    {
-        id: '6', type: 'COMMUNITY' as const, name: 'GameDev UA', slug: 'gamedev-ua',
-        avatarUrl: '', rating: 4.9, membersCount: 580,
-        categories: ['gamedev', 'ui/ux design'],
-        description: 'Розробники ігор в Україні. Unity, Unreal, Godot.',
-    },
-];
 
 const ITEMS_PER_PAGE = 6;
 
@@ -67,8 +48,21 @@ interface ApiTag {
     name: string;
 }
 
+interface SearchSpace {
+    id: string;
+    type: 'COMMUNITY' | 'TEAM';
+    name: string;
+    slug: string;
+    avatarUrl: string | null;
+    rating: number;
+    memberCount: number;
+    directions: string[];
+    description: string;
+}
+
 export default function SearchSpacePage() {
     const [people, setPeople] = useState<PersonCardProps[]>([]);
+    const [spaces, setSpaces] = useState<SearchSpace[]>([]);
     const [categories, setCategories] = useState<string[]>([]);
     const [tags, setTags] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -81,15 +75,17 @@ export default function SearchSpacePage() {
 
     useEffect(() => {
         let isMounted = true;
-        
+
         Promise.all([
             api.get<ApiUser[]>('/api/users'),
             api.get<ApiCategory[]>('/api/categories'),
-            api.get<ApiTag[]>('/api/tags')
+            api.get<ApiTag[]>('/api/tags'),
+            communitiesApi.findAll({ limit: 100 }),
+            teamsApi.findAll({ limit: 100 })
         ])
-            .then(([usersRes, catsRes, tagsRes]) => {
+            .then(([usersRes, catsRes, tagsRes, commsRes, teamsRes]) => {
                 if (!isMounted) return;
-                
+
                 const mappedUsers = usersRes.data.map(p => ({
                     id: String(p.id),
                     firstName: p.firstName || '',
@@ -101,11 +97,36 @@ export default function SearchSpacePage() {
                     directions: p.directions || [],
                     interests: p.interests || [],
                 }));
-                
+
+                const mappedCommunities = (commsRes.items || []).map(c => ({
+                    id: String(c.id),
+                    type: 'COMMUNITY' as const,
+                    name: c.name,
+                    slug: c.slug,
+                    avatarUrl: c.avatarUrl,
+                    rating: 4.5, // Default rating if none provided
+                    memberCount: c.memberCount || 0,
+                    directions: c.directions?.map((d: any) => d.name) || [],
+                    description: c.description || '',
+                }));
+
+                const mappedTeams = (teamsRes.items || []).map(t => ({
+                    id: String(t.id),
+                    type: 'TEAM' as const,
+                    name: t.name,
+                    slug: t.slug,
+                    avatarUrl: t.avatarUrl,
+                    rating: 4.5,
+                    memberCount: t.memberCount || 0,
+                    directions: t.directions?.map((d: any) => d.name) || [],
+                    description: t.description || '',
+                }));
+
                 const catNames = catsRes.data.map(c => c.name);
                 const tagNames = tagsRes.data.map(t => t.name);
 
                 setPeople(mappedUsers);
+                setSpaces([...mappedCommunities, ...mappedTeams]);
                 setCategories(catNames);
                 setTags(tagNames);
                 setIsLoading(false);
@@ -123,7 +144,6 @@ export default function SearchSpacePage() {
     const handleFilterChange = (newState: FilterState) => {
         setFilterState(newState);
         setPage(1);
-        console.log('Filter state:', newState);
     };
 
     const handleReset = () => {
@@ -133,12 +153,12 @@ export default function SearchSpacePage() {
     };
 
     const filtered = useMemo(() => {
-        const q = search.toLowerCase();
+        const q = search.trim().toLowerCase();
 
         if (filterState.tab === 'PEOPLE') {
             return people.filter(p => {
                 const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
-                if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q)) return false;
+                if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q) && !p.nickname.toLowerCase().includes(q)) return false;
                 if (filterState.directions.length > 0) {
                     const match = filterState.directions.some(d => p.directions.includes(d));
                     if (!match) return false;
@@ -149,32 +169,34 @@ export default function SearchSpacePage() {
                 return b.rating - a.rating;
             });
         } else {
-            return MOCK_SPACES.filter(s => {
+            return spaces.filter(s => {
                 if (q && !s.name.toLowerCase().includes(q) && !s.description.toLowerCase().includes(q)) return false;
                 if (filterState.directions.length > 0) {
-                    const match = filterState.directions.some(d => s.categories.includes(d));
+                    const match = filterState.directions.some(d => s.directions.includes(d));
                     if (!match) return false;
                 }
                 if (filterState.spaceType !== 'all' && s.type !== filterState.spaceType) return false;
                 return true;
             }).sort((a, b) => {
                 if (sort === 'rating_asc') return a.rating - b.rating;
-                if (sort === 'members_desc') return b.membersCount - a.membersCount;
-                if (sort === 'members_asc') return a.membersCount - b.membersCount;
+                if (sort === 'members_desc') return b.memberCount - a.memberCount;
+                if (sort === 'members_asc') return a.memberCount - b.memberCount;
                 return b.rating - a.rating;
             });
         }
-    }, [people, search, filterState, sort]);
+    }, [people, spaces, search, filterState, sort]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
-    const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
+    const paginated = useMemo(() => {
+        const start = (page - 1) * ITEMS_PER_PAGE;
+        return filtered.slice(start, start + ITEMS_PER_PAGE);
+    }, [filtered, page]);
 
     return (
         <div className="search-space-page">
             <div className="search-space-container">
                 <h1 className="search-space-title">Пошук</h1>
 
-                {/* Search bar row */}
                 <div className="search-bar-row">
                     <button
                         className={`filter-toggle-btn ${filterOpen ? 'filter-toggle-btn--active' : ''}`}
@@ -217,7 +239,6 @@ export default function SearchSpacePage() {
                     </div>
                 </div>
 
-                {/* Layout */}
                 <div className={`search-layout ${filterOpen ? 'search-layout--with-sidebar' : ''}`}>
                     {filterOpen && (
                         <aside className="search-sidebar">
@@ -228,16 +249,14 @@ export default function SearchSpacePage() {
                                 directions={categories}
                                 tags={tags}
                                 onTagSelect={(tag) => { setSearch(tag); setPage(1); }}
-                             />
+                            />
                         </aside>
                     )}
 
                     <div className="search-results">
-                        {isLoading && filterState.tab === 'PEOPLE' ? (
-                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
-                                Завантаження користувачів...
-                            </div>
-                        ) : paginated.length === 0 ? (
+                        {isLoading ? (
+                            <div className="search-loading">Завантаження...</div>
+                        ) : filtered.length === 0 ? (
                             <div className="search-empty">
                                 <span style={{ fontSize: 40, opacity: 0.4 }}>🔍</span>
                                 <p>Нічого не знайдено</p>
@@ -248,8 +267,14 @@ export default function SearchSpacePage() {
                                 <PersonCard key={p.id} {...p} />
                             ))
                         ) : (
-                            (paginated as typeof MOCK_SPACES).map(s => (
-                                <SpaceCard key={s.id} {...s} />
+                            (paginated as SearchSpace[]).map(s => (
+                                <SpaceCard
+                                    key={`${s.type}-${s.id}`}
+                                    {...s}
+                                    categories={s.directions}
+                                    membersCount={s.memberCount}
+                                    rating={s.rating}
+                                />
                             ))
                         )}
                     </div>

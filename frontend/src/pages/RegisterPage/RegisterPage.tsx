@@ -8,15 +8,15 @@ export default function RegisterPage() {
   const navigate = useNavigate();
   const { isAuthLoading, isAuth, register } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
-  
+
   const [isRegisterSubmitting, setIsRegisterSubmitting] = useState(false);
   const [selectedInterests, setSelectedInterests] = useState<(string | number)[]>([]);
   const [error, setError] = useState("");
 
   const [form, setForm] = useState({
-    firstName:"",
-    middleName:"",
-    lastName:"",
+    firstName: "",
+    middleName: "",
+    lastName: "",
     nick: "",
     email: "",
     pass: "",
@@ -25,17 +25,17 @@ export default function RegisterPage() {
   });
 
   useEffect(() => {
-  const loadCategories = async () => {
-    try {
-      const { data } = await getCategories();
-      setCategories(data);
-    } catch (error) {
-      console.error("Categories loading error:", error);
-    }
-  };
+    const loadCategories = async () => {
+      try {
+        const { data } = await getCategories();
+        setCategories(data);
+      } catch (error) {
+        console.error("Categories loading error:", error);
+      }
+    };
 
-  loadCategories();
-}, []);
+    loadCategories();
+  }, []);
 
   useEffect(() => {
     if (!isAuthLoading && isAuth && !isRegisterSubmitting) {
@@ -74,15 +74,15 @@ export default function RegisterPage() {
       return;
     }
 
-    console.log(form,selectedInterests);
+    console.log(form, selectedInterests);
 
     // @ts-ignore якщо register ще не типізований
     const registerResult = await register({
       email: form.email,
       password: form.pass,
-      firstName:form.firstName,
-      middleName:form.middleName,
-      lastName:form.lastName,
+      firstName: form.firstName,
+      middleName: form.middleName,
+      lastName: form.lastName,
       nickname: form.nick,
       categories: selectedInterests,
     });
@@ -114,7 +114,7 @@ export default function RegisterPage() {
 
           <div className="divider">або</div>
 
-         <div className="form-group">
+          <div className="form-group">
             <label className="form-label">Ім'я*</label>
             <input
               className="form-input"
@@ -138,7 +138,7 @@ export default function RegisterPage() {
             />
           </div>
 
-         <div className="form-group">
+          <div className="form-group">
             <label className="form-label">Побатькові</label>
             <input
               className="form-input"

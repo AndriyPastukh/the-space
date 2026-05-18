@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MultiSelect from '../../../../components/MultiSelect/MultiSelect';
 import AvatarUpload from '../shared/AvatarUpload/AvatarUpload';
+import { communitiesApi } from '../../../../features/communities/communitiesApi';
+import { getCategories, type Category } from '../../../../features/categories/categoryApi';
 import './CommunityForm.css';
 
-const DIRECTIONS = ['web', 'mobile', 'gamedev', 'design', 'ml/ai', 'backend', 'devops', 'other'];
 const MAX_WORDS = 300;
 
 const countWords = (text: string) =>
@@ -11,7 +12,7 @@ const countWords = (text: string) =>
 
 export interface CommunityFormState {
     name: string;
-    directions: string[];
+    directions: (string | number)[];
     description: string;
     avatar: File | null;
 }
@@ -26,6 +27,19 @@ type FormErrors = Partial<Record<keyof CommunityFormState, string>>;
 export default function CommunityForm({ formState, onChange }: CommunityFormProps) {
     const [errors, setErrors] = useState<FormErrors>({});
     const [avatarError, setAvatarError] = useState('');
+    const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+
+    useEffect(() => {
+        const loadCats = async () => {
+            try {
+                const { data } = await getCategories();
+                setAvailableCategories(data);
+            } catch (err) {
+                console.error('Failed to load categories:', err);
+            }
+        };
+        loadCats();
+    }, []);
 
     const update = <K extends keyof CommunityFormState>(field: K, value: CommunityFormState[K]) => {
         onChange({ ...formState, [field]: value });
@@ -54,16 +68,38 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!validate()) return;
-        console.log('[createCommunity] form data:', {
-            name: formState.name,
-            directions: formState.directions,
-            description: formState.description,
-            avatar: formState.avatar,
-        });
-        // createCommunity(formState);
+        
+        try {
+            let avatarUrl = '';
+            if (formState.avatar) {
+                const { uploadUrl, publicUrl } = await communitiesApi.getPresignedUrl(
+                    formState.avatar.name,
+                    formState.avatar.type
+                );
+                
+                await fetch(uploadUrl, {
+                    method: 'PUT',
+                    body: formState.avatar,
+                    headers: { 'Content-Type': formState.avatar.type }
+                });
+                avatarUrl = publicUrl;
+            }
+
+            const community = await communitiesApi.create({
+                name: formState.name,
+                description: formState.description,
+                directions: formState.directions, // Now contains IDs from MultiSelect
+                avatarUrl
+            });
+
+            window.location.href = `/communities/${community.slug}`;
+        } catch (err) {
+            console.error('Failed to create community:', err);
+            setAvatarError('Сталася помилка при створенні спільноти');
+        }
     };
 
     const descWords = countWords(formState.description);
@@ -94,7 +130,7 @@ export default function CommunityForm({ formState, onChange }: CommunityFormProp
                     Напрям <span className="required">*</span>
                 </label>
                 <MultiSelect
-                    options={DIRECTIONS}
+                    options={availableCategories}
                     selected={formState.directions}
                     onChange={val => update('directions', val)}
                     error={errors.directions}
