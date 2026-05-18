@@ -9,6 +9,7 @@ import { KnowledgeModule } from './knowledge/knowledge.module';
 import { TasksModule } from './tasks/tasks.module';
 import { CategoriesModule } from './categories/categories.module';
 import { ChatsModule } from './chats/chats.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ChatsModule } from './chats/chats.module';
     TasksModule,
     CategoriesModule,
     ChatsModule,
+    TagsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -396,6 +396,69 @@ export class UsersService {
     });
   }
 
+  async getAllUsers() {
+    const users = await this.prisma.userDetails.findMany({
+      where: {
+        deletedAt: null,
+      },
+      orderBy: [{ reputation: 'desc' }, { id: 'desc' }],
+      include: {
+        skills: true,
+        interests: true,
+        categories: true,
+      },
+    });
+
+    const userDetailsIds = users.map((user) => user.id);
+
+    const stats = await this.prisma.userStats.findMany({
+      where: {
+        userDetailsId: {
+          in: userDetailsIds,
+        },
+      },
+    });
+
+    const statsByUserDetailsId = new Map(
+      stats.map((stat) => [stat.userDetailsId, stat]),
+    );
+
+    return users.map((details) => {
+      const userStats = statsByUserDetailsId.get(details.id);
+
+      return {
+        id: String(details.userId),
+        userDetailsId: details.id,
+
+        firstName: details.firstName,
+        middleName: details.middleName,
+        lastName: details.lastName,
+        nickname: details.nickname,
+
+        avatarUrl: details.avatarUrl,
+        coverImageUrl: details.coverImageUrl,
+        bio: details.bio,
+        status: details.status,
+
+        location: {
+          country: details.country,
+          city: details.city,
+        },
+
+        rating: Number((userStats?.averageRating ?? 0).toFixed(1)),
+        reviewCount: userStats?.reviewCount ?? 0,
+
+        level: details.currentLevel,
+        xpPoints: details.xpPoints,
+        reputation: details.reputation,
+
+        directions: details.categories.map((category) => category.name),
+        interests: details.interests.map((interest) => interest.name),
+        skills: details.skills.map((skill) => skill.name),
+      };
+    });
+  }
+
   async create(email: string, passwordHash: string): Promise<any> {
     return this.prisma.user.create({
       data: {

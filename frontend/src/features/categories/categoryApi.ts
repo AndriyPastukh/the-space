@@ -6,5 +6,5 @@ export type Category = {
 };
 
 export const getCategories = () => {
-  return api.get<Category[]>("/categories");
+  return api.get<Category[]>("/api/categories");
 };

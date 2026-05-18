@@ -104,6 +104,11 @@ export class UsersController {
     });
   }
 
+  @Get()
+  async getAllUsers() {
+    return this.usersService.getAllUsers();
+  }
+
   @Get(':id')
   async getById(@Param('id') id: string) {
     const user = await this.usersService.getById(Number(id));

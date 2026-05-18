@@ -1,0 +1,19 @@
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+
+@Injectable()
+export class TagsService {
+  constructor(private readonly prisma: PrismaService) {}
+
+  async getTags() {
+    return this.prisma.tag.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+  }
+}

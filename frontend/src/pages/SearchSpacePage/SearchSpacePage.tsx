@@ -1,34 +1,12 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PersonCard from './components/PersonCard/PersonCard';
+import type { PersonCardProps } from './components/PersonCard/PersonCard';
 import SpaceCard from './components/SpaceCard/SpaceCard';
 import FilterPanel from './components/FilterPanel/FilterPanel';
 import Pagination from './components/Pagination/Pagination';
 import type { FilterState } from './components/FilterPanel/FilterPanel';
+import api from '../../api';
 import './SearchSpacePage.css';
-
-const MOCK_PEOPLE = [
-    {
-        id: '1', firstName: 'Іван', lastName: 'Петренко', nickname: 'ivan_p',
-        avatarUrl: '', rating: 4.9,
-        bio: 'Full-stack розробник, люблю React і Node.js. Шукаю цікаві проєкти.',
-        directions: ['web', 'backend', 'mobile'],
-        interests: ['gamedev', 'ui/ux design', 'Data Science'],
-    },
-    {
-        id: '2', firstName: 'Марія', lastName: 'Коваль', nickname: 'maria_k',
-        avatarUrl: '', rating: 4.7,
-        bio: 'UI/UX дизайнер з 3 роками досвіду. Працюю з Figma і Sketch.',
-        directions: ['ui/ux design', 'web'],
-        interests: ['mobile', 'gamedev'],
-    },
-    {
-        id: '3', firstName: 'Олег', lastName: 'Сидоренко', nickname: 'oleg_s',
-        avatarUrl: '', rating: 5.0,
-        bio: 'Data Scientist, ML ентузіаст. Python, TensorFlow, sklearn.',
-        directions: ['Data Science', 'backend'],
-        interests: ['web', 'QA/testing'],
-    },
-];
 
 const MOCK_SPACES = [
     {
@@ -67,13 +45,80 @@ const SORT_OPTIONS = [
     { value: 'members_asc', label: 'За зростанням учасників' },
 ];
 
+interface ApiUser {
+    id: string | number;
+    firstName?: string | null;
+    lastName?: string | null;
+    nickname?: string | null;
+    avatarUrl?: string | null;
+    rating?: number | null;
+    bio?: string | null;
+    directions?: string[] | null;
+    interests?: string[] | null;
+}
+
+interface ApiCategory {
+    id: number;
+    name: string;
+}
+
+interface ApiTag {
+    id: string;
+    name: string;
+}
+
 export default function SearchSpacePage() {
+    const [people, setPeople] = useState<PersonCardProps[]>([]);
+    const [categories, setCategories] = useState<string[]>([]);
+    const [tags, setTags] = useState<string[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [filterOpen, setFilterOpen] = useState(false);
     const [filterState, setFilterState] = useState<FilterState>(initialFilter);
     const [sort, setSort] = useState('rating_desc');
     const [sortOpen, setSortOpen] = useState(false);
     const [page, setPage] = useState(1);
+
+    useEffect(() => {
+        let isMounted = true;
+        
+        Promise.all([
+            api.get<ApiUser[]>('/api/users'),
+            api.get<ApiCategory[]>('/api/categories'),
+            api.get<ApiTag[]>('/api/tags')
+        ])
+            .then(([usersRes, catsRes, tagsRes]) => {
+                if (!isMounted) return;
+                
+                const mappedUsers = usersRes.data.map(p => ({
+                    id: String(p.id),
+                    firstName: p.firstName || '',
+                    lastName: p.lastName || '',
+                    nickname: p.nickname || '',
+                    avatarUrl: p.avatarUrl || '',
+                    rating: p.rating || 0.0,
+                    bio: p.bio || '',
+                    directions: p.directions || [],
+                    interests: p.interests || [],
+                }));
+                
+                const catNames = catsRes.data.map(c => c.name);
+                const tagNames = tagsRes.data.map(t => t.name);
+
+                setPeople(mappedUsers);
+                setCategories(catNames);
+                setTags(tagNames);
+                setIsLoading(false);
+            })
+            .catch(err => {
+                console.error('Failed to fetch search page data:', err);
+                if (isMounted) setIsLoading(false);
+            });
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
 
     const handleFilterChange = (newState: FilterState) => {
         setFilterState(newState);
@@ -91,7 +136,7 @@ export default function SearchSpacePage() {
         const q = search.toLowerCase();
 
         if (filterState.tab === 'PEOPLE') {
-            return MOCK_PEOPLE.filter(p => {
+            return people.filter(p => {
                 const fullName = `${p.firstName} ${p.lastName}`.toLowerCase();
                 if (q && !fullName.includes(q) && !p.bio.toLowerCase().includes(q)) return false;
                 if (filterState.directions.length > 0) {
@@ -119,7 +164,7 @@ export default function SearchSpacePage() {
                 return b.rating - a.rating;
             });
         }
-    }, [search, filterState, sort]);
+    }, [people, search, filterState, sort]);
 
     const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
     const paginated = filtered.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE);
@@ -180,19 +225,26 @@ export default function SearchSpacePage() {
                                 filterState={filterState}
                                 onChange={handleFilterChange}
                                 onReset={handleReset}
-                            />
+                                directions={categories}
+                                tags={tags}
+                                onTagSelect={(tag) => { setSearch(tag); setPage(1); }}
+                             />
                         </aside>
                     )}
 
                     <div className="search-results">
-                        {paginated.length === 0 ? (
+                        {isLoading && filterState.tab === 'PEOPLE' ? (
+                            <div style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>
+                                Завантаження користувачів...
+                            </div>
+                        ) : paginated.length === 0 ? (
                             <div className="search-empty">
                                 <span style={{ fontSize: 40, opacity: 0.4 }}>🔍</span>
                                 <p>Нічого не знайдено</p>
                                 <span>Спробуй змінити запит або фільтри</span>
                             </div>
                         ) : filterState.tab === 'PEOPLE' ? (
-                            (paginated as typeof MOCK_PEOPLE).map(p => (
+                            (paginated as PersonCardProps[]).map(p => (
                                 <PersonCard key={p.id} {...p} />
                             ))
                         ) : (
