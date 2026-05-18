@@ -96,8 +96,8 @@ export default function TeamForm({ formState, onChange }: TeamFormProps) {
             const team = await teamsApi.create({
                 name: formState.name,
                 description: formState.description,
-                directions: formState.directions, // Contains IDs from MultiSelect
-                avatarUrl
+                directions: formState.directions.map(Number), // Map to numbers to be safe
+                avatarUrl: avatarUrl || undefined
             });
 
             navigate(`/teams/${team.slug}`);
