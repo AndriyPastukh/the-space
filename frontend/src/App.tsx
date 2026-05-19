@@ -1,5 +1,5 @@
 import "./assets/styles/App.css";
-import { HashRouter as BrowserRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route } from "react-router-dom";
 import { MainPage } from "./pages/MainPage/MainPage.tsx";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
 import LoginPage from "./pages/LoginPage/LoginPage.tsx";
@@ -24,7 +24,7 @@ import EditKnowledgePage from "./pages/EditPage/EditKnowledgePage.tsx";
 
 function App() {
     return (
-        <BrowserRouter>
+        <HashRouter>
             <div className="App">
                 <Header />
                 <Routes>
@@ -50,7 +50,7 @@ function App() {
                 </Routes>
                 <Footer />
             </div>
-        </BrowserRouter>
+        </HashRouter>
     );
 }
 
